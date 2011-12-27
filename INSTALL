@@ -1,0 +1,14 @@
+This is a Qt toolkit based project.
+To build you will need Qt devel pacakges and libusb1.0 devel packages.
+
+For windows the makefile assumes libusb lives is c:\libusb, change the poolview.pro file as appropriate.
+
+To build:
+qmake
+make
+
+To build a debug version:
+make clean
+qmake CONFIG+=debug
+make
+
