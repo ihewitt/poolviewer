@@ -1,0 +1,18 @@
+#summary Overview of windows version.
+
+= Introduction =
+The windows build of PoolViewer uses Qt4 and libusb1.0. If you wish to build from source you will need to install these first.
+
+To run the pre-built binary the required libraries are included in the zip file, no application installation is necessary just copy the files to a directory and run the poolview.exe.
+
+You have the choice of either using your current PoolMate device driver to download your workouts or using the sync functionality built into the PoolViewer application.
+
+= USB device =
+If you have the PoolMate software and USB driver installed you can keep using the same driver to connect to your watch and download workouts.
+PoolViewer supports the file formats created by the Swimovate software, you should use the "Import CSV" option in the download form to access the files saved by your installed poolmate software.
+
+Alternatively if you want to use the watch sync built into the PoolViewer application then you need to install the libusb windows driver.
+
+This can be installed to override the current PoolMate driver and removed later if you want to revert to the bundled software.
+
+To use the inbuilt USB sync you will need to install the [https://sourceforge.net/projects/libwdi/files/zadig/ Zadig] driver and select the WinUSB driver option when it detects your poolmate device.
