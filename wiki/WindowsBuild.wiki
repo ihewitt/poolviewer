@@ -1,4 +1,5 @@
 #summary Overview of windows version.
+#labels Featured
 
 = Introduction =
 The windows build of PoolViewer uses Qt4 and libusb1.0. If you wish to build from source you will need to install these first.
