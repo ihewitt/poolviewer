@@ -3,7 +3,7 @@ QT = gui core
 
 VERSION = 0.2
 
-CONFIG += qt warn_on console
+CONFIG += qt warn_on
 
 DESTDIR = bin
 
@@ -23,11 +23,20 @@ unix {
 	LIBS += -lusb-1.0
 	INCLUDEPATH += ./src
 }
+
 win32 {
 	INCLUDEPATH += ./src c:/libusb/include
 	QMAKE_LIBDIR += C:/libusb/ms32/dll
 	LIBS += -llibusb-1.0
 }
+
+CONFIG(debug, debug|release) {
+	unix: TARGET = $$join(TARGET,,,_g)
+	win32: TARGET = $$join(TARGET,,d)
+}
+
+target.path = /usr/bin
+INSTALLS += target 
 
 FORMS = ui/summary.ui ui/sync.ui ui/config.ui ui/upload.ui
 HEADERS = src/uploadimpl.h src/syncimpl.h src/configimpl.h src/summaryimpl.h src/graphwidget.h src/datastore.h src/calendar.h
