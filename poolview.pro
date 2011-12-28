@@ -35,7 +35,7 @@ CONFIG(debug, debug|release) {
 	win32: TARGET = $$join(TARGET,,d)
 }
 
-target.path = /usr/bin
+target.path = $$DESTDIR/usr/bin
 INSTALLS += target 
 
 FORMS = ui/summary.ui ui/sync.ui ui/config.ui ui/upload.ui
