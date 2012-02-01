@@ -164,7 +164,7 @@ void SyncImpl::getData(std::vector<ExerciseSet>& data)
             set.date = QDate(e->year, e->month, e->day);
             set.time = QTime(e->hour, e->min);
 
-            if (s->status == 0) //swim
+            if (s->status == 0 && s->len) //swim
             {
                 set.type ="Swim";
                 set.pool = e->pool;

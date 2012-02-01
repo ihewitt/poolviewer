@@ -1,9 +1,9 @@
 TEMPLATE = app
 QT = gui core
 
-VERSION = 0.2
+VERSION = 0.3
 
-CONFIG += qt warn_on
+CONFIG += qt warn_on debug_and_release
 
 DESTDIR = bin
 
@@ -12,6 +12,7 @@ release {
 	MOC_DIR = build/release
 	UI_DIR = build/release
 	}
+
 debug {
 	OBJECTS_DIR = build/debug
 	MOC_DIR = build/debug
