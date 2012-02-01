@@ -23,6 +23,9 @@
 #include <QTextCharFormat>
 #include <QCloseEvent>
 #include <QMessageBox>
+#include <QPainter>
+#include <QPrinter>
+#include <QPrintDialog>
 
 #include "summaryimpl.h"
 #include "uploadimpl.h"
@@ -490,4 +493,33 @@ void SummaryImpl::closeEvent(QCloseEvent *event)
              event->ignore();
          }
      }
+}
+
+void SummaryImpl::printButton()
+{
+    QPrinter printer(QPrinter::HighResolution);
+
+    QPrintDialog *dialog = new QPrintDialog(&printer, this);
+    dialog->setWindowTitle(tr("Print Chart"));
+//  if (editor->textCursor().hasSelection())
+//       dialog->addEnabledOption(QAbstractPrintDialog::PrintSelection);
+    if (dialog->exec() != QDialog::Accepted)
+         return;
+
+    QPainter painter;
+    painter.begin(&printer);
+
+    double xscale = printer.pageRect().width()/double(graphWidget->width());
+    double yscale = printer.pageRect().height()/double(graphWidget->height());
+    double scale = qMin(xscale, yscale);
+
+    painter.translate(printer.paperRect().x() + printer.pageRect().width()/2,
+                  printer.paperRect().y() + printer.pageRect().height()/2);
+
+    painter.scale(scale, scale);
+    painter.translate(-width()/2, -height()/2);
+
+    graphWidget->render(&painter);
+    painter.end();
+
 }

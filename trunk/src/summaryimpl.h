@@ -64,6 +64,7 @@ private slots:
 	virtual void editButton();
 	virtual void deleteButton();
     virtual void scaleChanged(int);
+    virtual void printButton();
 
 private:
 	DataStore *ds;
