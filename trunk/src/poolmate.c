@@ -86,7 +86,10 @@ long poolmate_len()
 
 unsigned char* poolmate_data()
 {
-    return g_c->data;
+    if (g_c)
+        return g_c->data;
+    else
+        return 0;
 }
 
 

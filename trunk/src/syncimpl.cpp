@@ -164,6 +164,8 @@ void Usb::run()
 void SyncImpl::getData(std::vector<ExerciseSet>& data)
 {
     unsigned char *buf = poolmate_data();
+    if (!buf)
+        return;
 
     // some sort of checksum exists in 0x1000,1001,1002,1003
     // need to work out how to validate it.
