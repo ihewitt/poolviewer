@@ -38,7 +38,7 @@ void UploadImpl::fillList()
 {
     std::vector<ExerciseSet>::iterator i;
     
-    int pos=0, id=1;
+    int pos=0;
     QDateTime run;
     for (i=exdata.begin(); i!= exdata.end(); ++i, ++pos)
     {
@@ -160,7 +160,7 @@ void UploadImpl::add()
              (i->flags() & Qt::ItemIsEnabled) )
         {
             // userrole data contains location exercise list
-            int pos = i->data(Qt::UserRole).toInt();
+            unsigned int pos = i->data(Qt::UserRole).toInt();
 
             //Disable once uploaded
             i->setFlags(0);

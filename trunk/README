@@ -1,0 +1,19 @@
+
+This is a cross platform driver and viewer application for the Swimovate
+Poolmate Pro swimming watch.
+
+The poolmate dongle is actually a TI3410 USB-serial interface.
+There is already a kernel driver for the TI3410 - ti_usb_3410_5052 which could
+probably be used instead. However trying to get it working just resulted in
+failure to download firmware errors, despite pointing it at the right firmware
+from the windows driver. Also the linux driver doesn't seem to detect when
+there are two configurations (i.e. the firmware is already loaded) and just
+select the second without attempting to download.
+
+Therefore.... for now will stick to the simplistic included userspace USB
+driver instead although now changed to just dump down the raw data so might
+add an option to download from a ttyUSB device instead just incase I get the
+serial driver working.
+
+The data protocol is pretty straightforward, the watch just serially dumps a
+binary representation of its contents when it's placed onto the dock.
