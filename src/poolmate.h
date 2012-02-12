@@ -1,6 +1,6 @@
 /*
  * This file is part of PoolViewer
- * Copyright (c) 2011 Ivor Hewitt
+ * Copyright (c) 2011-2012 Ivor Hewitt
  *
  * PoolViewer is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@
 #ifndef POOLMATE_H
 #define POOLMATE_H
 
+/*
 #define MAX_SETS 255
 #define MAX_EXERCISES 255
 
@@ -53,16 +54,17 @@ typedef struct
 
     Set sets[MAX_SETS];
 } Exercise;
+*/
 
 int poolmate_init();
 int poolmate_find();
 int poolmate_attach();
 int poolmate_start();
 int poolmate_run();
-
 int poolmate_stop();
 int poolmate_cleanup();
 
-int poolmate_progress();
+long poolmate_len();
+unsigned char* poolmate_data();
 
 #endif /* POOLMATE_H */

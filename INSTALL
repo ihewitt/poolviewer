@@ -9,6 +9,6 @@ make
 
 To build a debug version:
 make clean
-qmake CONFIG+=debug
-make
+qmake
+make debug
 

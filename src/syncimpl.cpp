@@ -1,6 +1,6 @@
 /*
  * This file is part of PoolViewer
- * Copyright (c) 2011 Ivor Hewitt
+ * Copyright (c) 2011-2012 Ivor Hewitt
  *
  * PoolViewer is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,8 +25,6 @@
 extern "C"
 {
 #include "poolmate.h"
-    extern Exercise exercises[MAX_EXERCISES];
-    extern int num_exercises;
 };
 
 // TODO tidy up usb class communication.
@@ -38,12 +36,20 @@ SyncImpl::SyncImpl( QWidget * parent, Qt::WFlags f)
 {
     setupUi(this);
 
-    progressBar->setRange(0,512);
+    progressBar->setRange(0,4104);
     progressBar->setValue(0);
 
     start();
 }
 
+SyncImpl::~SyncImpl()
+{
+    usb->state = Usb::ERROR;
+    //    poolmate_stop();
+    usb->wait();
+
+    delete usb;
+}
 
 void SyncImpl::usbMsg(QString msg)
 {
@@ -68,6 +74,8 @@ Usb::~Usb()
 
 void Usb::run()
 {
+    int count;
+
     while ( state != ERROR &&
             state != DONE )
     {
@@ -108,20 +116,19 @@ void Usb::run()
             break;
             
         case READY:
-            int count=0;
-            while (poolmate_run() > 0)
+            while (state == READY && poolmate_run() > 0)
             {
-                count = poolmate_progress();
+                count=0;
+                count = poolmate_len();
                 if (count)
                     emit info(QString("Transferring"));
 
                 emit progress( count );
             }
-
-            count = poolmate_progress();
+            count = poolmate_len();
             emit progress( count );
 
-            if (count < 512)
+            if (count < 4104)
             {
                 emit info(QString("Problem during transfer."));
                 state = ERROR;
@@ -131,6 +138,12 @@ void Usb::run()
                 emit info(QString("Transfer complete."));
                 state = DONE;
             }
+            break;
+
+        case ERROR:
+        case TRANSFER:
+        case DONE:
+        default:
             break;
         }
     }
@@ -150,48 +163,146 @@ void Usb::run()
 
 void SyncImpl::getData(std::vector<ExerciseSet>& data)
 {
-    // extract and flatten exercise data 
-    for (int i=0; i<=num_exercises; i++)
+    unsigned char *buf = poolmate_data();
+
+    // some sort of checksum exists in 0x1000,1001,1002,1003
+    // need to work out how to validate it.
+    // just do based on length of transfer for now.
+    if (poolmate_len() != 4104)
+        return;
+    
+    int version = buf[0x1004];
+    int user = buf[0x1005];
+    
+    for (int i=0; i< 4088;)
     {
-        Exercise *e = &exercises[i];
-
-        for (int j=0;j<e->sets_t;j++)
+        if (buf[i] == 0 && buf[i+1] == 0)
         {
-            Set *s = &exercises[i].sets[j];
+            int year, month, day;
+            int hour, min, sec;
+            int cal, pool;
+            QString type;
+            QString units;
 
-            ExerciseSet set;
-            set.user = e->user;
-            set.date = QDate(e->year, e->month, e->day);
-            set.time = QTime(e->hour, e->min);
+            year  = buf[i+2] + 2000;
+            month = buf[i+4];
+            day   = buf[i+6];
+            QDate date(year, month, day);
+            
+            hour  = buf[i+3] & 0x7f;
+            min   = buf[i+5] & 0x7f;
+            QTime time(hour, min);
+            
+            hour  = buf[i+7] & 0x7f;
+            min   = buf[i+9] & 0x7f;
+            sec   = buf[i+11] & 0x7f;
+            QTime t_dur(hour, min, sec);
 
-            if (s->status == 0 && s->len) //swim
+            int sets   = buf[i+10];
+            
+            cal = ((buf[i+13] & 0x7f) << 8) | (buf[i+12]); 
+            pool = buf[i + 8]; 
+            if (buf[i + 14] == 0)
             {
-                set.type ="Swim";
-                set.pool = e->pool;
-                set.unit = "m"; //TODO find and extract
-                set.totalduration = QTime(e->dur_hr, e->dur_min, e->dur_sec);
-                set.cal = e->cal;
-                set.lengths = e->len_t;
-                set.totaldistance = e->len_t * e->pool;
-                set.set = j+1;
-                set.duration = QTime(s->hr, s->min, s->sec);
-                set.strk = s->str;
-                set.dist = s->len * e->pool;
-                set.lens = s->len;
-                int time_secs = (((s->hr*60)+s->min)*60+s->sec);
-                set.speed = 100*time_secs/(s->len*e->pool);
-                set.effic = ((25*time_secs/s->len)+(25*s->str))/e->pool;
-                set.rate = (60*s->str*s->len) / time_secs;
+                units = "m";
             }
             else
             {
-                set.type="Chrono";
-                set.totalduration = QTime(e->dur_hr, e->dur_min, e->dur_sec);
-                set.set = j+1;
-                set.duration = QTime(s->hr, s->min, s->sec);
+                units = "yd";
             }
 
-            data.push_back(set);
+            // step over header
+            i += 16;
+
+            if (buf[i+7] == 0x80)
+            {
+                type = "Swim";
+
+                int total_len=0;
+                for (int j = 0; j<sets; j++)
+                {
+                    int len = ((buf[i+j*8 + 2] & 0x7f) << 8) |
+                        buf[i+j*8 + 0];
+
+                    total_len += len;
+                }
+
+                for (int j = 0; j<sets; j++)
+                {
+                    hour = buf[i+j*8 + 1] & 0x7f;
+                    min = buf[i+j*8 + 3] & 0x7f;
+                    sec = buf[i+j*8 + 5] & 0x7f;
+                    QTime dur(hour, min, sec);
+
+                    int secs = ((hour*60)+min)*60+sec;
+
+                    int len = ((buf[i+j*8 + 2] & 0x7f) << 8) |
+                        buf[i+j*8 + 0];
+
+                    int str = ((buf[i+j*8 + 6] & 0x7f) << 8) |
+                        buf[i+j*8 + 4];
+                    
+                    ExerciseSet set;
+                    set.user = user;
+                    set.date = date;
+                    set.time = time;
+                    set.type = type;
+                    set.totalduration = t_dur;
+                    set.set = j+1;
+                    set.duration = dur;
+
+                    set.cal = cal;
+                    set.unit = units;
+
+                    set.pool = pool;
+
+                    set.lengths = total_len;
+                    set.totaldistance = total_len * pool;
+
+                    set.dist = len * pool;
+                    set.lens = len;
+
+                    set.strk = str;
+
+                    if (len)
+                    {
+                        set.speed = 100*secs / set.dist;
+                        set.effic = ((25 * secs / len) + (25 * str)) / pool;
+                        set.rate = (60 * str * len) / secs;
+                    }
+                    
+                    data.push_back(set);
+                }
+                i += sets * 8;
+            }
+            else if (buf[i+7] == 0x82)
+            {
+                type = "Chrono";
+                
+                for (int j = 0; j < sets; j++)
+                {
+                    hour = buf[i + j*8 + 1] & 0x7f;
+                    min = buf[i + j*8 + 3] & 0x7f;
+                    sec = buf[i + j*8 + 5] & 0x7f;
+                    QTime dur(hour, min, sec);
+
+                    ExerciseSet set;
+                    set.user = user;
+                    set.date = date;
+                    set.time = time;
+                    set.type = type;
+                    set.totalduration = t_dur;
+                    set.set = j+1;
+                    set.duration = dur;
+                    
+                    data.push_back(set);
+                }
+                i += sets * 8;
+            }  
+        }
+        else
+        {
+            i += 8;
         }
     }
 }
