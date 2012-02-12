@@ -306,6 +306,7 @@ void DataStore::remove(int id)
         if (i->id == id)
         {
             workouts.erase(i);
+            changed=true;
             return;
         }
     }
@@ -318,13 +319,17 @@ void DataStore::remove( QDateTime dt )
     for (i=workouts.begin(); i != workouts.end(); ++i)
     {
         if (QDateTime(i->date,i->time) == dt)
+        {
+            changed=true;
             workouts.erase(i);
+        }
     }
 }
 
 int DataStore::add(const std::vector<ExerciseSet> &sets)
 {
     sorted=false;
+    changed=true;
     setsToWorkouts( sets,  workouts);
     return -1;
 }

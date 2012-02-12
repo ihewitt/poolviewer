@@ -571,7 +571,7 @@
   <sender>closeButton</sender>
   <signal>clicked()</signal>
   <receiver>Summary</receiver>
-  <slot>reject()</slot>
+  <slot>close()</slot>
   <hints>
    <hint type="sourcelabel">
     <x>1016</x>
