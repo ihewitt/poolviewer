@@ -23,6 +23,15 @@
 
 #include "calendar.h"
 
+const char* eff[] =
+{
+    "Below Average",
+    "Average",
+    "Above Average",
+    "Very Good",
+    "Excellent"
+};
+
 QColor fgcolours[] =
     {
         QColor(0x00,0x00,0x00),
@@ -54,6 +63,7 @@ int effToId(int effic)
 CalendarWidget::CalendarWidget(QWidget *parent)
 	: QCalendarWidget(parent)
 {
+//    setMouseTracking(true);
 }
 
 void CalendarWidget::paintCell ( QPainter * painter, const QRect & rect, const QDate & date ) const
@@ -144,6 +154,22 @@ void CalendarWidget::setData(const std::map<QDate, Totals> _lens)
 
     for (i=total.begin(); i!=total.end(); i++)
     {
+        Totals &t = i->second;
+        
+        QString tip = 
+            QString("<table><tr><td><b>Distance</b></td><td>%1m</td></tr>"
+                    "<tr><td><b>Worst Efficiency</b></td><td>%2 (%3)</td></tr>"
+                    "<tr><td><b>Average Efficiency</b></td><td>%4 (%5)</td></tr>"
+                    "<tr><td><b>Best Efficiency</b></td><td>%6 (%7)</td></tr></table>")
+            .arg(t.dist)
+            .arg(t.max_eff)
+            .arg(eff[effToId(t.max_eff)])
+            .arg(t.avg_eff)
+            .arg(eff[effToId(t.avg_eff)])
+            .arg(t.min_eff)
+            .arg(eff[effToId(t.min_eff)]);
+        
+        c.setToolTip( tip );
         setDateTextFormat(i->first,c);
     }
 }

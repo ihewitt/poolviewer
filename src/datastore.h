@@ -72,6 +72,7 @@ public:
 
     // Remove exercise with id
     void remove(int id);
+    void removeSet( int wid, int sid );
 
     // Remove all exercises at date
     void remove( QDateTime dt );

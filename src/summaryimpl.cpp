@@ -119,7 +119,8 @@ void SummaryImpl::setData( const std::vector<Workout>& workouts)
     }
     else
     {
-        setData(workouts[0]);
+        if (workouts.size())
+            setData(workouts[0]);
     }
 
     std::vector<Workout>::const_iterator i;
@@ -345,6 +346,11 @@ void SummaryImpl::selectedDate(QDate /* d */)
     graphWidget->update();
 }
 
+void SummaryImpl::setSelected()
+{
+    setSel = true;
+}
+
 //
 // Workout in top grid selected.
 //   populate set list
@@ -364,7 +370,8 @@ void SummaryImpl::workoutSelected()
 
     setData(ds->Workouts()[row]);
     graphWidget->update();
-    
+
+    setSel = false;   
 }
 
 void SummaryImpl::syncButton()
@@ -387,47 +394,44 @@ void SummaryImpl::configButton()
 /* add delete back in */
 void SummaryImpl::deleteButton()
 {
+    int row = workoutGrid->currentRow();
     //    QDateTime dt = (ds->exercises[row].date,
     //                ds->exercises[row].time);
-
-    int ret = QMessageBox::question(this, tr("Delete exercise"),
-                                    tr("Delete the selected exercises?"),
-                                    QMessageBox::Yes|QMessageBox::No);
-
-    if (ret == QMessageBox::Yes)
+    if (setSel)
     {
-        int i;
-        printf ("selected ");
-        for (i=workoutGrid->rowCount()-1; i>=0; --i)
+        int ret = QMessageBox::question(this, tr("Delete exercise set"),
+                                        tr("Delete the selected exercise set?"),
+                                        QMessageBox::Yes|QMessageBox::No);
+        if (ret == QMessageBox::Yes)
         {
-            QTableWidgetItem* it = workoutGrid->item(i,0);
-            
-            if (it->isSelected())
+            for (int i = setGrid->rowCount()-1; i >= 0; --i)
             {
-                printf("%d ", i);
-                //                ds->Exercises().erase(ds->Exercises().begin()+i);
+                QTableWidgetItem* it = setGrid->item(i,0);
+                if (it->isSelected())
+                {
+                    ds->removeSet(row, i);
+                }
             }
-            
+            workoutSelected();
         }
-        printf ("\n");
-
-            /* QList<QTableWidgetSelectionRange> ranges = workoutGrid->selectedRanges();
-        QList<QTableWidgetSelectionRange>::iterator it;
-        for (it=ranges.begin(); it != ranges.end(); ++it)
+    }
+    else
+    {
+        int ret = QMessageBox::question(this, tr("Delete entire exercise"),
+                                        tr("Delete the selected exercises?"),
+                                        QMessageBox::Yes|QMessageBox::No);
+        if (ret == QMessageBox::Yes)
         {
-            int start = it->topRow();
-            int end = it->bottomRow();
-
-            printf("%d - %d\n", start, end);
-            for (int pos = end; pos >= start; pos--)
+            for (int i = workoutGrid->rowCount()-1; i >= 0; --i)
             {
-                printf(" remove %d\n", pos);
-                ds->remove(pos);
+                QTableWidgetItem* it = workoutGrid->item(i,0);
+                if (it->isSelected())
+                {
+                    ds->remove(i);
+                }
             }
+            fillWorkouts(ds->Workouts());
         }
-            */
-        //        setData(ds->Exercises());
-        // fillGrid(ds->Exercises());
     }
 }
 

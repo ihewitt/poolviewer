@@ -1,6 +1,6 @@
 /*
  * This file is part of PoolViewer
- * Copyright (c) 2011 Ivor Hewitt
+ * Copyright (c) 2011-2012 Ivor Hewitt
  *
  * PoolViewer is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -47,29 +47,30 @@ public:
     void fillWorkouts( const std::vector<Workout>& workouts );
     void fillSets( const std::vector<Set>& sets );
 
-	void colorRow(int r, QColor c); 
+    void colorRow(int r, QColor c); 
 
-	void setDataStore(DataStore *_ds) { ds = _ds;}
+    void setDataStore(DataStore *_ds) { ds = _ds;}
 
  protected:
     void keyPressEvent(QKeyEvent *event);
     void closeEvent(QCloseEvent *event);
-
-private slots:
-	virtual void selectedDate(QDate);
+    
+ private slots:
+    virtual void selectedDate(QDate);
     virtual void workoutSelected();
-	virtual void syncButton();
-	virtual void configButton();
+    virtual void setSelected();
+    virtual void syncButton();
+    virtual void configButton();
 
-	virtual void editButton();
-	virtual void deleteButton();
+    virtual void editButton();
+    virtual void deleteButton();
     virtual void scaleChanged(int);
     virtual void printButton();
 
 private:
-	DataStore *ds;
+    DataStore *ds;
     Scale scale;
-
+    bool setSel; //this is a bit clunky
 };
 #endif
 

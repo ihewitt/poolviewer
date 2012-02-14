@@ -41,7 +41,6 @@ bool SaveCSV( const std::string & name, std::vector<ExerciseSet>& exercises, boo
         out << "User,LogDate,LogTime,LogType,Pool,Units,TotalDuration,Calories,TotalLengths,TotalDistance,Nset,Duration,Strokes,Distance,Speed,Efficiency,StrokeRate,HRmin,HRmax,HRavg,HRbegin,HRend,Version\n";
         
         std::vector<ExerciseSet>::iterator i;
-        int row=0;
         
         for (i=exercises.begin(); i != exercises.end(); ++i)
         {
@@ -140,7 +139,6 @@ namespace {
                          std::vector<Workout>& workouts)
     {
         std::vector<ExerciseSet>::const_iterator i;
-        int row=0;
         
         for (i=sets.begin(); i != sets.end();)
         {
@@ -300,16 +298,15 @@ int sortfn(const Workout& lhs, const Workout &rhs)
 
 void DataStore::remove(int id)
 {
-    std::vector<Workout>::iterator i;
-    for (i=workouts.begin(); i != workouts.end(); ++i)
-    {
-        if (i->id == id)
-        {
-            workouts.erase(i);
-            changed=true;
-            return;
-        }
-    }
+    workouts.erase(workouts.begin()+id);
+    changed=true;
+}
+
+void DataStore::removeSet(int wid, int sid)
+{
+    std::vector<Set>& s = workouts[wid].sets;
+    s.erase(s.begin()+sid);
+    changed=true;
 }
 
 // Remove all exercises at date
