@@ -272,6 +272,12 @@ void SyncImpl::getData(std::vector<ExerciseSet>& data)
                         set.effic = ((25 * secs / len) + (25 * str)) / pool;
                         set.rate = (60 * str * len) / secs;
                     }
+                    else
+                    {
+                        set.speed=0;
+                        set.effic=0;
+                        set.rate=0;
+                    }
                     
                     data.push_back(set);
                 }
