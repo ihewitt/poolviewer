@@ -1,6 +1,6 @@
 /*
  * This file is part of PoolViewer
- * Copyright (c) 2011 Ivor Hewitt
+ * Copyright (c) 2011-2012 Ivor Hewitt
  *
  * PoolViewer is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,8 +29,7 @@
 #include "exerciseset.h"
 
 
-
-//Stick to same file format as poolmate app for now so we can share files
+// Stick to same file format as poolmate app for now so we can share files
 bool SaveCSV( const std::string & name, std::vector<ExerciseSet>& exercises, bool extra )
 {
     QFile file(name.c_str());
@@ -266,6 +265,21 @@ bool DataStore::save()
     return SaveCSV(qPrintable(filename), output, true);
 }
 
+//Find first exercise at date
+int DataStore::findExercise(QDate dt)
+{
+    std::vector<Workout>::iterator i;
+    int row=0;
+
+    for (i=workouts.begin(); i != workouts.end(); ++i)
+    {
+        if (i->date == dt)
+            return row;
+		row++;
+	}
+	return -1;
+}
+
 int DataStore::findExercise(QDateTime dt)
 {
     std::vector<Workout>::iterator i;
@@ -280,8 +294,7 @@ int DataStore::findExercise(QDateTime dt)
 //                printf("%s\n", qPrintable(td.toString()));
 
         if (td == dt)
-            return i->id;
-            //			return row;
+            return row;
 		row++;
 	}
 	return -1;

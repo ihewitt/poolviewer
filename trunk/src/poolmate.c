@@ -21,6 +21,9 @@
  * so could probably use a usbserial driver instead but I didn't
  * manage to get it going with the ti_usb_3410_5052 driver
  * so lets stick with talking to it in userspace for now.
+ * However this interface just presents the raw binary downloaded to
+ * the application, so switching to the serial interface instead should
+ * be simple.
  */
 
 #include <errno.h>
@@ -120,6 +123,9 @@ static void LIBUSB_CALL cb_ctrl(struct libusb_transfer * transfer)
 }
 */
 
+ //
+ // At the moment IRQ notifications are simply ignored
+ //
 static void LIBUSB_CALL cb_irq(struct libusb_transfer *transfer)
 {
     Context *c = transfer->user_data;
@@ -294,7 +300,7 @@ int poolmate_attach()
 
     /* Actually after reading about the serial interface
        might need to check there are 2 configurations and upload
-       firmware image if we are in configuration 1 */
+       firmware image if we are in configuration 1. */
 
     if (config != 2)
         libusb_set_configuration(g_c->devh, 2);

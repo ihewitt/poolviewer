@@ -545,7 +545,7 @@
    <sender>deleteButton</sender>
    <signal>clicked()</signal>
    <receiver>Summary</receiver>
-   <slot>deleteButton()</slot>
+   <slot>deleteClick()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>122</x>
@@ -629,7 +629,7 @@
   <slot>endDate(QDate)</slot>
   <slot>syncButton()</slot>
   <slot>configButton()</slot>
-  <slot>deleteButton()</slot>
+  <slot>deleteClick()</slot>
   <slot>editButton()</slot>
   <slot>display()</slot>
   <slot>workoutSelected()</slot>
