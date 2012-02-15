@@ -41,6 +41,7 @@ Q_OBJECT
 public:
     SummaryImpl( QWidget * parent = 0, Qt::WFlags f = 0 );
 
+    void setData();
     void setData( const std::vector<Workout>& workouts);
     void setData( const Workout& workout );
 
@@ -63,7 +64,7 @@ public:
     virtual void configButton();
 
     virtual void editButton();
-    virtual void deleteButton();
+    virtual void deleteClick();
     virtual void scaleChanged(int);
     virtual void printButton();
 

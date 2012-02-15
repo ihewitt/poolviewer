@@ -1,6 +1,6 @@
 /*
  * This file is part of PoolViewer
- * Copyright (c) 2011 Ivor Hewitt
+ * Copyright (c) 2011-2012 Ivor Hewitt
  *
  * PoolViewer is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -53,7 +53,7 @@ void SummaryImpl::scaleChanged(int sc)
     graphWidget->update();
 }
 
-//
+
 void SummaryImpl::setData( const std::vector<Workout>& workouts)
 {
     //current date/selection
@@ -107,7 +107,7 @@ void SummaryImpl::setData( const std::vector<Workout>& workouts)
     volumeWidget->series[2].label = "";
     volumeWidget->series[3].label = "Dur/Rest";
 
-    if (scale != WORKOUTS)
+    //    if (scale != WORKOUTS)
     {
         graphWidget->clear();
         graphWidget->style = GraphWidget::Line;
@@ -117,11 +117,11 @@ void SummaryImpl::setData( const std::vector<Workout>& workouts)
         graphWidget->series[2].label = "Strk";
         graphWidget->series[3].label = "Rte";
     }
-    else
+    /*    else
     {
         if (workouts.size())
             setData(workouts[0]);
-    }
+            }*/
 
     std::vector<Workout>::const_iterator i;
     for ( i = workouts.begin(); i != workouts.end(); ++i)
@@ -131,7 +131,9 @@ void SummaryImpl::setData( const std::vector<Workout>& workouts)
         {
             QString axLabel;
             if (scale == YEARBYWEEK)
-                axLabel=QString::number(i->date.weekNumber());
+                axLabel=QString("%1/%2")
+                    .arg(i->date.weekNumber())
+                    .arg(i->date.year());
             else if (scale == YEARBYMONTH)
                 axLabel=i->date.toString("MMM");
             else
@@ -154,35 +156,25 @@ void SummaryImpl::setData( const std::vector<Workout>& workouts)
                     graphWidget->series[2].doubles.push_back( j->strk ? (double)i->pool/j->strk : 0.0 );
                     graphWidget->series[3].integers.push_back(j->rate);
                 }
+            } else
+            {
+                int row = 0;
+                const Workout& workout = ds->Workouts()[workoutGrid->currentRow()];
+
+                std::vector<Set>::const_iterator i;
+                for (i = workout.sets.begin(); i != workout.sets.end(); ++i)
+                {
+                    graphWidget->xaxis.push_back( QString::number(++row) );
+                    graphWidget->series[0].integers.push_back(i->effic);
+                    graphWidget->series[1].integers.push_back(i->speed);
+                    graphWidget->series[2].doubles.push_back( i->strk ? (double)workout.pool/i->strk : 0.0 );
+                    graphWidget->series[3].integers.push_back(i->rate);
+                }
             }
         }
     }
 }
 
-// Draw graphs
-void SummaryImpl::setData( const Workout& workout )
-{
-    graphWidget->clear();
-    graphWidget->style = GraphWidget::Line;
-    graphWidget->series.resize(4);
-
-    graphWidget->series[0].label = "Eff";
-    graphWidget->series[1].label = "Spd";
-    graphWidget->series[2].label = "Strk";
-    graphWidget->series[3].label = "Rte";
-
-    std::vector<Set>::const_iterator i;
-    
-    int row=0;
-    for (i = workout.sets.begin(); i != workout.sets.end(); ++i)
-    {
-        graphWidget->xaxis.push_back( QString::number(++row) );
-        graphWidget->series[0].integers.push_back(i->effic);
-        graphWidget->series[1].integers.push_back(i->speed);
-        graphWidget->series[2].doubles.push_back( i->strk ? (double)workout.pool/i->strk : 0.0 );
-        graphWidget->series[3].integers.push_back(i->rate);
-    }
-}
 
 void SummaryImpl::fillWorkouts( const std::vector<Workout>& workouts)
 {
@@ -279,7 +271,7 @@ void SummaryImpl::fillWorkouts( const std::vector<Workout>& workouts)
     workoutGrid->selectRow(workoutGrid->rowCount()-1);
 
     //populate graph
-    setData(workouts);
+    setData(ds->Workouts());
     calendarWidget->setData(day_totals);
 }
 
@@ -338,17 +330,19 @@ void SummaryImpl::fillSets( const std::vector<Set>& sets)
     }
 }
 
-void SummaryImpl::selectedDate(QDate /* d */)
+//
+// Select workout on date selected on calendar
+//
+void SummaryImpl::selectedDate( QDate d )
 {
-    setData(ds->Workouts());
-
-    volumeWidget->update();
-    graphWidget->update();
+    int id = ds->findExercise(d);
+    workoutGrid->selectRow(id);
 }
 
 void SummaryImpl::setSelected()
 {
     setSel = true;
+    deleteButton->setText("Delete set");
 }
 
 //
@@ -365,13 +359,16 @@ void SummaryImpl::workoutSelected()
     const std::vector<Set>& sets = ds->Workouts()[row].sets;
     fillSets( sets );
 
-    viewCombo->setCurrentIndex((int)WORKOUTS);
+    //    viewCombo->setCurrentIndex((int)WORKOUTS);
     calendarWidget->setSelectedDate( ds->Workouts()[row].date );
 
-    setData(ds->Workouts()[row]);
+    setData(ds->Workouts());
+
     graphWidget->update();
+    volumeWidget->update();
 
     setSel = false;   
+    deleteButton->setText("Delete wrk");
 }
 
 void SummaryImpl::syncButton()
@@ -391,12 +388,10 @@ void SummaryImpl::configButton()
     win.exec();
 }
 
-/* add delete back in */
-void SummaryImpl::deleteButton()
+void SummaryImpl::deleteClick()
 {
     int row = workoutGrid->currentRow();
-    //    QDateTime dt = (ds->exercises[row].date,
-    //                ds->exercises[row].time);
+
     if (setSel)
     {
         int ret = QMessageBox::question(this, tr("Delete exercise set"),
@@ -450,7 +445,7 @@ void SummaryImpl::keyPressEvent(QKeyEvent *event)
     }
     else
     {
-        //        close();
+        // close();
     }
 }
 
@@ -458,6 +453,7 @@ void SummaryImpl::closeEvent(QCloseEvent *event)
 {
      if (ds->hasChanged())
      {
+         // TODO change to configurable datafile
          if (ds->getFile().isEmpty())
          {
              //user, username, home
@@ -491,22 +487,25 @@ void SummaryImpl::closeEvent(QCloseEvent *event)
          }
          else
          {
-         if (ds->save())
-             event->accept();
+             if (ds->save())
+                 event->accept();
          else
              event->ignore();
          }
      }
 }
 
+// TODO implement
 void SummaryImpl::printButton()
 {
     QPrinter printer(QPrinter::HighResolution);
 
     QPrintDialog *dialog = new QPrintDialog(&printer, this);
     dialog->setWindowTitle(tr("Print Chart"));
+
 //  if (editor->textCursor().hasSelection())
 //       dialog->addEnabledOption(QAbstractPrintDialog::PrintSelection);
+
     if (dialog->exec() != QDialog::Accepted)
          return;
 
@@ -517,13 +516,20 @@ void SummaryImpl::printButton()
     double yscale = printer.pageRect().height()/double(graphWidget->height());
     double scale = qMin(xscale, yscale);
 
-    painter.translate(printer.paperRect().x() + printer.pageRect().width()/2,
-                  printer.paperRect().y() + printer.pageRect().height()/2);
+    // painter.translate(printer.paperRect().x() + printer.pageRect().width()/2,
+    //               printer.paperRect().y() + printer.pageRect().height()/2);
+    painter.translate(printer.paperRect().x(),
+                  printer.paperRect().y());
 
     painter.scale(scale, scale);
-    painter.translate(-width()/2, -height()/2);
+    //    painter.translate(-width()/2, -height()/2);
 
     graphWidget->render(&painter);
+
+    painter.translate(0, graphWidget->height()*2);
+    volumeWidget->render(&painter);
+
+
     painter.end();
 
 }

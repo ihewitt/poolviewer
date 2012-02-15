@@ -1,6 +1,6 @@
 /*
  * This file is part of PoolViewer
- * Copyright (c) 2011 Ivor Hewitt
+ * Copyright (c) 2011-2012 Ivor Hewitt
  *
  * PoolViewer is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -66,6 +66,7 @@ public:
     
     // Locate first exercise id with matching datetime.
     int findExercise( QDateTime dt);
+    int findExercise( QDate dt);
 
     // Insert exercise into datastore, return id
     int add( const std::vector<ExerciseSet>& set) ;
