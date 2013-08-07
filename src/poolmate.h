@@ -19,6 +19,18 @@
 #ifndef POOLMATE_H
 #define POOLMATE_H
 
+//#define TEST
+////#define VERBOSE_DEBUG
+
+#ifdef VERBOSE_DEBUG
+#define INFO(x,...) do { fprintf(stderr,x, ##__VA_ARGS__ );} while(0)
+#define DEBUG(x,...) do { fprintf( stderr, x, ##__VA_ARGS__ );} while(0)
+#else
+#define INFO(x,...)
+#define DEBUG(x,...)
+#endif
+
+
 /*
 #define MAX_SETS 255
 #define MAX_EXERCISES 255
