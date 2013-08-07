@@ -285,13 +285,9 @@ int DataStore::findExercise(QDateTime dt)
     std::vector<Workout>::iterator i;
     int row=0;
 
-//    printf("%s\n", qPrintable(dt.toString()));
-
     for (i=workouts.begin(); i != workouts.end(); ++i)
     {
 		QDateTime td(i->date, i->time);
-
-//                printf("%s\n", qPrintable(td.toString()));
 
         if (td == dt)
             return row;

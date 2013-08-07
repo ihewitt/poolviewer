@@ -40,17 +40,6 @@
 #define LIBUSB_CALL
 #endif
 
-//#define TEST
-//#define VERBOSE_DEBUG
-
-#ifdef VERBOSE_DEBUG
-#define INFO(x,...) fprintf(stderr,x, ##__VA_ARGS__ )
-#define DEBUG(x,...) fprintf( stderr, x, ##__VA_ARGS__ )
-#else
-#define INFO(x,...)
-#define DEBUG(x,...)
-#endif
-
 typedef enum {
     NONE,
     READY,
@@ -326,7 +315,7 @@ int poolmate_attach()
     libusb_reset_device(g_c->devh);
 
     status = get_status();
-    printf("Status %d\n", status);
+    DEBUG("Status %d\n", status);
 
     r = alloc_transfers();
     if (r)
@@ -476,38 +465,38 @@ void main()
 
     if (poolmate_init())
     {
-        printf("unable to init\n");
+        DEBUG("unable to init\n");
         return;
     }
     
     if (poolmate_find())
     {
-        printf("unable to find\n");
+        DEBUG("unable to find\n");
         return;
     }
     
     if (poolmate_attach())
     {
-        printf("unable ot attach\n");
+        DEBUG("unable ot attach\n");
         return;
     }
 
     while (1)
     {
         sig=0;
-        printf ("listening\n");
+        DEBUG ("listening\n");
         if (poolmate_start())
         {
-            printf("unable to start\n");
+            DEBUG("unable to start\n");
             return;
         }
         
         while (!sig && poolmate_run() > 0)
         { }
-        printf ("\n");
+        DEBUG ("\n");
         
         if (poolmate_stop())
-            printf("unable to stop\n");
+            DEBUG("unable to stop\n");
     }
         
 }

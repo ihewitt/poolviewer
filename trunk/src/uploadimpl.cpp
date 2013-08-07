@@ -48,7 +48,7 @@ void UploadImpl::fillList()
             
             // TODO replace this with custom drawn control
             QString line = QString("[%1] \t%2")
-                .arg(run.toString("dd MMM hh:mm"))
+                .arg(run.toString("yyyy/MM/dd hh:mm"))
                 .arg(i->lengths);
             
             QListWidgetItem* i = new QListWidgetItem(line);
@@ -135,7 +135,6 @@ void UploadImpl::selectNone()
 
 void UploadImpl::syncButton()
 {
-    printf("Sync\n");
     SyncImpl win(this);
     win.exec();
 

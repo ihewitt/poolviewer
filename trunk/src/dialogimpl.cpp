@@ -57,7 +57,7 @@ DialogImpl::DialogImpl( QWidget * parent, Qt::WFlags f)
 
 void DialogImpl::selectedDate(QDate)
 {
-	printf("selectedd\n");
+	DEBUG("selectedd\n");
 	//locate date and populate workouts
 
 
@@ -80,7 +80,7 @@ void DialogImpl::selectedDate(QDate)
 
 void DialogImpl::selectedWorkout(QModelIndex)
 {
-	printf("selectedw\n");
+	DEBUG("selectedw\n");
 }
 
 

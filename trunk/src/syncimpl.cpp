@@ -176,7 +176,9 @@ void SyncImpl::getData(std::vector<ExerciseSet>& data)
     int version = buf[0x1004];
     int user = buf[0x1005];
     
-    for (int i=0; i< 4088;)
+//TODO tidy buffer looping logic.
+//at the moment will only work if the header doesn't wrap.
+    for (int i=0; i<= 4096;)
     {
         if (buf[i] == 0 && buf[i+1] == 0)
         {
@@ -223,26 +225,35 @@ void SyncImpl::getData(std::vector<ExerciseSet>& data)
                 int total_len=0;
                 for (int j = 0; j<sets; j++)
                 {
-                    int len = ((buf[i+j*8 + 2] & 0x7f) << 8) |
-                        buf[i+j*8 + 0];
+                    int c = (i+j*8)%4096;
+
+                    int len = ((buf[c + 2] & 0x7f) << 8) |
+                        buf[c + 0];
 
                     total_len += len;
                 }
 
                 for (int j = 0; j<sets; j++)
                 {
-                    hour = buf[i+j*8 + 1] & 0x7f;
-                    min = buf[i+j*8 + 3] & 0x7f;
-                    sec = buf[i+j*8 + 5] & 0x7f;
+                    int c = (i+j*8)%4096;
+                    for (int ct = 0; ct<8; ++ct)
+                    {
+                        DEBUG("%02x ", buf[c+ct]);
+                    }
+                    DEBUG(" - ");
+
+                    hour = buf[c + 1] & 0x7f;
+                    min = buf[c + 3] & 0x7f;
+                    sec = buf[c + 5] & 0x7f;
                     QTime dur(hour, min, sec);
 
                     int secs = ((hour*60)+min)*60+sec;
 
-                    int len = ((buf[i+j*8 + 2] & 0x7f) << 8) |
-                        buf[i+j*8 + 0];
+                    int len = ((buf[c + 2] & 0x7f) << 8) |
+                        buf[c + 0];
 
-                    int str = ((buf[i+j*8 + 6] & 0x7f) << 8) |
-                        buf[i+j*8 + 4];
+                    int str = ((buf[c + 6] & 0x7f) << 8) |
+                        buf[c + 4];
                     
                     ExerciseSet set;
                     set.user = user;
@@ -270,7 +281,10 @@ void SyncImpl::getData(std::vector<ExerciseSet>& data)
                     {
                         set.speed = 100*secs / set.dist;
                         set.effic = ((25 * secs / len) + (25 * str)) / pool;
-                        set.rate = (60 * str * len) / secs;
+                        if (secs)
+                            set.rate = (60 * str * len) / secs;
+                        else
+                            set.rate = 0;
                     }
                     else
                     {
@@ -278,6 +292,8 @@ void SyncImpl::getData(std::vector<ExerciseSet>& data)
                         set.effic=0;
                         set.rate=0;
                     }
+
+                    DEBUG(" %d %d %d, %d %d %d \n", hour, min, sec, pool, len, secs);
                     
                     data.push_back(set);
                 }
@@ -286,12 +302,14 @@ void SyncImpl::getData(std::vector<ExerciseSet>& data)
             else if (buf[i+7] == 0x82)
             {
                 type = "Chrono";
-                
+
                 for (int j = 0; j < sets; j++)
                 {
-                    hour = buf[i + j*8 + 1] & 0x7f;
-                    min = buf[i + j*8 + 3] & 0x7f;
-                    sec = buf[i + j*8 + 5] & 0x7f;
+                    int c = (i+j*8)%4096;
+
+                    hour = buf[c + 1] & 0x7f;
+                    min = buf[c + 3] & 0x7f;
+                    sec = buf[c + 5] & 0x7f;
                     QTime dur(hour, min, sec);
 
                     ExerciseSet set;
