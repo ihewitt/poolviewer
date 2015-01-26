@@ -57,7 +57,7 @@ class SyncImpl : public QDialog, public Ui::syncDlg
 {
 Q_OBJECT
 public:
-    SyncImpl( QWidget * parent = 0, Qt::WFlags f = 0 );
+    SyncImpl( QWidget * parent = 0, Qt::WindowFlags f = 0 );
     ~SyncImpl();
 
 	void getData(std::vector<ExerciseSet>& data);

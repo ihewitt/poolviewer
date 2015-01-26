@@ -30,7 +30,7 @@ class ConfigImpl : public QDialog, public Ui::ConfigDlg
 {
 Q_OBJECT
 public:
-    ConfigImpl( QWidget * parent = 0, Qt::WFlags f = 0 );
+    ConfigImpl( QWidget * parent = 0, Qt::WindowFlags f = 0 );
 
 private slots:
 

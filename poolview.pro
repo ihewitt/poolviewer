@@ -1,5 +1,5 @@
 TEMPLATE = app
-QT = gui core
+QT = gui core widgets printsupport
 
 VERSION = 0.3
 
