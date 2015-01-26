@@ -92,7 +92,7 @@ void dump(char* n, unsigned char* buf)
     DEBUG("%s ",n);
     for (i=0; i<8; ++i)
     {
-	DEBUG("%02x", buf[i]);
+        DEBUG("%02x", buf[i]);
     }
     DEBUG("\n");
 }
@@ -100,7 +100,9 @@ void dump(char* n, unsigned char* buf)
 
 static int find_poolmate_device()
 {
-    g_c->devh = libusb_open_device_with_vid_pid(g_c->ctx, 0x0451, 0x5051);
+//Try first id
+	g_c->devh = libusb_open_device_with_vid_pid(g_c->ctx, 0x0451, 0x5051);
+
     return g_c->devh ? 0 : -EIO;
 }
 
@@ -180,7 +182,7 @@ static int alloc_transfers()
     g_c->img_transfer = libusb_alloc_transfer(0);
     if (!g_c->img_transfer)
         return -ENOMEM;
-	
+    
     g_c->irq_transfer = libusb_alloc_transfer(0);
     if (!g_c->irq_transfer)
         return -ENOMEM;
@@ -291,13 +293,15 @@ int poolmate_attach()
        might need to check there are 2 configurations and upload
        firmware image if we are in configuration 1. */
 
+    INFO("Configuration %d\n", config);
+
     if (config != 2)
         libusb_set_configuration(g_c->devh, 2);
 
     libusb_get_configuration(g_c->devh, &config);
     if (config != 2)
     {
-        INFO( "configuration error");
+        INFO( "configuration error\n");
         return -1;
     }
     
@@ -381,46 +385,47 @@ int poolmate_stop()
     while (g_c->transfer)
         libusb_handle_events(g_c->ctx);
 
-    return close_port(g_c);
+    return close_port();
 }
 
 int poolmate_cleanup()
 {
-    if (!g_c)
-        return 0;
-
-    if (g_c->ctrl_transfer)
-        libusb_free_transfer(g_c->ctrl_transfer);
-    if (g_c->img_transfer)
-        libusb_free_transfer(g_c->img_transfer);
-    if (g_c->irq_transfer)
-        libusb_free_transfer(g_c->irq_transfer);
-
-    g_c->ctrl_transfer=0;
-    g_c->img_transfer=0;
-    g_c->irq_transfer=0;
-    
-    if (g_c->claimed)
-    {
-        libusb_release_interface(g_c->devh, 0);
-        g_c->claimed=0;
-    }
-
-    if (g_c->devh)
-        libusb_close(g_c->devh);
-    g_c->devh=0;
-
-    if (g_c->ctx)
-        libusb_exit(g_c->ctx);
-    g_c->ctx = 0;
-
-    if (g_c->data)
-        free(g_c->data);
-    g_c->data=0;
-
-    free(g_c);
+    Context *c = g_c;
     g_c=0;
 
+    if (!c)
+        return 0;
+
+    if (c->ctrl_transfer)
+        libusb_free_transfer(c->ctrl_transfer);
+    if (c->img_transfer)
+        libusb_free_transfer(c->img_transfer);
+    if (c->irq_transfer)
+        libusb_free_transfer(c->irq_transfer);
+
+    c->ctrl_transfer=0;
+    c->img_transfer=0;
+    c->irq_transfer=0;
+    
+    if (c->claimed)
+    {
+        libusb_release_interface(c->devh, 0);
+        c->claimed=0;
+    }
+
+    if (c->devh)
+        libusb_close(c->devh);
+    c->devh=0;
+
+    if (c->ctx)
+        libusb_exit(c->ctx);
+    c->ctx = 0;
+
+    if (c->data)
+        free(c->data);
+    c->data=0;
+
+    free(c);
     return -1;
 }
 
@@ -454,6 +459,7 @@ static void sighandler(int signum)
 
 void main()
 {
+	printf("Test mode\n");
     struct sigaction sigact;
     sigact.sa_handler = sighandler;
     sigemptyset(&sigact.sa_mask);
@@ -500,4 +506,5 @@ void main()
     }
         
 }
+
 #endif

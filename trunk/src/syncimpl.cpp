@@ -31,7 +31,7 @@ extern "C"
 // tidy messages
 // remove logging from poolmate.c
 
-SyncImpl::SyncImpl( QWidget * parent, Qt::WFlags f) 
+SyncImpl::SyncImpl( QWidget * parent, Qt::WindowFlags f) 
     : QDialog(parent, f), usb(0)
 {
     setupUi(this);

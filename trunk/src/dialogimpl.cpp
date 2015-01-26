@@ -39,7 +39,7 @@ void LoadData()
 }
 
 //
-DialogImpl::DialogImpl( QWidget * parent, Qt::WFlags f) 
+DialogImpl::DialogImpl( QWidget * parent, Qt::WindowFlags f) 
 	: QDialog(parent, f)
 {
 	setupUi(this);

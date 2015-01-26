@@ -27,7 +27,7 @@
 bool ReadCSV( const std::string & name, std::vector<ExerciseSet>&, bool extra );
 bool SaveCSV( const std::string & name, std::vector<ExerciseSet>&, bool extra );
 
-UploadImpl::UploadImpl( QWidget * parent, Qt::WFlags f) 
+UploadImpl::UploadImpl( QWidget * parent, Qt::WindowFlags f) 
     : QDialog(parent, f)
 {
     exdata.clear();

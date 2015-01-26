@@ -34,7 +34,7 @@
 #include "configimpl.h"
 
 
-SummaryImpl::SummaryImpl( QWidget * parent, Qt::WFlags f) 
+SummaryImpl::SummaryImpl( QWidget * parent, Qt::WindowFlags f) 
     : QDialog(parent, f)
 {
     setupUi(this);
