@@ -407,26 +407,18 @@ int poolmate_cleanup()
     c->img_transfer=0;
     c->irq_transfer=0;
     
-    if (c->claimed)
+    int errCode = libusb_release_interface(c->devh, 0);
+    if  (errCode)
     {
-        libusb_release_interface(c->devh, 0);
-        c->claimed=0;
+        return -1;
     }
+    libusb_close(c->devh);
+    libusb_exit(c->ctx);
 
-    if (c->devh)
-        libusb_close(c->devh);
-    c->devh=0;
-
-    if (c->ctx)
-        libusb_exit(c->ctx);
-    c->ctx = 0;
-
-    if (c->data)
-        free(c->data);
-    c->data=0;
-
+    free(c->data);
     free(c);
-    return -1;
+
+    return 0;
 }
 
 

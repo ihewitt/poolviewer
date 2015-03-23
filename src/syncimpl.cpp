@@ -69,7 +69,8 @@ Usb::Usb()
 
 Usb::~Usb()
 {
-    poolmate_cleanup();
+    if (state != STARTUP)
+        poolmate_cleanup();
 }
 
 void Usb::run()
