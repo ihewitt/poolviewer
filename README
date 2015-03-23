@@ -51,3 +51,15 @@ you will need to perform the following:
 
 # modprobe ftdi_sio
 # echo 0403 8b30 > /sys/bus/usb-serial/drivers/ftdi_sio/new_id
+
+Some binary packages available on openSUSE build service:
+
+openSUSE 13.2 - 
+https://build.opensuse.org/package/binaries/home:ivorhewitt:poolsync/poolsync?repository=openSUSE_13.2
+
+Fedora 21 - 
+https://build.opensuse.org/package/binaries/home:ivorhewitt:poolsync/poolsync?repository=Fedora_21
+
+Ubuntu 14.10 - 
+https://build.opensuse.org/package/binaries/home:ivorhewitt:poolsync/poolsync?repository=xUbuntu_14.10
+
