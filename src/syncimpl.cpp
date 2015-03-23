@@ -44,7 +44,7 @@ SyncImpl::SyncImpl( QWidget * parent, Qt::WindowFlags f)
 
 SyncImpl::~SyncImpl()
 {
-    usb->state = Usb::ERROR;
+    usb->state = UsbBase::ERROR;
     //    poolmate_stop();
     usb->wait();
 
@@ -62,18 +62,186 @@ void SyncImpl::usbProgress(int progress)
 }
 
 
-Usb::Usb()
+// TODO reorganise properly and get rid of our horrible state machine.
+
+UsbOrig::UsbOrig()
 {
     state = STARTUP;
 }
 
-Usb::~Usb()
+UsbA::UsbA()
+{
+    state = STARTUP;
+    
+    serialPort=NULL;
+    serialPortName=this->find();
+    if(serialPortName==QString(""))
+        return;
+
+    serialPort= new QSerialPort();
+    serialPort->setPortName(serialPortName);
+
+    //m_standardOutput= &out;
+    if (!serialPort->open(QIODevice::ReadWrite)) {
+        return;
+    }
+
+    int serialPortBaudRate = QSerialPort::Baud115200;
+    if (!serialPort->setBaudRate(serialPortBaudRate)) {
+        return;
+    }
+
+    if (!serialPort->setDataBits(QSerialPort::Data8)) {
+        return;
+    }
+
+    if (!serialPort->setParity(QSerialPort::NoParity)) {
+        return;
+    }
+
+    if (!serialPort->setStopBits(QSerialPort::OneStop)) {
+        return;
+    }
+
+    if (!serialPort->setFlowControl(QSerialPort::SoftwareControl)) {
+        return;
+    }
+
+    readData.clear();
+    connect(serialPort, SIGNAL(readyRead()), SLOT(handleReadyRead()));
+    connect(serialPort, SIGNAL(error(QSerialPort::SerialPortError)), SLOT(handleError(QSerialPort::SerialPortError)));
+}
+
+QString UsbA::find()
+{
+    QList<QSerialPortInfo> serialPortInfoList = QSerialPortInfo::availablePorts();
+    foreach (const QSerialPortInfo &serialPortInfo, serialPortInfoList) {
+        if(serialPortInfo.hasProductIdentifier()
+           && serialPortInfo.productIdentifier()==0x8b30
+           && serialPortInfo.hasVendorIdentifier()
+           && serialPortInfo.vendorIdentifier()==0x403)
+            return serialPortInfo.systemLocation();
+    }
+    
+    return QString("");
+}
+
+UsbOrig::~UsbOrig()
 {
     if (state != STARTUP)
         poolmate_cleanup();
 }
 
-void Usb::run()
+UsbA::~UsbA()
+{
+    if(serialPort!=NULL && serialPort->isOpen())
+        serialPort->close();
+    delete serialPort;
+}
+
+void UsbA::run()
+{
+    int count;
+
+    while (state != ERROR &&
+           state != DONE )
+    {
+        switch (state)
+        {
+        case STARTUP:
+            serialPort->flush();
+            serialPort->setDataTerminalReady(false);
+            serialPort->setRequestToSend(false);
+            state=INITIALISED;
+            break;
+
+        case INITIALISED:
+            state = READY;
+            emit info(QString("Ready to transfer. Place PoolMate on pod"));
+            break;
+
+        case READY:
+            while (state == READY)
+            {
+                count=0;
+                count = len();
+                if (count)
+                    emit info(QString("Transferring"));
+                emit progress( count );
+                yieldCurrentThread();
+            }
+            count = len();
+            emit progress( count );
+
+            if (count < 4104)
+            {
+                emit info(QString("Problem during transfer."));
+                state = ERROR;
+            }
+            else
+            {
+                emit info(QString("Transfer complete."));
+                state = DONE;
+            }
+            break;
+
+        case ERROR:
+        case TRANSFER:
+        case DONE:
+        default:
+            break;
+
+        }
+    }
+
+}
+
+void UsbA::handleReadyRead()
+{
+    readData.append(serialPort->readAll());
+    int len=readData.length();
+    if(len>0){
+        this->state=TRANSFER;
+    }
+    if ( readData.length() > 4104)
+    {
+        this->state = ERROR;
+        return;
+    }
+
+    if ( readData.length()==4104)
+    {
+        INFO("\nDone\n");
+        this->state = DONE;
+        return;
+    }
+
+    //detect complete
+}
+
+unsigned char* UsbA::data()
+{
+    if (readData.isEmpty())
+        return NULL;
+    else
+        return (unsigned char*) readData.data();
+}
+
+int UsbA::len()
+{
+    return readData.length();
+}
+
+
+void UsbA::handleError(QSerialPort::SerialPortError serialPortError)
+{
+    if (serialPortError == QSerialPort::ReadError) {
+        state=ERROR;
+    }
+}
+
+
+void UsbOrig::run()
 {
     int count;
 
@@ -162,16 +330,27 @@ void Usb::run()
     }
 }
 
+unsigned char* UsbOrig::data()
+{
+    return poolmate_data();
+}
+
+int UsbOrig::len()
+{
+    return poolmate_len();
+}
+
+
 void SyncImpl::getData(std::vector<ExerciseSet>& data)
 {
-    unsigned char *buf = poolmate_data();
+    unsigned char *buf = usb->data();
     if (!buf)
         return;
 
     // some sort of checksum exists in 0x1000,1001,1002,1003
     // need to work out how to validate it.
     // just do based on length of transfer for now.
-    if (poolmate_len() != 4104)
+    if (usb->len() != 4104)
         return;
     
     int version = buf[0x1004];
@@ -336,7 +515,15 @@ void SyncImpl::getData(std::vector<ExerciseSet>& data)
 
 void SyncImpl::start()
 {
-    usb = new Usb();
+//    if (mDevice == PODA)
+//    {
+        usb = new UsbA();
+//    }
+//    else
+//    { 
+//        usb = new UsbOrig();
+//    }
+
     void info(QString msg);
     void error(QString msg);
     void progress(int progress);

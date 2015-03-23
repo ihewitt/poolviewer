@@ -21,19 +21,19 @@
 //
 #include <QDialog>
 #include <QThread>
+#include <QtSerialPort/QtSerialPort>
 
 #include "ui_sync.h"
 
 #include "exerciseset.h"
 
-//
-class Usb : public QThread
+class UsbBase : public QThread
 {
 Q_OBJECT
 
 public:
-    Usb();
-    ~Usb();
+    UsbBase() {}
+    ~UsbBase() {}
 
     enum State {
         STARTUP,
@@ -43,9 +43,56 @@ public:
         TRANSFER,
         DONE
     };
+    State state;
+
+    virtual unsigned char* data() =0;
+    virtual int len() =0;
+};
+
+// Implementation for the poolmate "Pod-A"
+// this is supported by the native linux serial interface so use
+// QSerialPort instead
+
+class UsbA : public UsbBase
+{
+Q_OBJECT
+public:
+    UsbA();
+    ~UsbA();
 
     void run();
-    State state;
+
+    unsigned char* data();
+    int len();
+
+signals:
+    void info(QString msg);
+    void error(QString msg);
+    void progress(int progress);
+
+private slots:
+    void handleReadyRead();
+    void handleError(QSerialPort::SerialPortError error);
+   
+private:
+    QString find();
+    QSerialPort *serialPort;
+    QString serialPortName;
+    QByteArray  readData;
+};
+
+//
+class UsbOrig : public UsbBase
+{
+Q_OBJECT
+public:
+    UsbOrig();
+    ~UsbOrig();
+
+    void run();
+
+    unsigned char* data();
+    int len();
 
 signals:
     void info(QString msg);
@@ -57,18 +104,23 @@ class SyncImpl : public QDialog, public Ui::syncDlg
 {
 Q_OBJECT
 public:
+    typedef enum {
+        PODA,
+        POD} PODTYPE;
+
     SyncImpl( QWidget * parent = 0, Qt::WindowFlags f = 0 );
     ~SyncImpl();
 
-	void getData(std::vector<ExerciseSet>& data);
+    void getData(std::vector<ExerciseSet>& data);
 
 private slots:
-	void usbMsg(QString);
+    void usbMsg(QString);
     void usbProgress(int);
 
 private:
-	void start();
-	Usb *usb;
+    void start();
+    UsbBase *usb;
+    PODTYPE mDevice;    
 };
 
 #endif
