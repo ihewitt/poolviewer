@@ -34,6 +34,8 @@ public:
 
 private slots:
 
+    void on_buttonBox_accepted();
+
 private:
 };
 

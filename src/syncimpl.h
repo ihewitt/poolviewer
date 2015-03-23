@@ -20,85 +20,11 @@
 #define SYNCIMPL_H
 //
 #include <QDialog>
-#include <QThread>
-#include <QtSerialPort/QtSerialPort>
 
 #include "ui_sync.h"
-
 #include "exerciseset.h"
 
-class UsbBase : public QThread
-{
-Q_OBJECT
-
-public:
-    UsbBase() {}
-    ~UsbBase() {}
-
-    enum State {
-        STARTUP,
-        ERROR,
-        INITIALISED,
-        READY,
-        TRANSFER,
-        DONE
-    };
-    State state;
-
-    virtual unsigned char* data() =0;
-    virtual int len() =0;
-};
-
-// Implementation for the poolmate "Pod-A"
-// this is supported by the native linux serial interface so use
-// QSerialPort instead
-
-class UsbA : public UsbBase
-{
-Q_OBJECT
-public:
-    UsbA();
-    ~UsbA();
-
-    void run();
-
-    unsigned char* data();
-    int len();
-
-signals:
-    void info(QString msg);
-    void error(QString msg);
-    void progress(int progress);
-
-private slots:
-    void handleReadyRead();
-    void handleError(QSerialPort::SerialPortError error);
-   
-private:
-    QString find();
-    QSerialPort *serialPort;
-    QString serialPortName;
-    QByteArray  readData;
-};
-
-//
-class UsbOrig : public UsbBase
-{
-Q_OBJECT
-public:
-    UsbOrig();
-    ~UsbOrig();
-
-    void run();
-
-    unsigned char* data();
-    int len();
-
-signals:
-    void info(QString msg);
-    void error(QString msg);
-    void progress(int progress);
-};
+class UsbBase;
 
 class SyncImpl : public QDialog, public Ui::syncDlg
 {

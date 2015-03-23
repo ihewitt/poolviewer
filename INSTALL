@@ -12,3 +12,9 @@ make clean
 qmake
 make debug
 
+For the software to access the poolmate pod device you'll probably need something like the following in udev/rules.d-
+
+51-poolmate.rules:
+
+SUBSYSTEMS=="usb" ATTRS{idVendor}=="0451" ATTRS{idProduct}=="5051" MODE:="0666"
+

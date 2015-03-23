@@ -31,7 +31,14 @@ int main(int argc, char ** argv)
     // Do we have a datafile?
     //    settings.setValue("test", 1);
     QString path = settings.value("dataFile").toString();
-    
+    if (path.isEmpty())
+    {
+        QString username = qgetenv("USER").constData();
+        QString home = qgetenv("HOME").constData();
+        path = QString("%1/poolmate-%2.csv").arg(home).arg(username);
+        settings.setValue("dataFile", path);
+    }
+
     DataStore *d = new DataStore();
     d->setFile(path);
     d->load();
