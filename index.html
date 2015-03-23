@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="description" content="Poolviewer : Opensource data viewer for Swimovate Poolmate swimming watches.">
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Poolviewer</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/ihewitt/poolviewer">View on GitHub</a>
+
+          <h1 id="project_title">Poolviewer</h1>
+          <h2 id="project_tagline">Opensource data viewer for Swimovate Poolmate swimming watches.</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/ihewitt/poolviewer/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/ihewitt/poolviewer/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>
+<a id="poolviewer" class="anchor" href="#poolviewer" aria-hidden="true"><span class="octicon octicon-link"></span></a>PoolViewer</h1>
+
+<p>Cross platform driver, downloader and viewer for <a href="http://www.swimovate.com/">Swimovate</a> <a href="http://www.swimovate.com/poolmatepro.html">PoolMatePro</a> swim watches for Linux and Windows.</p>
+
+<p>Cross platform application for downloading data from Swimovate PoolMate watches.</p>
+
+<p>Uses <a href="http://qt.nokia.com/products/">Qt</a> and <a href="http://www.libusb.org/wiki/libusb-1.0">libusb</a>.</p>
+
+<h1>
+<a id="documentation" class="anchor" href="#documentation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Documentation</h1>
+
+<p>Overview of the user interface <a href="http://poolviewer.googlecode.com/files/Overview.pdf">Overview.pdf</a></p>
+
+<h1>
+<a id="screenshots" class="anchor" href="#screenshots" aria-hidden="true"><span class="octicon octicon-link"></span></a>Screenshots</h1>
+
+<p><img src="https://lh4.googleusercontent.com/-TPhRLqYgm7o/TvnXQ8-j2kI/AAAAAAAABv4/ZnML1VezwGQ/s400/linux-tech2.png" alt="">
+<img src="https://lh4.googleusercontent.com/-b03COsx-lGU/TvnXSDXeKpI/AAAAAAAABwI/0UzG3jc20aA/s400/linux-vol2.png" alt=""></p>
+
+<p>The poolmate dongle is actually a TI3410 USB-serial interface.
+There is already a kernel driver for the TI3410 - ti_usb_3410_5052 which could
+probably be used instead. However trying to get it working just resulted in
+failure to download firmware errors, despite pointing it at the right firmware
+from the windows driver. Also the linux driver doesn't seem to detect when
+there are two configurations (i.e. the firmware is already loaded) and just
+select the second without attempting to download.</p>
+
+<p>Therefore.... for now will stick to the simplistic included userspace USB
+driver instead although now changed to just dump down the raw data so might
+add an option to download from a ttyUSB device instead just incase I get the
+serial driver working.</p>
+
+<p>The data protocol is pretty straightforward, the watch just serially dumps a
+binary representation of its contents when it's placed onto the dock.</p>
+
+<p>03/2015 Finally merged in changes for Pod A support from Valentio Colosso - </p>
+
+<p>It adds the support to the virtual ttyUSB serial port for the swimovate Poolmate Pro.
+ This file make use of the QtSerialPort module of the Qt Toolkit.</p>
+
+<p>Tested with Poolmate dongle Pod version A.
+  This is a FTDI USB-serial device, wich is managed from ftdi_sio module.
+  In my ubuntu 13.10, the module isn't detected, so I had load the module manually using</p>
+
+<p>sudo modprobe -q ftdi_sio product=0x8b30 vendor=0x0403</p>
+
+<p>If the pod is detected, module is loaded and you will notice a nice, newly created /dev/ttyUSB0 device.</p>
+
+<p>After a while, I ended up creating a new file</p>
+
+<p>/etc/udev/rules.d/99-poolmate.rules</p>
+
+<p>containing the following lines</p>
+
+<p>$ /etc/udev/rules.d/100-dvb.rules
+SUBSYSTEM=="usb", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="8b30", PROGRAM="/sbin/modprobe -q ftdi_sio product=0x8b30 vendor=0x0403"</p>
+
+<p>This will do the magic automatically loading the module on pod connection and creating /devttyUSB0.</p>
+
+<h2></h2>
+
+<p>Note the mechanism for adding undetected driver ids for ftdi_sio has changed
+you will need to perform the following:</p>
+
+<p>$ modprobe ftdi_sio
+ $ echo 0403 8b30 &gt; /sys/bus/usb-serial/drivers/ftdi_sio/new_id</p>
+
+<p>Some binary packages available on openSUSE build service:</p>
+
+<p>openSUSE 13.2 - 
+<a href="https://build.opensuse.org/package/binaries/home:ivorhewitt:poolsync/poolsync?repository=openSUSE_13.2">https://build.opensuse.org/package/binaries/home:ivorhewitt:poolsync/poolsync?repository=openSUSE_13.2</a></p>
+
+<p>Fedora 21 - 
+<a href="https://build.opensuse.org/package/binaries/home:ivorhewitt:poolsync/poolsync?repository=Fedora_21">https://build.opensuse.org/package/binaries/home:ivorhewitt:poolsync/poolsync?repository=Fedora_21</a></p>
+
+<p>Ubuntu 14.10 - 
+<a href="https://build.opensuse.org/package/binaries/home:ivorhewitt:poolsync/poolsync?repository=xUbuntu_14.10">https://build.opensuse.org/package/binaries/home:ivorhewitt:poolsync/poolsync?repository=xUbuntu_14.10</a></p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Poolviewer maintained by <a href="https://github.com/ihewitt">ihewitt</a></p>
+        <p>Published with <a href="https://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
