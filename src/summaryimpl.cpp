@@ -39,6 +39,14 @@ SummaryImpl::SummaryImpl( QWidget * parent, Qt::WindowFlags f)
 {
     setupUi(this);
     setWindowFlags(Qt::WindowMinimizeButtonHint|Qt::WindowMaximizeButtonHint);
+
+// Graph control settings
+    efficCheck->setChecked(true);
+    strokeCheck->setChecked(true);
+    rateCheck->setChecked(true);
+    speedCheck->setChecked(true);
+    graphWidget->setGraphs(true,true,true,true);
+
     scale = WORKOUTS;
     //    setEscapeButton(pushButton);
 }
@@ -64,38 +72,38 @@ void SummaryImpl::setData( const std::vector<Workout>& workouts)
     switch (scale)
     {
     case WORKOUTS:
-        {
-            start = day;
-            end = day;
-        }
+    {
+        start = day;
+        end = day;
+    }
         break;
     case WEEKLY:
-        {
-            start = day.addDays(-day.dayOfWeek());
-            end = day.addDays(7-day.dayOfWeek());
-        }
+    {
+        start = day.addDays(-day.dayOfWeek());
+        end = day.addDays(7-day.dayOfWeek());
+    }
         break;
     case MONTHLY:
-        {
-            start = day.addDays(-day.day());
-            end = day.addDays(day.daysInMonth()-day.day());
-        }
+    {
+        start = day.addDays(-day.day());
+        end = day.addDays(day.daysInMonth()-day.day());
+    }
         break;
     case YEARBYWEEK:
-        {
-            int yr = day.year();
-            start = QDate(yr,1,1);
-            end = QDate(yr,12,31);
-            
-        }
+    {
+        int yr = day.year();
+        start = QDate(yr,1,1);
+        end = QDate(yr,12,31);
+
+    }
         break;
     case YEARBYMONTH:
-        {
-            int yr = day.year();
-            start = QDate(yr,1,1);
-            end = QDate(yr,12,31);
+    {
+        int yr = day.year();
+        start = QDate(yr,1,1);
+        end = QDate(yr,12,31);
 
-        }
+    }
         break;
     };
 
@@ -132,8 +140,8 @@ void SummaryImpl::setData( const std::vector<Workout>& workouts)
             QString axLabel;
             if (scale == YEARBYWEEK)
                 axLabel=QString("%1/%2")
-                    .arg(i->date.weekNumber())
-                    .arg(i->date.year());
+                        .arg(i->date.weekNumber())
+                        .arg(i->date.year());
             else if (scale == YEARBYMONTH)
                 axLabel=i->date.toString("MMM");
             else
@@ -195,7 +203,7 @@ void SummaryImpl::fillWorkouts( const std::vector<Workout>& workouts)
 
     std::map<QDate, CalendarWidget::Totals> day_totals;
     std::map<QDate, int> day_nums;
-   
+
     int row=0;
     for ( i = workouts.begin(); i != workouts.end(); ++i)
     {
@@ -254,7 +262,7 @@ void SummaryImpl::fillWorkouts( const std::vector<Workout>& workouts)
     std::map<QDate, int>::iterator j;
     for (j=day_nums.begin(); j!=day_nums.end();++j)
     {
-/*        printf("%s - %d %d %d %d\n", 
+        /*        printf("%s - %d %d %d %d\n",
                qPrintable(j->first.toString("dd/MM")),
                day_totals[j->first].min_eff,
                day_totals[j->first].avg_eff,
@@ -367,7 +375,7 @@ void SummaryImpl::workoutSelected()
     graphWidget->update();
     volumeWidget->update();
 
-    setSel = false;   
+    setSel = false;
     deleteButton->setText("Delete wrk");
 }
 
@@ -377,7 +385,7 @@ void SummaryImpl::syncButton()
     win.setDataStore(ds); // will populate our datastore
     win.exec();
 
-    //Repopulate controls 
+    //Repopulate controls
     fillWorkouts(ds->Workouts());
 }
 
@@ -451,48 +459,48 @@ void SummaryImpl::keyPressEvent(QKeyEvent *event)
 
 void SummaryImpl::closeEvent(QCloseEvent *event)
 {
-     if (ds->hasChanged())
-     {
-         // TODO change to configurable datafile
-         if (ds->getFile().isEmpty())
-         {
-             //user, username, home
-             QString username = qgetenv("USER").constData();
-             QString home = qgetenv("HOME").constData();
+    if (ds->hasChanged())
+    {
+        // TODO change to configurable datafile
+        if (ds->getFile().isEmpty())
+        {
+            //user, username, home
+            QString username = qgetenv("USER").constData();
+            QString home = qgetenv("HOME").constData();
 
-             QString filename = QString("%1/poolmate-%2.csv").arg(home).arg(username);
+            QString filename = QString("%1/poolmate-%2.csv").arg(home).arg(username);
 
-             //TODO add help/warning dialog
-             QString file;
-             file = QFileDialog::getSaveFileName(this,
-                                                 tr("Save Data"),
-                                                 filename,
-                                                 tr("Comma separated files (*.csv *.txt)"));
+            //TODO add help/warning dialog
+            QString file;
+            file = QFileDialog::getSaveFileName(this,
+                                                tr("Save Data"),
+                                                filename,
+                                                tr("Comma separated files (*.csv *.txt)"));
 
-             if (!file.isEmpty())
-             {
-                 //save settings
-                 QSettings settings("Swim","Poolmate");
-                 settings.setValue("dataFile", file);
+            if (!file.isEmpty())
+            {
+                //save settings
+                QSettings settings("Swim","Poolmate");
+                settings.setValue("dataFile", file);
 
-                 //update file
-                 ds->setFile(file);
-                 if (ds->save())
-                     event->accept();
-                 else
-                     event->ignore();
-             }
-             else
-                 event->ignore();
-         }
-         else
-         {
-             if (ds->save())
-                 event->accept();
-         else
-             event->ignore();
-         }
-     }
+                //update file
+                ds->setFile(file);
+                if (ds->save())
+                    event->accept();
+                else
+                    event->ignore();
+            }
+            else
+                event->ignore();
+        }
+        else
+        {
+            if (ds->save())
+                event->accept();
+            else
+                event->ignore();
+        }
+    }
 }
 
 // TODO implement
@@ -503,11 +511,11 @@ void SummaryImpl::printButton()
     QPrintDialog *dialog = new QPrintDialog(&printer, this);
     dialog->setWindowTitle(tr("Print Chart"));
 
-//  if (editor->textCursor().hasSelection())
-//       dialog->addEnabledOption(QAbstractPrintDialog::PrintSelection);
+    //  if (editor->textCursor().hasSelection())
+    //       dialog->addEnabledOption(QAbstractPrintDialog::PrintSelection);
 
     if (dialog->exec() != QDialog::Accepted)
-         return;
+        return;
 
     QPainter painter;
     painter.begin(&printer);
@@ -519,7 +527,7 @@ void SummaryImpl::printButton()
     // painter.translate(printer.paperRect().x() + printer.pageRect().width()/2,
     //               printer.paperRect().y() + printer.pageRect().height()/2);
     painter.translate(printer.paperRect().x(),
-                  printer.paperRect().y());
+                      printer.paperRect().y());
 
     painter.scale(scale, scale);
     //    painter.translate(-width()/2, -height()/2);
@@ -532,4 +540,13 @@ void SummaryImpl::printButton()
 
     painter.end();
 
+}
+
+void SummaryImpl::on_check_clicked()
+{
+    graphWidget->setGraphs(efficCheck->isChecked(),
+                           strokeCheck->isChecked(),
+                           rateCheck->isChecked(),
+                           speedCheck->isChecked());
+    graphWidget->update();
 }

@@ -30,7 +30,7 @@
 
 
 // Stick to same file format as poolmate app for now so we can share files
-bool SaveCSV( const std::string & name, std::vector<ExerciseSet>& exercises, bool extra )
+bool SaveCSV( const std::string & name, std::vector<ExerciseSet>& exercises )
 {
     QFile file(name.c_str());
     if (file.open(QIODevice::WriteOnly|QIODevice::Text))
@@ -80,7 +80,7 @@ return true;
 }
 
 //
-bool ReadCSV( const std::string & name, std::vector<ExerciseSet>& dst, bool extra )
+bool ReadCSV( const std::string & name, std::vector<ExerciseSet>& dst )
 {
 // Simplistic csv format reading
     QFile file(name.c_str());
@@ -248,7 +248,7 @@ bool DataStore::load()
     changed=false;
 
     std::vector<ExerciseSet> input;
-    if ( ReadCSV(qPrintable(filename), input, true))
+    if ( ReadCSV(qPrintable(filename), input))
     {
         setsToWorkouts(input, workouts);
         return true;
@@ -262,7 +262,7 @@ bool DataStore::save()
 
     std::vector<ExerciseSet> output;
     workoutsToSets(workouts, output);
-    return SaveCSV(qPrintable(filename), output, true);
+    return SaveCSV(qPrintable(filename), output );
 }
 
 //Find first exercise at date

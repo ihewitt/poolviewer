@@ -86,6 +86,14 @@ GraphWidget::GraphWidget(QWidget *parent)
 {
 }
 
+void GraphWidget::setGraphs(bool beffic, bool bstroke, bool brate, bool bspeed)
+{
+    effic = beffic;
+    stroke = bstroke;
+    rate = brate;
+    speed = bspeed;
+}
+
 // Draw bar graph
 void GraphWidget::drawBars( QPainter &painter,
                             QColor pen,
@@ -474,10 +482,14 @@ void GraphWidget::paintEvent(QPaintEvent *)
 
     if (style == Line)
     {
-        drawSeries(painter, Qt::red,       0);
-        drawSeries(painter, Qt::darkGreen, 1);
-        drawSeries(painter, Qt::blue,      2);
-        drawSeries(painter, Qt::magenta,   3);
+        if (effic)
+            drawSeries(painter, Qt::red,       0);
+        if (speed)
+            drawSeries(painter, Qt::darkGreen, 1);
+        if (stroke)
+            drawSeries(painter, Qt::blue,      2);
+        if (rate)
+            drawSeries(painter, Qt::magenta,   3);
     }
     else if (style == Bar)
     {

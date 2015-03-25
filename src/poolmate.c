@@ -247,14 +247,14 @@ int purge_port(int wValue)
 int get_status()
 {
     int r;
-    unsigned char buf[2];
+    uint16_t buf;
 
-    r = libusb_control_transfer(g_c->devh, 0x80, 0x00, 0,0,  buf,2,1000);
+    r = libusb_control_transfer(g_c->devh, 0x80, 0x00, 0,0, (unsigned char*)&buf,2,1000);
     if (r < 0)
     {
         INFO( "control error %d\n", r);
     }
-    return *(uint16_t*)buf;
+    return buf;
 }
 
 int poolmate_init()
@@ -285,7 +285,6 @@ int poolmate_attach()
 {
     int r;
     int config;
-    int status;
 
 #ifndef _WIN32
     libusb_get_configuration(g_c->devh, &config);
@@ -319,8 +318,7 @@ int poolmate_attach()
 
     libusb_reset_device(g_c->devh);
 
-    status = get_status();
-    DEBUG("Status %d\n", status);
+    DEBUG("Status %d\n", get_status());
 
     r = alloc_transfers();
     if (r)

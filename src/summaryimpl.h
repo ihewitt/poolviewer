@@ -62,11 +62,11 @@ public:
     virtual void setSelected();
     virtual void syncButton();
     virtual void configButton();
-
     virtual void editButton();
     virtual void deleteClick();
     virtual void scaleChanged(int);
     virtual void printButton();
+    virtual void on_check_clicked();
 
 private:
     DataStore *ds;

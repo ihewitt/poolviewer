@@ -24,8 +24,8 @@
 
 #include "datastore.h"
 
-bool ReadCSV( const std::string & name, std::vector<ExerciseSet>&, bool extra );
-bool SaveCSV( const std::string & name, std::vector<ExerciseSet>&, bool extra );
+bool ReadCSV( const std::string & name, std::vector<ExerciseSet>& );
+bool SaveCSV( const std::string & name, std::vector<ExerciseSet>& );
 
 UploadImpl::UploadImpl( QWidget * parent, Qt::WindowFlags f) 
     : QDialog(parent, f)
@@ -98,7 +98,7 @@ void UploadImpl::importButton()
     
     if (!file.isEmpty())
     {
-        ReadCSV(qPrintable(file), exdata, false);
+        ReadCSV(qPrintable(file), exdata);
         if (exdata.size())
         {
             fillList();

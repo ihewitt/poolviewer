@@ -29,7 +29,7 @@
       <property name="minimumSize">
        <size>
         <width>0</width>
-        <height>250</height>
+        <height>280</height>
        </size>
       </property>
       <property name="tabPosition">
@@ -237,17 +237,17 @@
             <widget class="QComboBox" name="viewCombo">
              <item>
               <property name="text">
-               <string>Workouts</string>
+               <string>Sets</string>
               </property>
              </item>
              <item>
               <property name="text">
-               <string>Weekly</string>
+               <string>One week</string>
               </property>
              </item>
              <item>
               <property name="text">
-               <string>Monthly</string>
+               <string>One month</string>
               </property>
              </item>
              <item>
@@ -337,6 +337,70 @@
        <item>
         <layout class="QVBoxLayout" name="calendarLayout">
          <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_3">
+           <item>
+            <widget class="QCheckBox" name="efficCheck">
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;SWOLF efficiency score&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="text">
+              <string>Efficiency</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="strokeCheck">
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Stroke length&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="text">
+              <string>Stroke</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="rateCheck">
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Stroke rate&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="text">
+              <string>Rate</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="speedCheck">
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Speed = Seconds per 100m&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="text">
+              <string>Speed</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer_4">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>50</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
+            <widget class="QPushButton" name="todayButton">
+             <property name="text">
+              <string>Today</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
           <widget class="CalendarWidget" name="calendarWidget">
            <property name="autoFillBackground">
             <bool>true</bool>
@@ -357,13 +421,6 @@
          </item>
          <item>
           <layout class="QHBoxLayout" name="buttonLayout">
-           <item>
-            <widget class="QPushButton" name="pushButton">
-             <property name="text">
-              <string>Today</string>
-             </property>
-            </widget>
-           </item>
            <item>
             <spacer name="horizontalSpacer_3">
              <property name="orientation">
@@ -462,7 +519,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>pushButton</sender>
+   <sender>todayButton</sender>
    <signal>clicked()</signal>
    <receiver>calendarWidget</receiver>
    <slot>showToday()</slot>
@@ -621,6 +678,70 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>efficCheck</sender>
+   <signal>clicked()</signal>
+   <receiver>Summary</receiver>
+   <slot>on_check_clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>560</x>
+     <y>304</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>511</x>
+     <y>383</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>strokeCheck</sender>
+   <signal>clicked()</signal>
+   <receiver>Summary</receiver>
+   <slot>on_check_clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>641</x>
+     <y>304</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>511</x>
+     <y>383</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>rateCheck</sender>
+   <signal>clicked()</signal>
+   <receiver>Summary</receiver>
+   <slot>on_check_clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>709</x>
+     <y>304</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>511</x>
+     <y>383</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>speedCheck</sender>
+   <signal>clicked()</signal>
+   <receiver>Summary</receiver>
+   <slot>on_check_clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>778</x>
+     <y>304</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>511</x>
+     <y>383</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>selectedDate(QDate)</slot>
@@ -636,5 +757,6 @@
   <slot>scaleChanged(int)</slot>
   <slot>printButton()</slot>
   <slot>setSelected()</slot>
+  <slot>on_check_clicked()</slot>
  </slots>
 </ui>

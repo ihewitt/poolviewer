@@ -193,6 +193,7 @@ protected:
     void paintEvent(QPaintEvent *event);
 
 public:
+    void setGraphs(bool effic, bool stroke, bool rate, bool speed);
 
     void clear();
 
@@ -222,11 +223,13 @@ public:
 
     Style style;
 
- private:
-    //	QDateTime xmin;
-    //	QDateTime xmax;
+ private:    
+    //Enabled graphs
+    bool effic;
+    bool rate;
+    bool speed;
+    bool stroke;
 
-    //yaxis is calculated
 };
 
 #endif
