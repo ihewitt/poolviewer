@@ -44,6 +44,8 @@ SUBSYSTEMS=="usb" ATTRS{idVendor}=="0451" ATTRS{idProduct}=="5051" MODE:="0666"
 ## Binary packages ##
 **Note** - the Linux binary installs currenly just install the executable "poolview" in /usr/bin no desktop or menu item is added. This will change at some point.
 
+Caution! These might not be updated with the latest fixes at the moment, the best option is to compile from the latest source code.
+
 openSUSE 13.2 -
 https://build.opensuse.org/package/binaries/home:ivorhewitt:poolsync/poolsync?repository=openSUSE_13.2
 
