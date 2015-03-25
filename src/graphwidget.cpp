@@ -42,7 +42,7 @@ void GraphWidget::Series::getValue(double &ret, int i, int j)
 {
     double t = doubles[i];
 
-    for (int c = i + 1; c <= j; c++)
+    for (int c = i + 1; c < j; c++)
     {
         t += doubles[c];
     }
@@ -56,7 +56,7 @@ void GraphWidget::Series::getValue(int &ret, int i, int j)
 {
     int t = integers[i];
 
-    for (int c = i + 1; c <= j; c++)
+    for (int c = i + 1; c < j; c++)
     {
         t += integers[c];
     }
@@ -70,7 +70,7 @@ void GraphWidget::Series::getValue(QTime &ret, int i, int j)
 {
     int t = times[i].second() + times[i].minute()*60 + times[i].hour()*60*60;
 
-    for (int c = i + 1; c <= j; c++)
+    for (int c = i + 1; c < j; c++)
     {
         t += times[c].second() + times[c].minute()*60 + times[c].hour()*60*60;
     }
@@ -217,7 +217,7 @@ void GraphWidget::drawBars( QPainter &painter,
 
 // Draw series line graph
 void GraphWidget::drawSeries( QPainter &painter,
-							  QColor pen,
+			      QColor pen,
                               int set)
 {
     int w = width();
@@ -225,23 +225,25 @@ void GraphWidget::drawSeries( QPainter &painter,
 
     Series& graph = series[set];
 
-	int i;
-	int j=graph.size();
+    int i;
+    int j=graph.size();
 
     if (!j)
         return;
 
     std::vector<QString> labels;
+    std::vector<QString> tags;
     std::vector<int> vals; // Y axis values to show
 
     QString label;
 
     //aggregate data by label
-	for (i=0; i < j;)
-	{
+    for (i=0; i < j;)
+    {
         int val=0;
         int num=0;
         label = xaxis[i];
+        int s=i;
         while ( i < j && label == xaxis[i])
         {
             val += graph.getY(i,h);
@@ -250,10 +252,31 @@ void GraphWidget::drawSeries( QPainter &painter,
         }
         labels.push_back(label);
         vals.push_back(val / num);
+
+        QString text;
+        //get label to tag
+        if (graph.hasDoubles())
+        {
+            double dblVal;
+            graph.getValue( dblVal, s, s+num );
+            text = QString::number(dblVal, 'g', 3);
+        }
+        else if (graph.hasInts())
+        {
+            int intVal;
+            graph.getValue( intVal, s, s+num );
+            text = QString::number(intVal);
+        }
+        else if (graph.hasTimes())
+        {
+            QTime timeVal;
+            graph.getValue( timeVal, s, s+num );
+            text = timeVal.toString("mm:ss");
+        }
+        tags.push_back(text);
     }
 
     j=labels.size();
-
     int space = w / j;
 
 	int l=0;
@@ -262,24 +285,6 @@ void GraphWidget::drawSeries( QPainter &painter,
 	for (i=0; i<j; i++)
 	{
         l=vals[i];
-
-        int intVal;
-        double dblVal;
-        QTime timeVal;
-
-        //get label to tag
-        if (graph.hasDoubles())
-        {
-            graph.getValue( dblVal, i );
-        }
-        else if (graph.hasInts())
-        {
-            graph.getValue( intVal, i );
-        }
-        else if (graph.hasTimes())
-        {
-            graph.getValue( timeVal, i );
-        }
     
 		int x =  (space/2)+i * space;
 		int y = h - l;
@@ -300,23 +305,10 @@ void GraphWidget::drawSeries( QPainter &painter,
         }
         painter.drawEllipse(pt1, 3,3);
 
-
         painter.save();
         painter.translate(pt1);
 
-        QString text;
-        if (graph.hasDoubles())
-        {
-            text = QString::number(dblVal, 'g', 3);
-        }
-        else if (graph.hasInts())
-        {
-            text = QString::number(intVal);
-        }
-        else if (graph.hasTimes())
-        {
-            text = timeVal.toString("mm:ss");
-        }
+        QString text = tags[i];
 
         painter.setPen(Qt::white);
         painter.drawText(6,-9,text);
