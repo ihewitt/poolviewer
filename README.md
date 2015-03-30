@@ -33,6 +33,11 @@ For a Poolmate Type A pod the ftdi_sio driver can be used however the dongle won
 $ modprobe ftdi_sio
 $ echo 0403 8b30 > /sys/bus/usb-serial/drivers/ftdi_sio/new_id
 ```
+To make this persistent add a udev rule such as:
+
+```
+ACTION==”add”, ATTRS{idVendor}==”0403″, ATTRS{idProduct}==”8b30″, RUN+=”/sbin/modprobe ftdi_sio” RUN+=”/bin/sh -c ‘echo 0403 8b30 > /sys/bus/usb-serial/drivers/ftdi_sio/new_id’”
+```
 
 For the original non-type A pod, the application uses libusb to talk directly to the device, make sure that you have permissions for the device with a udev rule such as:
 
