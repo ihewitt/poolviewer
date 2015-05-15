@@ -21,8 +21,33 @@ extern "C"
 #include "poolmate.h"
 };
 
+#include <inttypes.h>
 #include "logging.h"
 #include "usblink.h"
+
+//CRC32 helper function for PoolmateLive protocol
+// Non-optimised crc32 calc.
+// Doesn't need to be fast so leave readable.
+uint32_t crc32a(char *message, int len)
+{
+    int i, j;
+    uint32_t crc;
+    char byte;
+   
+    for (crc=~0,i=0; i<len; ++i)
+    {
+	byte = message[i];
+	for (j = 0; j <= 7; j++)
+	{
+	    if ((crc>>24 ^ byte) & 0x80)
+		crc = (crc << 1) ^ 0x04C11DB7;
+	    else
+		crc = crc << 1;
+	    byte = byte << 1;
+	}
+    }
+    return ~crc;
+}
 
 // TODO reorganise properly and get rid of our horrible state machine now we know
 // what we need to do.
