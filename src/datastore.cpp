@@ -37,8 +37,9 @@ bool SaveCSV( const std::string & name, std::vector<ExerciseSet>& exercises )
     {
         QTextStream out(&file);
 
-        out << "User,LogDate,LogTime,LogType,Pool,Units,TotalDuration,Calories,TotalLengths,TotalDistance,Nset,Duration,Strokes,Distance,Speed,Efficiency,StrokeRate,HRmin,HRmax,HRavg,HRbegin,HRend,Version\n";
-        
+//New format
+        out << "User Number,Date,Time,Type,Pool Length,,Duration,Calories,Total Laps,Total Distance,Set Number,Set Duration,Average Strokes,Distance,Speed,Efficiency,Stroke Rate,,,,,,Watch Version,Status,Notes\n";
+
         std::vector<ExerciseSet>::iterator i;
         
         for (i=exercises.begin(); i != exercises.end(); ++i)
@@ -58,10 +59,10 @@ bool SaveCSV( const std::string & name, std::vector<ExerciseSet>& exercises )
                     << i->set << ","
                     << i->duration.toString("hh:mm:ss") << ","
                     << i->strk << ","
-                    << i->dist << ","
+                    << i->lens << ","
                     << i->speed << ","
                     << i->effic << ","
-                    << i->rate << ",";
+                    << i->rate << ",Free,";
             }
             else
             {
@@ -71,12 +72,12 @@ bool SaveCSV( const std::string & name, std::vector<ExerciseSet>& exercises )
                     << ",,,"
                     << i->set << ","
                     << i->duration.toString("hh:mm:ss") << ","
-                    << ",,,,,";
+                    << ",,,,,,";
             }
-            out << ",,,,,210\n";
+            out << ",,,,210,,,\n";
         }
     }
-return true;
+    return true;
 }
 
 //
@@ -86,35 +87,49 @@ bool ReadCSV( const std::string & name, std::vector<ExerciseSet>& dst )
     QFile file(name.c_str());
     if (file.open(QIODevice::ReadOnly))
     {
-        file.readLine(); //skip header
+        bool oldformat = false;
+        QString head = file.readLine(); //skip header
+        if (head.contains("LogDate"))
+        {
+            oldformat = true;
+        }
 
         while (!file.atEnd())
         {
             QString line = file.readLine();
             QStringList strings = line.split(",");
 
-            ExerciseSet e;
+            if (strings.count())
+            {
+                ExerciseSet e;
 
-            e.user = strings.value(0).toInt();
-            e.date = QDate::fromString( strings.value(1), QString("dd/MM/yyyy"));
-            e.time = QTime::fromString( strings.value(2));
+                e.user = strings.value(0).toInt();
+                e.date = QDate::fromString( strings.value(1), QString("dd/MM/yyyy"));
+                e.time = QTime::fromString( strings.value(2));
 
-            e.type = strings.value(3);
-            e.pool = strings.value(4).toInt();
-            e.unit = strings.value(5);
-            e.totalduration = QTime::fromString(strings.value(6));
-            e.cal = strings.value(7).toInt();
-            e.lengths = strings.value(8).toInt();
-            e.totaldistance = strings.value(9).toInt();
-            e.set = strings.value(10).toInt();
-            e.duration = QTime::fromString( strings.value(11));
-            e.strk = strings.value(12).toInt();
-            e.dist  = strings.value(13).toInt();
-            e.speed  = strings.value(14).toInt();
-            e.effic = strings.value(15).toInt();
-            e.rate  = strings.value(16).toInt();
+                e.type = strings.value(3);
+                e.pool = strings.value(4).toInt();
+                e.unit = strings.value(5);
+                e.totalduration = QTime::fromString(strings.value(6));
+                e.cal = strings.value(7).toInt();
+                e.lengths = strings.value(8).toInt();
+                e.totaldistance = strings.value(9).toInt();
+                e.set = strings.value(10).toInt();
+                e.duration = QTime::fromString( strings.value(11));
+                e.strk = strings.value(12).toInt();
+                e.lens  = strings.value(13).toInt();
 
-            dst.push_back(e);
+                if (oldformat && e.lens && e.pool) //if we've saved as an oldformat file update
+                {
+                    e.lens = strings.value(13).toInt() / e.pool;
+                }
+                e.dist = e.lens * e.pool;
+                e.speed  = strings.value(14).toInt();
+                e.effic = strings.value(15).toInt();
+                e.rate  = strings.value(16).toInt();
+
+                dst.push_back(e);
+            }
         }
         file.close();
 
@@ -210,6 +225,7 @@ namespace {
         {
             std::vector<Set>::const_iterator j;
 
+            int setcount = 1;
             for (j = i->sets.begin(); j!= i->sets.end(); ++j)
             {
                 ExerciseSet s;
@@ -225,7 +241,8 @@ namespace {
                 s.lengths = i->lengths;
                 s.totaldistance = i->totaldistance;
 
-                s.set = j->set;
+                //Recalc setids in case of deletions for compatibility with Poolmate software
+                s.set = setcount++; //j->set;
                 s.duration = j->duration;
                 s.lens = j->lens;
                 s.strk = j->strk;
@@ -275,9 +292,9 @@ int DataStore::findExercise(QDate dt)
     {
         if (i->date == dt)
             return row;
-		row++;
-	}
-	return -1;
+        row++;
+    }
+    return -1;
 }
 
 int DataStore::findExercise(QDateTime dt)
@@ -287,13 +304,13 @@ int DataStore::findExercise(QDateTime dt)
 
     for (i=workouts.begin(); i != workouts.end(); ++i)
     {
-		QDateTime td(i->date, i->time);
+        QDateTime td(i->date, i->time);
 
         if (td == dt)
             return row;
-		row++;
-	}
-	return -1;
+        row++;
+    }
+    return -1;
 }
 
 int sortfn(const Workout& lhs, const Workout &rhs)
