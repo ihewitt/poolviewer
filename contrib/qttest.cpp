@@ -78,6 +78,10 @@ void display(QByteArray& data)
     for (i=0; i < data.length(); ++i)
     {
 	printf("%02x ", (unsigned char)data[i]);
+	if ((i & 0xff) == 0xff)
+	{
+            printf("\n");
+	}
     }
     printf("\n");
 }
@@ -196,7 +200,8 @@ char * decode_wrk(char* data)
         printf("Chrono\n");
         return data+256;
     }
-    else if (data[2] == 2)
+    else if (data[2] == 2 ||
+	     data[2] == 3)   //Seems to start either 2 or 3 for a swim session for some reason.
     {
         printf("Swim\n");
 
@@ -244,19 +249,27 @@ void download(QSerialPort *serialPort)
             buf[9]=i;
             uint32_t crc = crc32a(&buf[6], 10);
             memcpy(&buf[16], &crc, sizeof(uint32_t));
-          
+         
+            printf("Request set %02x ", i); 
             write(serialPort, buf, 20);
             read(serialPort, 20);
-          
+
+            printf("Read %d\n", data.length());	    
             //check crc.
             buffer.append(data.data(), data.length()-4);
         }
-        req = req>>1;
+        req = req >> 1;
 
         // Bitfield doesnt seems to match populated datasets so
-        // Try to spot of packet run ons. 
-        if (data[data.length()-5] != (char)255) // Improve this logic
-            req |= 1;
+        // Try to spot packet run ons. 
+        if (data[data.length()-5] != (char)255) // <Improve this logic
+	{
+            if ((req & 1) == 0)
+            {
+                printf("More data, overriding bitmask.\n");
+                req |= 1;
+            }
+	}
     }
     printf("Data buffer:\n");
     display(buffer);
@@ -269,14 +282,9 @@ void download(QSerialPort *serialPort)
 
         if (type == 0) // workout header
         {
-	    ptr = decode_wrk(ptr);
+	    decode_wrk(ptr);
         }
-    
-        // packets padded with 0xff so just skip over for now.
-        // Improve this to actually just step onto the next dataset packet.
-        while (*ptr == -1)
-	    ptr++;
-
+	ptr += 0x100; //Walk over packets to next workout start
     } while (ptr < buffer.data()+ buffer.length()); //Again, track number of packets instead.
 
     printf("done\n");
