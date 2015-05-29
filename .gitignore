@@ -1,0 +1,10 @@
+# build files
+Makefile*
+bin/
+build/
+
+# save files
+*~
+*.bak
+*-bak
+*.bck
