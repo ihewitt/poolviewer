@@ -376,15 +376,16 @@ void SummaryImpl::setSelected()
     setSel = true;
     deleteButton->setText("Delete set");
 
-    //Fill lengths
-
-//    const Workout& workout = ds->Workouts()[workoutGrid->currentRow()];
     int row = workoutGrid->currentRow();
     const std::vector<Set>& sets = ds->Workouts()[row].sets;
 
     const Set& set = sets[setGrid->currentRow()];
 
-    fillLengths(set);
+    //Just check we have some for now.
+    if (set.times.size())
+    {
+        fillLengths(set);
+    }
 }
 
 //
