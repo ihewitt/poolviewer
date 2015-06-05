@@ -47,6 +47,7 @@ public:
 
     void fillWorkouts( const std::vector<Workout>& workouts );
     void fillSets( const std::vector<Set>& sets );
+    void fillLengths( const Set& set);
 
     void colorRow(int r, QColor c); 
 

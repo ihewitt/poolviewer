@@ -283,6 +283,30 @@ void SummaryImpl::fillWorkouts( const std::vector<Workout>& workouts)
     calendarWidget->setData(day_totals);
 }
 
+void SummaryImpl::fillLengths( const Set& set)
+{
+    lengthGrid->clearContents();
+    lengthGrid->setRowCount(set.lens);
+
+    lengthGrid->setColumnWidth(0,50);
+    lengthGrid->setColumnWidth(1,50);
+
+    int row;
+    for (row=0; row<set.lens; ++row)
+    {
+        int col=0;
+        QTableWidgetItem *item;
+
+        item = new QTableWidgetItem(QString::number(set.times[row]));
+        item->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
+        lengthGrid->setItem( row, col++, item );
+
+        item = new QTableWidgetItem(QString::number(set.strokes[row]));
+        item->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
+        lengthGrid->setItem( row, col++, item );
+    }
+}
+
 void SummaryImpl::fillSets( const std::vector<Set>& sets)
 {
     setGrid->clearContents();
@@ -351,6 +375,16 @@ void SummaryImpl::setSelected()
 {
     setSel = true;
     deleteButton->setText("Delete set");
+
+    //Fill lengths
+
+//    const Workout& workout = ds->Workouts()[workoutGrid->currentRow()];
+    int row = workoutGrid->currentRow();
+    const std::vector<Set>& sets = ds->Workouts()[row].sets;
+
+    const Set& set = sets[setGrid->currentRow()];
+
+    fillLengths(set);
 }
 
 //
@@ -550,3 +584,4 @@ void SummaryImpl::on_check_clicked()
                            speedCheck->isChecked());
     graphWidget->update();
 }
+

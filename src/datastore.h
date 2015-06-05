@@ -32,6 +32,10 @@ struct Set
     int speed;
     int effic;
     int rate;
+    QTime rest;
+
+    std::vector<double> times;
+    std::vector<int> strokes;
 };
 
 struct Workout
