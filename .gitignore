@@ -8,3 +8,6 @@ build/
 *.bak
 *-bak
 *.bck
+
+# kdevelop
+*.kdev4
