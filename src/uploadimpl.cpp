@@ -94,15 +94,21 @@ void UploadImpl::importButton()
     file = QFileDialog::getOpenFileName(this,
                                         tr("Import Exercise Data"),
                                         "",
-                                        tr("Comma separated files (*.csv *.txt)"));
+                                        tr("Comma separated files (*.csv *.txt);;Garmin FIT file (*.fit)"));
     
     if (!file.isEmpty())
     {
-        ReadCSV(qPrintable(file), exdata);
-        if (exdata.size())
-        {
-            fillList();
-        }
+	if ( QFileInfo(file.toLower()).suffix() == "fit") {
+	  // Garmin FIT file
+	  
+	} else {
+	  // csv file
+	  ReadCSV(qPrintable(file), exdata);
+	  if (exdata.size())
+	  {
+	      fillList();
+	  }
+	}
     }
 }
 
