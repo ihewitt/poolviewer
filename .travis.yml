@@ -13,7 +13,7 @@ compiler:
 before_install:
     - sudo add-apt-repository --yes ppa:beineri/opt-qt511 
     - sudo apt-get update -qq
-    - sudo apt-get install -y qt51-meta-minimal qt51serialport libgl1-mesa-dev libusb-1.0-0-dev
+    - sudo apt-get install -y qt51-meta-minimal qt51serialport libgl1-mesa-dev libusb-1.0-0-dev libboost-all-dev
 
 script:
  - source /opt/qt51/bin/qt51-env.sh
