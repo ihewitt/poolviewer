@@ -36,12 +36,16 @@ struct ExerciseSet
 
     int set;
     QTime duration;
-	int lens;
+    int lens;
     int strk;
     int dist;
     int speed;
     int effic;
     int rate;
+    QTime rest;
+
+    std::vector<double> len_time;
+    std::vector<int> len_strokes;
 };
 
 #endif

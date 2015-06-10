@@ -47,6 +47,7 @@ SummaryImpl::SummaryImpl( QWidget * parent, Qt::WindowFlags f)
     speedCheck->setChecked(true);
     graphWidget->setGraphs(true,true,true,true);
 
+    lengthWidget->setGraphs(true,true,true,true);
     scale = WORKOUTS;
     //    setEscapeButton(pushButton);
 }
@@ -59,6 +60,7 @@ void SummaryImpl::scaleChanged(int sc)
 
     volumeWidget->update();
     graphWidget->update();
+    lengthWidget->update();
 }
 
 
@@ -125,11 +127,16 @@ void SummaryImpl::setData( const std::vector<Workout>& workouts)
         graphWidget->series[2].label = "Strk";
         graphWidget->series[3].label = "Rte";
     }
-    /*    else
     {
-        if (workouts.size())
-            setData(workouts[0]);
-            }*/
+        lengthWidget->clear();
+        lengthWidget->style = GraphWidget::Line;
+        lengthWidget->series.resize(4);
+        lengthWidget->series[0].label = "Eff";
+        lengthWidget->series[1].label = "Spd";
+        lengthWidget->series[2].label = "Strk";
+        lengthWidget->series[3].label = "Rte";
+    }
+
 
     std::vector<Workout>::const_iterator i;
     for ( i = workouts.begin(); i != workouts.end(); ++i)
@@ -177,6 +184,33 @@ void SummaryImpl::setData( const std::vector<Workout>& workouts)
                     graphWidget->series[1].integers.push_back(i->speed);
                     graphWidget->series[2].doubles.push_back( i->strk ? (double)workout.pool/i->strk : 0.0 );
                     graphWidget->series[3].integers.push_back(i->rate);
+                }
+
+                if (workout.sets[0].times.size())
+                {
+                    int n=0;
+                    std::vector<Set>::const_iterator i;
+                    for (i = workout.sets.begin(); i != workout.sets.end(); ++i)
+                    {
+                        int j;
+                        for ( j=0; j < i->lens; ++j )
+                        {
+                            double rate = 60 * i->strokes[j]/i->times[j];
+                            int effic = ((25 * i->times[j]) + (25*i->strokes[j]))/workout.pool;
+
+                            lengthWidget->xaxis.push_back(QString::number(++n));
+
+                            lengthWidget->series[0].integers.push_back(effic);
+                            lengthWidget->series[1].integers.push_back(100*i->times[j]/workout.pool);
+                            lengthWidget->series[2].doubles.push_back((double)workout.pool/i->strokes[j]);
+                            lengthWidget->series[3].integers.push_back(rate);
+                        }
+                        lengthWidget->xaxis.push_back(QString());
+                        lengthWidget->series[0].integers.push_back(-1);
+                        lengthWidget->series[1].integers.push_back(-1);
+                        lengthWidget->series[2].doubles.push_back(-1);
+                        lengthWidget->series[3].integers.push_back(-1);
+                    }
                 }
             }
         }
@@ -283,6 +317,30 @@ void SummaryImpl::fillWorkouts( const std::vector<Workout>& workouts)
     calendarWidget->setData(day_totals);
 }
 
+void SummaryImpl::fillLengths( const Set& set)
+{
+    lengthGrid->clearContents();
+    lengthGrid->setRowCount(set.lens);
+
+    lengthGrid->setColumnWidth(0,50);
+    lengthGrid->setColumnWidth(1,50);
+
+    int row;
+    for (row=0; row<set.lens; ++row)
+    {
+        int col=0;
+        QTableWidgetItem *item;
+
+        item = new QTableWidgetItem(QString::number(set.times[row]));
+        item->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
+        lengthGrid->setItem( row, col++, item );
+
+        item = new QTableWidgetItem(QString::number(set.strokes[row]));
+        item->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
+        lengthGrid->setItem( row, col++, item );
+    }
+}
+
 void SummaryImpl::fillSets( const std::vector<Set>& sets)
 {
     setGrid->clearContents();
@@ -351,6 +409,17 @@ void SummaryImpl::setSelected()
 {
     setSel = true;
     deleteButton->setText("Delete set");
+
+    int row = workoutGrid->currentRow();
+    const std::vector<Set>& sets = ds->Workouts()[row].sets;
+
+    const Set& set = sets[setGrid->currentRow()];
+
+    //Just check we have some for now.
+    if (set.times.size())
+    {
+        fillLengths(set);
+    }
 }
 
 //
@@ -374,6 +443,7 @@ void SummaryImpl::workoutSelected()
 
     graphWidget->update();
     volumeWidget->update();
+    lengthWidget->update();
 
     setSel = false;
     deleteButton->setText("Delete wrk");
@@ -549,4 +619,12 @@ void SummaryImpl::on_check_clicked()
                            rateCheck->isChecked(),
                            speedCheck->isChecked());
     graphWidget->update();
+
+    lengthWidget->setGraphs(efficCheck->isChecked(),
+                           strokeCheck->isChecked(),
+                           rateCheck->isChecked(),
+                           speedCheck->isChecked());
+    lengthWidget->update();
+
 }
+

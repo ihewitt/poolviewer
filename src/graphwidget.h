@@ -122,7 +122,7 @@ public:
                 {
                     if (doubles[i] > maxDbl)
                         maxDbl = doubles[i];
-                    if (doubles[i] < minDbl)
+                    if ((doubles[i]>=0) && doubles[i] < minDbl)
                         minDbl = doubles[i];
                 }
 
@@ -139,7 +139,7 @@ public:
                 {
                     if (integers[i] > maxInt)
                         maxInt = integers[i];
-                    if (integers[i] < minInt)
+                    if ((integers[i]>=0) && integers[i] < minInt)
                         minInt = integers[i];
                 }
 

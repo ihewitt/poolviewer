@@ -285,7 +285,13 @@ void GraphWidget::drawSeries( QPainter &painter,
 	for (i=0; i<j; i++)
 	{
         l=vals[i];
-    
+
+        if (labels[i].isEmpty()) //Gap in series
+        {
+            pt = QPoint(0,0);
+            continue;
+        }
+
 		int x =  (space/2)+i * space;
 		int y = h - l;
 
@@ -449,18 +455,6 @@ void GraphWidget::paintEvent(QPaintEvent *)
 
 
 	drawXAxis(painter, Qt::black);
-
-    //fill gradient
-    /*    {
-        int y1 = h-3*(h/10);
-        int y2 = h-5*(h/10);
-        int y3 = h-6*(h/10);
-        int y4 = h-8*(h/10);
-        painter.fillRect(0,y1,w,y2-y1,QColor(255,235,235));
-        painter.fillRect(0,y2,w,y3-y2,QColor(255,215,225));
-        painter.fillRect(0,y3,w,y4-y3,QColor(255,205,195));
-        }*/
-
 
     // horizontal gridlines
     {

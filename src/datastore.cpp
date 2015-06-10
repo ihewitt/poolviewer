@@ -63,6 +63,12 @@ bool SaveCSV( const std::string & name, std::vector<ExerciseSet>& exercises )
                     << i->speed << ","
                     << i->effic << ","
                     << i->rate << ",Free,";
+                out << ",,,,210,,,\n";
+            }
+//1,31/3/2015,06:38:12,SwimHR,25,,00:32:38,397,52,1300,1,00:06:19,12,12,126,44,22,Free,,,,,0,New,00:32:38,,STARTOFLAPDATA,0,0,0,3908.923,00:14,SwimHR,11,-1,28,12,31,13,31.125,13,31.625,13,31.25,13,31.125,13,29.5,11,33.375,13,30.375,13,31.75,12,33.125,13,33,13
+            else if (i->type == "SwimHR")
+            {
+
             }
             else
             {
@@ -73,8 +79,8 @@ bool SaveCSV( const std::string & name, std::vector<ExerciseSet>& exercises )
                     << i->set << ","
                     << i->duration.toString("hh:mm:ss") << ","
                     << ",,,,,,";
+                out << ",,,,210,,,\n";
             }
-            out << ",,,,210,,,\n";
         }
     }
     return true;
@@ -108,26 +114,52 @@ bool ReadCSV( const std::string & name, std::vector<ExerciseSet>& dst )
                 e.time = QTime::fromString( strings.value(2));
 
                 e.type = strings.value(3);
-                e.pool = strings.value(4).toInt();
-                e.unit = strings.value(5);
-                e.totalduration = QTime::fromString(strings.value(6));
-                e.cal = strings.value(7).toInt();
-                e.lengths = strings.value(8).toInt();
-                e.totaldistance = strings.value(9).toInt();
-                e.set = strings.value(10).toInt();
-                e.duration = QTime::fromString( strings.value(11));
-                e.strk = strings.value(12).toInt();
-                e.lens  = strings.value(13).toInt();
 
-                if (oldformat && e.lens && e.pool) //if we've saved as an oldformat file update
+                if (e.type == "Swim" || e.type == "SwimHR")
                 {
-                    e.lens = strings.value(13).toInt() / e.pool;
-                }
-                e.dist = e.lens * e.pool;
-                e.speed  = strings.value(14).toInt();
-                e.effic = strings.value(15).toInt();
-                e.rate  = strings.value(16).toInt();
+                    e.pool = strings.value(4).toInt();
+                    e.unit = strings.value(5);
+                    e.totalduration = QTime::fromString(strings.value(6));
+                    e.cal = strings.value(7).toInt();
+                    e.lengths = strings.value(8).toInt();
+                    e.totaldistance = strings.value(9).toInt();
+                    e.set = strings.value(10).toInt();
+                    e.duration = QTime::fromString( strings.value(11));
+                    e.strk = strings.value(12).toInt();
+                    e.lens  = strings.value(13).toInt();
 
+                    if (oldformat && e.lens && e.pool) //if we've saved as an oldformat file update to new
+                    {
+                        e.lens = strings.value(13).toInt() / e.pool;
+                    }
+                    e.dist = e.lens * e.pool;
+                    e.speed  = strings.value(14).toInt();
+                    e.effic = strings.value(15).toInt();
+                    e.rate  = strings.value(16).toInt();
+                }
+
+//1,31/3/2015,06:38:12,SwimHR,25,,00:32:38,397,52,1300,1,00:06:19,12,12,126,44,22,Free,,,,,0,
+//New,00:32:38,,STARTOFLAPDATA,
+//0,0,0,3908.923,00:14,SwimHR,
+//11,-1,28,12,31,13,31.125,13,31.625,13,31.25,13,31.125,13,29.5,11,33.375,13,30.375,13,31.75,12,33.125,13,33,13
+//Ignore HR part of data for now.
+
+                if (e.type == "SwimHR") // Read length data
+                {
+                    double num = strings.value(30).toDouble(); //no idea what this is
+                    e.rest = QTime::fromString( strings.value(31));
+
+                    // we already know the number of lengths.
+                    int l;
+                    for (l = 0; l <e.lens; ++l)
+                    {
+                        double time = strings.value(35+l*2).toDouble();
+                        int strk = strings.value(36+l*2).toInt();
+
+                        e.len_time.push_back(time);
+                        e.len_strokes.push_back(strk);
+                    }
+                }
                 dst.push_back(e);
             }
         }
@@ -193,6 +225,10 @@ namespace {
                 set.speed = j->speed;
                 set.effic = j->effic;
                 set.rate = j->rate;
+                set.rest = j->rest;
+
+                set.times = j->len_time;
+                set.strokes = j->len_strokes;
             
                 if (set.effic < min_effic) min_effic = set.effic;
                 if (set.effic > max_effic) max_effic = set.effic;

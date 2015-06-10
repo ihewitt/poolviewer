@@ -6,26 +6,59 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1024</width>
-    <height>768</height>
+    <width>957</width>
+    <height>645</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>957</width>
+    <height>645</height>
+   </size>
   </property>
   <property name="windowTitle">
    <string>PoolMate Viewer</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout">
+  <property name="sizeGripEnabled">
+   <bool>false</bool>
+  </property>
+  <layout class="QGridLayout" name="gridLayout_2">
    <item row="0" column="0">
-    <widget class="QSplitter" name="splitter">
+    <widget class="QSplitter" name="main_splitter">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>16777215</height>
+      </size>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::NoFrame</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Sunken</enum>
+     </property>
+     <property name="lineWidth">
+      <number>1</number>
+     </property>
      <property name="orientation">
       <enum>Qt::Vertical</enum>
      </property>
+     <property name="handleWidth">
+      <number>3</number>
+     </property>
      <widget class="QTabWidget" name="tabs">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
       <property name="minimumSize">
        <size>
         <width>0</width>
@@ -38,16 +71,6 @@
       <property name="currentIndex">
        <number>1</number>
       </property>
-      <widget class="QWidget" name="technique">
-       <attribute name="title">
-        <string>Technique</string>
-       </attribute>
-       <layout class="QHBoxLayout" name="horizontalLayout">
-        <item>
-         <widget class="GraphWidget" name="graphWidget" native="true"/>
-        </item>
-       </layout>
-      </widget>
       <widget class="QWidget" name="volume">
        <attribute name="title">
         <string>Volume</string>
@@ -58,430 +81,508 @@
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="technique">
+       <attribute name="title">
+        <string>Technique</string>
+       </attribute>
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <widget class="GraphWidget" name="graphWidget" native="true"/>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="lengths">
+       <attribute name="title">
+        <string>Lengths</string>
+       </attribute>
+       <layout class="QHBoxLayout" name="horizontalLayout_4">
+        <item>
+         <widget class="GraphWidget" name="lengthWidget" native="true"/>
+        </item>
+       </layout>
+      </widget>
      </widget>
-     <widget class="QWidget" name="layoutWidget">
-      <layout class="QHBoxLayout" name="bottomLayout">
-       <item>
-        <layout class="QVBoxLayout" name="verticalLayout">
-         <item>
-          <widget class="QTableWidget" name="workoutGrid">
-           <property name="minimumSize">
-            <size>
-             <width>502</width>
-             <height>0</height>
-            </size>
-           </property>
-           <property name="alternatingRowColors">
-            <bool>true</bool>
-           </property>
-           <property name="selectionMode">
-            <enum>QAbstractItemView::ExtendedSelection</enum>
-           </property>
-           <property name="selectionBehavior">
-            <enum>QAbstractItemView::SelectRows</enum>
-           </property>
-           <property name="rowCount">
-            <number>1</number>
-           </property>
-           <property name="columnCount">
-            <number>8</number>
-           </property>
-           <attribute name="horizontalHeaderDefaultSectionSize">
-            <number>60</number>
+     <widget class="QSplitter" name="lower_splitter">
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>16777215</height>
+       </size>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="handleWidth">
+       <number>3</number>
+      </property>
+      <widget class="QWidget" name="layoutWidget">
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <item>
+         <widget class="QTabWidget" name="tabWidget">
+          <property name="currentIndex">
+           <number>0</number>
+          </property>
+          <widget class="QWidget" name="tab">
+           <attribute name="title">
+            <string>Workouts</string>
            </attribute>
-           <attribute name="horizontalHeaderMinimumSectionSize">
-            <number>30</number>
-           </attribute>
-           <attribute name="verticalHeaderVisible">
-            <bool>false</bool>
-           </attribute>
-           <attribute name="verticalHeaderDefaultSectionSize">
-            <number>19</number>
-           </attribute>
-           <row/>
-           <column>
-            <property name="text">
-             <string>Date</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>Time</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>Pool</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>Duration</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>Cal</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>Lengths</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>Total m</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>Rest</string>
-            </property>
-           </column>
-           <item row="0" column="0">
-            <property name="text">
-             <string/>
-            </property>
-           </item>
-           <item row="0" column="1">
-            <property name="text">
-             <string/>
-            </property>
-           </item>
-           <item row="0" column="2">
-            <property name="text">
-             <string/>
-            </property>
-           </item>
-           <item row="0" column="3">
-            <property name="text">
-             <string/>
-            </property>
-           </item>
-           <item row="0" column="4">
-            <property name="text">
-             <string/>
-            </property>
-           </item>
-           <item row="0" column="5">
-            <property name="text">
-             <string/>
-            </property>
-           </item>
-           <item row="0" column="6">
-            <property name="text">
-             <string/>
-            </property>
-           </item>
-           <item row="0" column="7">
-            <property name="text">
-             <string/>
-            </property>
-           </item>
+           <layout class="QGridLayout" name="gridLayout_3">
+            <item row="0" column="0">
+             <widget class="QTableWidget" name="workoutGrid">
+              <property name="alternatingRowColors">
+               <bool>true</bool>
+              </property>
+              <property name="selectionMode">
+               <enum>QAbstractItemView::ExtendedSelection</enum>
+              </property>
+              <property name="selectionBehavior">
+               <enum>QAbstractItemView::SelectRows</enum>
+              </property>
+              <property name="rowCount">
+               <number>1</number>
+              </property>
+              <property name="columnCount">
+               <number>8</number>
+              </property>
+              <attribute name="horizontalHeaderDefaultSectionSize">
+               <number>60</number>
+              </attribute>
+              <attribute name="horizontalHeaderMinimumSectionSize">
+               <number>30</number>
+              </attribute>
+              <attribute name="verticalHeaderVisible">
+               <bool>false</bool>
+              </attribute>
+              <attribute name="verticalHeaderDefaultSectionSize">
+               <number>19</number>
+              </attribute>
+              <row/>
+              <column>
+               <property name="text">
+                <string>Date</string>
+               </property>
+              </column>
+              <column>
+               <property name="text">
+                <string>Time</string>
+               </property>
+              </column>
+              <column>
+               <property name="text">
+                <string>Pool</string>
+               </property>
+              </column>
+              <column>
+               <property name="text">
+                <string>Duration</string>
+               </property>
+              </column>
+              <column>
+               <property name="text">
+                <string>Cal</string>
+               </property>
+              </column>
+              <column>
+               <property name="text">
+                <string>Lengths</string>
+               </property>
+              </column>
+              <column>
+               <property name="text">
+                <string>Total m</string>
+               </property>
+              </column>
+              <column>
+               <property name="text">
+                <string>Rest</string>
+               </property>
+              </column>
+              <item row="0" column="0">
+               <property name="text">
+                <string/>
+               </property>
+              </item>
+              <item row="0" column="1">
+               <property name="text">
+                <string/>
+               </property>
+              </item>
+              <item row="0" column="2">
+               <property name="text">
+                <string/>
+               </property>
+              </item>
+              <item row="0" column="3">
+               <property name="text">
+                <string/>
+               </property>
+              </item>
+              <item row="0" column="4">
+               <property name="text">
+                <string/>
+               </property>
+              </item>
+              <item row="0" column="5">
+               <property name="text">
+                <string/>
+               </property>
+              </item>
+              <item row="0" column="6">
+               <property name="text">
+                <string/>
+               </property>
+              </item>
+              <item row="0" column="7">
+               <property name="text">
+                <string/>
+               </property>
+              </item>
+             </widget>
+            </item>
+           </layout>
           </widget>
-         </item>
-         <item>
-          <layout class="QHBoxLayout" name="buttonLayout2">
-           <item>
-            <widget class="QPushButton" name="editButton">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="text">
-              <string>Edit</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="deleteButton">
-             <property name="enabled">
-              <bool>true</bool>
-             </property>
-             <property name="text">
-              <string>Delete</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <spacer name="horizontalSpacer_2">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeType">
-              <enum>QSizePolicy::MinimumExpanding</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>40</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item>
-            <widget class="QPushButton" name="printButton">
-             <property name="text">
-              <string>Print</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLabel" name="label">
-             <property name="text">
-              <string>Graph:</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QComboBox" name="viewCombo">
-             <item>
-              <property name="text">
-               <string>Sets</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>One week</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>One month</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Year by week</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Year by month</string>
-              </property>
-             </item>
-            </widget>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <widget class="QTableWidget" name="setGrid">
-           <property name="minimumSize">
-            <size>
-             <width>501</width>
-             <height>0</height>
-            </size>
-           </property>
-           <property name="alternatingRowColors">
-            <bool>true</bool>
-           </property>
-           <property name="selectionBehavior">
-            <enum>QAbstractItemView::SelectRows</enum>
-           </property>
-           <attribute name="horizontalHeaderDefaultSectionSize">
-            <number>60</number>
+          <widget class="QWidget" name="tab_2">
+           <attribute name="title">
+            <string>Sets</string>
            </attribute>
-           <attribute name="horizontalHeaderMinimumSectionSize">
-            <number>30</number>
+           <layout class="QGridLayout" name="gridLayout_4">
+            <item row="0" column="0">
+             <widget class="QTableWidget" name="setGrid">
+              <property name="alternatingRowColors">
+               <bool>true</bool>
+              </property>
+              <property name="selectionBehavior">
+               <enum>QAbstractItemView::SelectRows</enum>
+              </property>
+              <attribute name="horizontalHeaderDefaultSectionSize">
+               <number>60</number>
+              </attribute>
+              <attribute name="horizontalHeaderMinimumSectionSize">
+               <number>30</number>
+              </attribute>
+              <attribute name="verticalHeaderVisible">
+               <bool>false</bool>
+              </attribute>
+              <attribute name="verticalHeaderDefaultSectionSize">
+               <number>19</number>
+              </attribute>
+              <column>
+               <property name="text">
+                <string>Set</string>
+               </property>
+              </column>
+              <column>
+               <property name="text">
+                <string>Duration</string>
+               </property>
+              </column>
+              <column>
+               <property name="text">
+                <string>Strokes</string>
+               </property>
+              </column>
+              <column>
+               <property name="text">
+                <string>Dist</string>
+               </property>
+              </column>
+              <column>
+               <property name="text">
+                <string>Speed</string>
+               </property>
+              </column>
+              <column>
+               <property name="text">
+                <string>Effic</string>
+               </property>
+              </column>
+              <column>
+               <property name="text">
+                <string>Rate</string>
+               </property>
+              </column>
+              <column>
+               <property name="text">
+                <string>Stroke</string>
+               </property>
+              </column>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="tab_3">
+           <attribute name="title">
+            <string>Lengths</string>
            </attribute>
-           <attribute name="verticalHeaderVisible">
-            <bool>false</bool>
-           </attribute>
-           <attribute name="verticalHeaderDefaultSectionSize">
-            <number>19</number>
-           </attribute>
-           <column>
-            <property name="text">
-             <string>Set</string>
+           <layout class="QGridLayout" name="gridLayout_5">
+            <item row="0" column="0">
+             <widget class="QTableWidget" name="lengthGrid">
+              <property name="alternatingRowColors">
+               <bool>true</bool>
+              </property>
+              <property name="selectionBehavior">
+               <enum>QAbstractItemView::SelectRows</enum>
+              </property>
+              <attribute name="horizontalHeaderDefaultSectionSize">
+               <number>60</number>
+              </attribute>
+              <attribute name="horizontalHeaderMinimumSectionSize">
+               <number>30</number>
+              </attribute>
+              <attribute name="verticalHeaderVisible">
+               <bool>false</bool>
+              </attribute>
+              <attribute name="verticalHeaderDefaultSectionSize">
+               <number>19</number>
+              </attribute>
+              <column>
+               <property name="text">
+                <string>Time</string>
+               </property>
+              </column>
+              <column>
+               <property name="text">
+                <string>Strokes</string>
+               </property>
+              </column>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="buttonLayout2">
+          <item>
+           <widget class="QPushButton" name="editButton">
+            <property name="enabled">
+             <bool>false</bool>
             </property>
-           </column>
-           <column>
             <property name="text">
-             <string>Duration</string>
+             <string>Edit</string>
             </property>
-           </column>
-           <column>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="deleteButton">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
             <property name="text">
-             <string>Strokes</string>
+             <string>Delete</string>
             </property>
-           </column>
-           <column>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeType">
+             <enum>QSizePolicy::MinimumExpanding</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QPushButton" name="printButton">
             <property name="text">
-             <string>Dist</string>
+             <string>Print</string>
             </property>
-           </column>
-           <column>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="label">
             <property name="text">
-             <string>Speed</string>
+             <string>Graph:</string>
             </property>
-           </column>
-           <column>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="viewCombo">
+            <item>
+             <property name="text">
+              <string>Sets</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>One week</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>One month</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Year by week</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Year by month</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="layoutWidget">
+       <layout class="QVBoxLayout" name="calendarLayout">
+        <item>
+         <layout class="QHBoxLayout" name="stroke_buttons">
+          <item>
+           <widget class="QCheckBox" name="efficCheck">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;SWOLF efficiency score&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
             <property name="text">
-             <string>Effic</string>
+             <string>Efficiency</string>
             </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>Rate</string>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="strokeCheck">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Stroke length&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
-           </column>
-           <column>
             <property name="text">
              <string>Stroke</string>
             </property>
-           </column>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QVBoxLayout" name="calendarLayout">
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_3">
-           <item>
-            <widget class="QCheckBox" name="efficCheck">
-             <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;SWOLF efficiency score&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
-             <property name="text">
-              <string>Efficiency</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QCheckBox" name="strokeCheck">
-             <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Stroke length&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
-             <property name="text">
-              <string>Stroke</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QCheckBox" name="rateCheck">
-             <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Stroke rate&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
-             <property name="text">
-              <string>Rate</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QCheckBox" name="speedCheck">
-             <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Speed = Seconds per 100m&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
-             <property name="text">
-              <string>Speed</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <spacer name="horizontalSpacer_4">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>50</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item>
-            <widget class="QPushButton" name="todayButton">
-             <property name="text">
-              <string>Today</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <widget class="CalendarWidget" name="calendarWidget">
-           <property name="autoFillBackground">
-            <bool>true</bool>
-           </property>
-           <property name="firstDayOfWeek">
-            <enum>Qt::Monday</enum>
-           </property>
-           <property name="gridVisible">
-            <bool>true</bool>
-           </property>
-           <property name="horizontalHeaderFormat">
-            <enum>QCalendarWidget::ShortDayNames</enum>
-           </property>
-           <property name="verticalHeaderFormat">
-            <enum>QCalendarWidget::NoVerticalHeader</enum>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <layout class="QHBoxLayout" name="buttonLayout">
-           <item>
-            <spacer name="horizontalSpacer_3">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>40</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item>
-            <widget class="QPushButton" name="downloadButton">
-             <property name="text">
-              <string>Download...</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="configButton">
-             <property name="enabled">
-              <bool>true</bool>
-             </property>
-             <property name="text">
-              <string>Config...</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <spacer name="horizontalSpacer">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeType">
-              <enum>QSizePolicy::Minimum</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>40</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item>
-            <widget class="QPushButton" name="closeButton">
-             <property name="text">
-              <string>Close</string>
-             </property>
-             <property name="default">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-        </layout>
-       </item>
-      </layout>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="rateCheck">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Stroke rate&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="text">
+             <string>Rate</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="speedCheck">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Speed = Seconds per 100m&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="text">
+             <string>Speed</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer_4">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>50</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QPushButton" name="todayButton">
+            <property name="text">
+             <string>Today</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="CalendarWidget" name="calendarWidget">
+          <property name="autoFillBackground">
+           <bool>true</bool>
+          </property>
+          <property name="firstDayOfWeek">
+           <enum>Qt::Monday</enum>
+          </property>
+          <property name="gridVisible">
+           <bool>true</bool>
+          </property>
+          <property name="horizontalHeaderFormat">
+           <enum>QCalendarWidget::ShortDayNames</enum>
+          </property>
+          <property name="verticalHeaderFormat">
+           <enum>QCalendarWidget::NoVerticalHeader</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="control_buttons">
+          <item>
+           <spacer name="horizontalSpacer_3">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QPushButton" name="downloadButton">
+            <property name="text">
+             <string>Download...</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="configButton">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="text">
+             <string>Config...</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="horizontalSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeType">
+             <enum>QSizePolicy::Minimum</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QPushButton" name="closeButton">
+            <property name="text">
+             <string>Close</string>
+            </property>
+            <property name="default">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
      </widget>
     </widget>
    </item>
@@ -503,30 +604,14 @@
  <resources/>
  <connections>
   <connection>
-   <sender>workoutGrid</sender>
-   <signal>itemSelectionChanged()</signal>
-   <receiver>Summary</receiver>
-   <slot>workoutSelected()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>63</x>
-     <y>493</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>4</x>
-     <y>291</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>todayButton</sender>
    <signal>clicked()</signal>
    <receiver>calendarWidget</receiver>
    <slot>showToday()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>575</x>
-     <y>760</y>
+     <x>948</x>
+     <y>320</y>
     </hint>
     <hint type="destinationlabel">
      <x>631</x>
@@ -541,8 +626,8 @@
    <slot>scaleChanged(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>507</x>
-     <y>522</y>
+     <x>488</x>
+     <y>635</y>
     </hint>
     <hint type="destinationlabel">
      <x>528</x>
@@ -573,8 +658,8 @@
    <slot>syncButton()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>831</x>
-     <y>760</y>
+     <x>722</x>
+     <y>636</y>
     </hint>
     <hint type="destinationlabel">
      <x>747</x>
@@ -589,8 +674,8 @@
    <slot>editButton()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>42</x>
-     <y>522</y>
+     <x>50</x>
+     <y>636</y>
     </hint>
     <hint type="destinationlabel">
      <x>6</x>
@@ -605,8 +690,8 @@
    <slot>deleteClick()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>122</x>
-     <y>522</y>
+     <x>181</x>
+     <y>636</y>
     </hint>
     <hint type="destinationlabel">
      <x>3</x>
@@ -621,8 +706,8 @@
    <slot>configButton()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>909</x>
-     <y>760</y>
+     <x>812</x>
+     <y>636</y>
     </hint>
     <hint type="destinationlabel">
      <x>832</x>
@@ -637,8 +722,8 @@
    <slot>close()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1016</x>
-     <y>760</y>
+     <x>948</x>
+     <y>636</y>
     </hint>
     <hint type="destinationlabel">
      <x>942</x>
@@ -653,27 +738,11 @@
    <slot>printButton()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>341</x>
-     <y>522</y>
+     <x>330</x>
+     <y>636</y>
     </hint>
     <hint type="destinationlabel">
      <x>377</x>
-     <y>767</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>setGrid</sender>
-   <signal>itemSelectionChanged()</signal>
-   <receiver>Summary</receiver>
-   <slot>setSelected()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>224</x>
-     <y>679</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>245</x>
      <y>767</y>
     </hint>
    </hints>
@@ -739,6 +808,38 @@
     <hint type="destinationlabel">
      <x>511</x>
      <y>383</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>workoutGrid</sender>
+   <signal>itemSelectionChanged()</signal>
+   <receiver>Summary</receiver>
+   <slot>workoutSelected()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>248</x>
+     <y>458</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>478</x>
+     <y>322</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>setGrid</sender>
+   <signal>itemSelectionChanged()</signal>
+   <receiver>Summary</receiver>
+   <slot>setSelected()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>248</x>
+     <y>458</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>478</x>
+     <y>322</y>
     </hint>
    </hints>
   </connection>
