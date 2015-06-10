@@ -30,7 +30,7 @@ struct ExerciseSet
     int pool;                   /**< Pool length */
     QString unit;               /**< Pool length unit m,? */
     QTime totalduration;        /**< Total duration of workout */
-    int cal;                    /**< ? calories (Kcal) used during this workout */
+    int cal;                    /**< calories (Kcal) used during this workout */
     int lengths;                /**< number of length in this workout */
     int totaldistance;          /**< total distance of this workout (in units ?) */
 
@@ -42,7 +42,7 @@ struct ExerciseSet
     int speed;                  /**< ? average speed of this set/lap in ???  */
     int effic;                  /**< ? swolf */
     int rate;                   /**< ? stroke rate in ??? */
-    QTime rest;
+    QTime rest;                 /**< ? rest time for this set/lap */
 
     std::vector<double> len_time; /**< duration of each length in this set/lap in seconds */
     std::vector<int> len_strokes; /**< number of strokes for each length for this set/lap */

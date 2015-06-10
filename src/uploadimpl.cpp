@@ -113,11 +113,12 @@ void UploadImpl::importButton()
 	} else {
 	  // csv file
 	  ReadCSV(qPrintable(file), exdata);
-	  if (exdata.size())
-	  {
-	      fillList();
-	  }
 	}
+        if (exdata.size())
+          {
+              fillList();
+          }
+
     }
 }
 

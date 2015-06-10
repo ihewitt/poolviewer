@@ -39,6 +39,7 @@
 
 #include "FIT.hpp"
 #include "logging.h"
+#include "antdefs.hpp"
 
 #include <time.h>
 #include <string.h>
@@ -50,19 +51,21 @@
 
 using namespace std;
 
-bool isZero(const uint32_t i) { return i==0; }
+bool isZero(const uint32_t i)
+{
+    return i == 0;
+}
 
 
 std::time_t
 ZeroFileContent::getFitFileTime(const uint16_t idx)
 {
-  for(size_t i = 0; i < zfRecords.size(); i++)
-  {
-    ZeroFileRecord& zfRecord(zfRecords[i]);
-    if(zfRecord.index == idx)
-      return zfRecord.timeStamp;
-  }
-  return 0;
+    for (size_t i = 0; i < zfRecords.size(); i++) {
+        ZeroFileRecord &zfRecord(zfRecords[i]);
+        if (zfRecord.index == idx)
+            return zfRecord.timeStamp;
+    }
+    return 0;
 }
 
 
@@ -153,7 +156,7 @@ FIT::FIT()
     messageFieldNameMap[7][3] = "Functional Threshold Power";
     messageFieldNameMap[7][5] = "HR Calc Type";
     messageFieldNameMap[7][6] = "PWR Calc Type";
-    
+
     messageTypeMap[8] = "Heart Rate Zone";
     messageFieldNameMap[8][254] = "Index";
     messageFieldNameMap[8][1] = "High BPM";
@@ -483,7 +486,7 @@ FIT::FIT()
 
     messageTypeMap[55] = "Monitoring";
     messageTypeMap[78] = "HRV";
-    
+
     messageTypeMap[79] = "User Profile ?";
     messageFieldNameMap[79][254] = "Index";
     messageFieldNameMap[79][253] = "Timestamp";
@@ -491,7 +494,7 @@ FIT::FIT()
     messageFieldNameMap[79][2] = "Height";
     messageFieldNameMap[79][3] = "Weight";
     messageFieldTypeMap[79][3] = MessageFieldTypeWeight;
-    
+
     messageTypeMap[101] = "Length";
     messageFieldNameMap[101][254] = "Index";
     messageFieldNameMap[101][253] = "Timestamp";
@@ -514,12 +517,12 @@ FIT::FIT()
     messageFieldNameMap[101][12] = "Length Type";
     messageFieldTypeMap[101][12] = MessageFieldTypeLengthType;
     messageFieldNameMap[101][13] = "";
-    
-    
+
+
     messageTypeMap[103] = "Monitoring Info";
     messageTypeMap[105] = "PAD";
 
-    
+
     dataTypeMap[BT_Enum] = "enum";
     dataTypeMap[BT_Int8] = "int8";
     dataTypeMap[BT_UInt8] = "uint8";
@@ -640,13 +643,13 @@ FIT::FIT()
     enumMap[MessageFieldTypeSwimStroke][3] = "Butterlfy";
     enumMap[MessageFieldTypeSwimStroke][4] = "Drill";
     enumMap[MessageFieldTypeSwimStroke][5] = "Mixed";
-    
+
     enumMap[MessageFieldTypeLengthType][0] = "Resting";
     enumMap[MessageFieldTypeLengthType][1] = "Active";
-    
+
     enumMap[MessageFieldTypePoolLengthUnit][0] = "meters";
     enumMap[MessageFieldTypePoolLengthUnit][1] = "yards";
-        
+
     manufacturerMap[ManufacturerGarmin] = "Garmin";
     manufacturerMap[ManufacturerGarminFR405ANTFS] = "Garmin (FR405 ANTFS)";
     manufacturerMap[ManufacturerZephyr] = "Zephyr";
@@ -670,7 +673,7 @@ FIT::FIT()
     manufacturerMap[ManufacturerAandD] = "A&D";
     manufacturerMap[ManufacturerHMM] = "HMM";
 
-    productMap[ManufacturerGarmin][GarminHRM1] = "Heart Rate Monitor"; 
+    productMap[ManufacturerGarmin][GarminHRM1] = "Heart Rate Monitor";
     productMap[ManufacturerGarmin][GarminAXH01] = "AXH01 HRM Chipset";
     productMap[ManufacturerGarmin][GarminAXB01] = "AXB01 Chipset";
     productMap[ManufacturerGarmin][GarminAXB02] = "AXB02 Chipset";
@@ -705,8 +708,7 @@ FIT::~FIT()
 
 uint16_t FIT::CRC_byte(uint16_t crc, uint8_t byte)
 {
-    static const uint16_t crc_table[16] =
-    {
+    static const uint16_t crc_table[16] = {
         0x0000, 0xCC01, 0xD801, 0x1400, 0xF001, 0x3C00, 0x2800, 0xE401,
         0xA001, 0x6C00, 0x7800, 0xB401, 0x5000, 0x9C01, 0x8801, 0x4400
     };
@@ -725,220 +727,179 @@ uint16_t FIT::CRC_byte(uint16_t crc, uint8_t byte)
 string FIT::getDataString(uint8_t *ptr, uint8_t size, uint8_t baseType, uint8_t messageType, uint8_t fieldNum)
 {
     ostringstream strstrm;
-    strstrm.setf(ios::fixed,ios::floatfield);
+    strstrm.setf(ios::fixed, ios::floatfield);
 
     BaseType bt;
     bt.byte = baseType;
 
     int baseTypeNum = bt.bits.baseTypeNum;
-    switch(baseTypeNum)
-    {
-        case BT_Enum:
-        {
-            int val = *(int8_t *)ptr;
-            uint8_t type = messageFieldTypeMap[messageType][fieldNum];
-            string strVal(enumMap[type][val]);
+    switch (baseTypeNum) {
+    case BT_Enum: {
+        int val = *(int8_t *)ptr;
+        uint8_t type = messageFieldTypeMap[messageType][fieldNum];
+        string strVal(enumMap[type][val]);
 
-            if (!strVal.empty())
-            {
-                strstrm << strVal;
-            }
-            else
-            {
-                strstrm << "[" << dec << val << "]";
-            }
-            break;
+        if (!strVal.empty()) {
+            strstrm << strVal;
+        } else {
+            strstrm << "[" << dec << val << "]";
         }
-        case BT_Int8:
-        {
-            int val = *(int8_t *)ptr;
+        break;
+    }
+    case BT_Int8: {
+        int val = *(int8_t *)ptr;
+        strstrm << dec << val;
+        break;
+    }
+    case BT_UInt8:
+    case BT_Uint8z: {
+        unsigned val = *(uint8_t *)ptr;
+        if (val == 0xFF) {
+            strstrm << "undefined";
+        } else {
             strstrm << dec << val;
-            break;
         }
-        case BT_UInt8:
-        case BT_Uint8z:
-        {
-            unsigned val = *(uint8_t *)ptr;
-            if (val == 0xFF)
-            {
-                strstrm << "undefined";
+        break;
+    }
+    case BT_Int16: {
+        int16_t val = *(int16_t *)ptr;
+        if (val == 0x7FFF) {
+            strstrm << "undefined";
+        } else {
+            strstrm << dec << val;
+        }
+        break;
+    }
+    case BT_Uint16:
+    case BT_Uint16z: {
+        uint16_t val = *(uint16_t *)ptr;
+        if (val == 0xFFFF) {
+            strstrm << "undefined";
+        } else {
+            switch (messageFieldTypeMap[messageType][fieldNum]) {
+            case MessageFieldTypeAltitude: {
+                strstrm << setprecision(1) << GarminConvert::altitude(val);
+                break;
             }
-            else
-            {
+            case MessageFieldTypeWeight: {
+                strstrm << setprecision(1) << GarminConvert::weight(val);
+                break;
+            }
+            case MessageFieldTypeSpeed: {
+                strstrm << setprecision(1) << GarminConvert::speed(val);
+                break;
+            }
+            case MessageFieldTypeManufacturer: {
+                manufacturer = val;
+                strstrm << manufacturerMap[static_cast<uint8_t>(manufacturer)];
+                break;
+            }
+            case MessageFieldTypeProduct: {
+                strstrm << productMap[static_cast<uint8_t>(manufacturer)][val];
+                break;
+            }
+            default: {
                 strstrm << dec << val;
             }
-            break;
-        }
-        case BT_Int16:
-        {
-            int16_t val = *(int16_t *)ptr;
-            if (val == 0x7FFF)
-            {
-                strstrm << "undefined";
             }
-            else
-            {
+        }
+        break;
+    }
+    case BT_Int32: {
+        int32_t val = *(int32_t *)ptr;
+        if (val == 0x7FFFFFFF) {
+            strstrm << "undefined";
+        } else {
+            switch (messageFieldTypeMap[messageType][fieldNum]) {
+            case MessageFieldTypeCoord: {
+                strstrm << setprecision(5) << GarminConvert::coord(val);
+                break;
+            }
+            default: {
                 strstrm << dec << val;
             }
-            break;
+            }
         }
-        case BT_Uint16:
-        case BT_Uint16z:
-        {
-            uint16_t val = *(uint16_t *)ptr;
-            if (val == 0xFFFF)
-            {
-                strstrm << "undefined";
-            }
-            else
-            {
-                switch (messageFieldTypeMap[messageType][fieldNum])
-                {
-                    case MessageFieldTypeAltitude:
-                    {
-                        strstrm << setprecision(1) << GarminConvert::altitude(val);
-                        break;
-                    }
-                    case MessageFieldTypeWeight:
-                    {
-                        strstrm << setprecision(1) << GarminConvert::weight(val);
-                        break;
-                    }
-                    case MessageFieldTypeSpeed:
-                    {
-                        strstrm << setprecision(1) << GarminConvert::speed(val);
-                        break;
-                    }
-                    case MessageFieldTypeManufacturer:
-                    {
-                        manufacturer = val;
-                        strstrm << manufacturerMap[static_cast<uint8_t>(manufacturer)];
-                        break;
-                    }
-                    case MessageFieldTypeProduct:
-                    {
-                        strstrm << productMap[static_cast<uint8_t>(manufacturer)][val];
-                        break;
-                    }
-                    default:
-                    {
-                        strstrm << dec << val;
-                    }
-                }
-            }
-            break;
-        }
-        case BT_Int32:
-        {
-            int32_t val = *(int32_t *)ptr;
-            if (val == 0x7FFFFFFF)
-            {
-                strstrm << "undefined";
-            }
-            else
-            {
-                switch(messageFieldTypeMap[messageType][fieldNum])
-                {
-                    case MessageFieldTypeCoord:
-                    {
-                        strstrm << setprecision(5) << GarminConvert::coord(val);
-                        break;
-                    }
-                    default:
-                    {
-                        strstrm << dec << val;
-                    }
-                }
-            }
-            break;
-        }
-        case BT_UInt32:
-        case BT_Uint32z:
-        {
-            uint32_t val = *(uint32_t *)ptr;
-            if (val == 0xFFFFFFFF)
-            {
-                strstrm << "undefined";
-            }
-            else
-            {
-                if (fieldNum == 253)
-                {
+        break;
+    }
+    case BT_UInt32:
+    case BT_Uint32z: {
+        uint32_t val = *(uint32_t *)ptr;
+        if (val == 0xFFFFFFFF) {
+            strstrm << "undefined";
+        } else {
+            if (fieldNum == 253) {
+                strstrm << GarminConvert::localTime(val);
+            } else {
+                switch (messageFieldTypeMap[messageType][fieldNum]) {
+                case MessageFieldTypeTimestamp: {
                     strstrm << GarminConvert::localTime(val);
+                    break;
                 }
-                else
-                {
-                    switch (messageFieldTypeMap[messageType][fieldNum])
-                    {
-                        case MessageFieldTypeTimestamp:
-                        {
-                            strstrm << GarminConvert::localTime(val);
-                            break;
-                        }
-                        case MessageFieldTypeTime:
-                        {
-                            strstrm << GarminConvert::gTime(val);
-                            break;
-                        }
-                        case MessageFieldTypeOdometr:
-                        {
-                            strstrm << setprecision(2) << GarminConvert::length(val);
-                            break;
-                        }
-                        default:
-                        {
-                            strstrm << dec << val;
-                        }
-                    }
+                case MessageFieldTypeTime: {
+                    strstrm << GarminConvert::gTime(val);
+                    break;
+                }
+                case MessageFieldTypeOdometr: {
+                    strstrm << setprecision(2) << GarminConvert::length(val);
+                    break;
+                }
+                default: {
+                    strstrm << dec << val;
+                }
                 }
             }
-            break;
         }
-        case BT_String:
-        {
-            strstrm << "\"" << GarminConvert::gString(ptr, size) << "\"";
-            break;
-        }
+        break;
+    }
+    case BT_String: {
+        strstrm << "\"" << GarminConvert::gString(ptr, size) << "\"";
+        break;
+    }
     }
 
     return strstrm.str();
 }
 
-bool FIT::parse(vector<uint8_t> &fitData, std::vector<ExerciseSet>& dst)
+bool FIT::parse(vector<uint8_t> &fitData, std::vector<ExerciseSet> &dst)
 {
 //     LOG(LOG_DBG2) << "Parsing FIT file\n";
+    ExerciseSet e;
+    e.user = 1;
+    e.set = 0;
+    e.type = "SwimHR";
+    int total_lengths = 0;
+    int total_cals = 0;
+    int timestampOffset = GARMIN_EPOCH;
+    
 
     FITHeader fitHeader;
-    if(fitData.size()<sizeof(fitHeader))
-      return false;
+    if (fitData.size() < sizeof(fitHeader))
+        return false;
 
     uint8_t *ptr = &fitData.front();
     memcpy(&fitHeader, ptr, sizeof(fitHeader));
 
     // FIT header CRC
     uint16_t crc = 0;
-    for (int i = 0; i < fitHeader.headerSize; i++)
-    {
-        crc = CRC_byte(crc, *(ptr+i));
+    for (int i = 0; i < fitHeader.headerSize; i++) {
+        crc = CRC_byte(crc, *(ptr + i));
     }
 
     ptr += fitHeader.headerSize;
 
     // FIT data CRC
-    for (uint32_t i = 0; i < fitHeader.dataSize; i++)
-    {
-        crc = CRC_byte(crc, *(ptr+i));
+    for (uint32_t i = 0; i < fitHeader.dataSize; i++) {
+        crc = CRC_byte(crc, *(ptr + i));
     }
 
-    if (memcmp(fitHeader.signature, ".FIT", sizeof(fitHeader.signature)))
-    {
+    if (memcmp(fitHeader.signature, ".FIT", sizeof(fitHeader.signature))) {
 //         LOG(LOG_DBG) << "FIT signature not found\n";
         return false;
     }
 
-    uint16_t fitCRC = *(uint16_t *)(ptr+fitHeader.dataSize);
-    if (crc != fitCRC /*&& fitCRC != 0*/)
-    {
+    uint16_t fitCRC = *(uint16_t *)(ptr + fitHeader.dataSize);
+    if (crc != fitCRC /*&& fitCRC != 0*/) {
 //         LOG(LOG_WARN) << hex << uppercase << setw(4) << setfill('0') << "Invalid FIT CRC (" << crc << "!=" << fitCRC << ")\n";
         return false;
     }
@@ -948,22 +909,19 @@ bool FIT::parse(vector<uint8_t> &fitData, std::vector<ExerciseSet>& dst)
 //     LOG(LOG_DBG2) << "FIT Profile Version " << fitHeader.profileVersion << "\n";
 
 //     LOG(LOG_DBG2) << "FIT Data size " << fitHeader.dataSize << " bytes\n";
-   
+
     map<uint8_t, RecordDef> recDefMap;
     vector<uint32_t>        tstamps;
 
-    for (int bytes = fitHeader.dataSize; bytes > 0;)
-    {
+    for (int bytes = fitHeader.dataSize; bytes > 0;) {
         RecordHeader rh;
         memcpy(&rh, ptr, sizeof(rh));
         ptr += sizeof(rh);
         bytes -= sizeof(rh);
 
-        if (!rh.normalHeader.headerType)
-        {
+        if (!rh.normalHeader.headerType) {
             // Normal Header
-            if (rh.normalHeader.messageType)
-            {
+            if (rh.normalHeader.messageType) {
                 // Definition Message
                 RecordDef rd;
 
@@ -974,8 +932,7 @@ bool FIT::parse(vector<uint8_t> &fitData, std::vector<ExerciseSet>& dst)
 
                 rd.rfx = rfx;
 
-                for (int i=0; i<rfx.fieldsNum; i++)
-                {
+                for (int i = 0; i < rfx.fieldsNum; i++) {
                     RecordField rf;
                     memcpy(&rf, ptr, sizeof(rf));
                     ptr += sizeof(rf);
@@ -985,32 +942,28 @@ bool FIT::parse(vector<uint8_t> &fitData, std::vector<ExerciseSet>& dst)
                 }
 
                 recDefMap[rh.normalHeader.localMessageType] = rd;
-            }
-            else
-            {
+            } else {
                 // Data Message
-                map<uint8_t, RecordDef>::iterator it=recDefMap.find(rh.normalHeader.localMessageType);
-                if (it != recDefMap.end())
-                {
+                map<uint8_t, RecordDef>::iterator it = recDefMap.find(rh.normalHeader.localMessageType);
+                if (it != recDefMap.end()) {
                     RecordDef rd = recDefMap[rh.normalHeader.localMessageType];
                     //logger() << "Local Message \"" << messageTypeMap[rd.rfx.globalNum] << "\"(" << rd.rfx.globalNum << "):\n";
-                    
-                    switch(rd.rfx.globalNum)
-                    {
-                        case 29: // WayPoint
-                        {
-//                             gpx.newWayPoint();
-                            break;
-                        }
-                    }
 
-                    uint32_t fileCreationTime=0;
-                    int8_t fileType=INT8_MAX;
+//                    switch(rd.rfx.globalNum)
+//                    {
+//                        case 29: // WayPoint
+//                        {
+////                             gpx.newWayPoint();
+//                            break;
+//                        }
+//                    }
+
+                    uint32_t fileCreationTime = 0;
+                    int8_t fileType = INT8_MAX;
 
                     uint32_t time;
 
-                    for (int i=0; i<rd.rfx.fieldsNum; i++)
-                    {
+                    for (int i = 0; i < rd.rfx.fieldsNum; i++) {
                         RecordField &rf = rd.rf[i];
 
                         //BaseType bt;
@@ -1019,273 +972,264 @@ bool FIT::parse(vector<uint8_t> &fitData, std::vector<ExerciseSet>& dst)
 //                          LOG(LOG_DBG2) << rd.rfx.globalNum << "." << (unsigned)rf.definitionNum << ": " << messageFieldNameMap[rd.rfx.globalNum][rf.definitionNum] << "\n";
 //                                     " (" << dataTypeMap[bt.bits.baseTypeNum] << ") " << getDataString(ptr, rf.size, bt.bits.baseTypeNum, rd.rfx.globalNum, rf.definitionNum) << "\n";
 
-                        switch(rd.rfx.globalNum)
-                        {
-                            case 0: // File Id
-                            {
-                                switch(rf.definitionNum)
-                                {
-                                    case 0: // Type
-                                    {
-                                        fileType = *(int8_t *)ptr;
-                                        break;
-                                    }
-                                    case 4: // Creation Time
-                                    {
-                                        fileCreationTime = *(uint32_t*)ptr;
-                                        mCreationTimestamp = fileCreationTime;
-                                        break;
-                                    }
+                        switch (rd.rfx.globalNum) {
+                        case 0: { // File Id
+                            switch (rf.definitionNum) {
+                            case 0: { // Type
+                                fileType = *(int8_t *)ptr;
+                                break;
+                            }
+                            case 4: { // Creation Time
+                                fileCreationTime = *(uint32_t *)ptr;
+                                mCreationTimestamp = fileCreationTime;
+                                break;
+                            }
+                            }
+                            break;
+                        }
+                        case 34: { // Activity
+                            switch (rf.definitionNum) {
+                            case 5 : { // "Local Timestamp"
+                                // in this case timestamps are not
+                                // from GARMIN_EPOCH but also form this value
+                                timestampOffset += *(uint32_t*)ptr;
+                                break;
+                            }
+                            break;
+                            }
+                        }
+                        case 18: { // Session
+                            switch (rf.definitionNum) {
+                            case 2 : { // Start Time
+                                int t = *(uint32_t*)ptr;
+                                INFO ("0x%X", t);
+                                QDateTime timestamp;
+                                timestamp.setTime_t(t + timestampOffset);
+                                e.date = timestamp.date();
+                                e.time = timestamp.time();
+                                break;
+                            }
+                            case 9: { //"Total Distance";
+                                e.totaldistance = *(uint32_t *)ptr / 100;
+                                break;
+                            }
+                            case 8: { //Total Timer Time";
+                                e.totalduration = QTime(0, 0).addSecs(*(uint32_t *)ptr / 1000);
+                                break;
+                            }
+                            case 44: { // Pool length
+                                e.pool = *(uint16_t *)ptr / 100;
+                                break;
+                            }
+                            case 47: { //num_active_lengths
+                                e.lengths = *(uint16_t *)ptr;
+                                break;
+                            }
+
+
+                            } // switch(rf.definitionNum)
+
+                            break;
+                        } // case 18: // Session
+                        case 19: { // Lap
+                            switch (rf.definitionNum) {
+                            case 253: { // Timestamp
+                                time = *(uint32_t *)ptr;
+                                // TODO: add to gpx?
+                                tstamps.push_back(time);
+                                break;
+                            }
+                            case 7 : { // "Total Elapsed Time";
+                                // duration of the Lap/Set
+                                e.duration = QTime(0, 0).addSecs(*(uint32_t *)ptr / 1000);
+                                break;
+                            }
+                            case 32 : { // int lens;
+                                // nb length of the Lap/Set
+                                e.lens = *(uint16_t *)ptr;
+                                break;
+                            }
+                            case 11 : { //  "Total calories";
+                                // calories Lap/Set
+                                int cal = *(uint16_t *)ptr;
+                                if (cal != 65535) {
+                                    total_cals += cal;
                                 }
                                 break;
                             }
-                            case 19: // Lap
-                            {
-                              switch(rf.definitionNum)
-                              {
-                                case 253: // Timestamp
-                                {
-                                  time = *(uint32_t*)ptr;
-                                  // TODO: add to gpx?
-                                  tstamps.push_back(time);
-                                  break;
-                                }
-                              }
-                              break;
+                            case 13 : { //  "Average Speed";
+                                // average speed of the Lap/Set
+                                e.speed = *(uint16_t *)ptr; // 1000 m/s
+                                break;
                             }
-                            case 20: // Record
-                            {
-                                switch(rf.definitionNum)
-                                {
-                                    case 253: // Timestamp
-                                    {
-                                        time = *(uint32_t*)ptr;
-//                                         gpx.tracks.back().trackSegs.back().trackPoints[time].time = time;
-                                        tstamps.push_back(time);
-                                        break;
-                                    }
-                                    case 0: // Latitude
-                                    {
-                                        int32_t latitude = *(int32_t*)ptr;
-//                                         gpx.tracks.back().trackSegs.back().trackPoints[time].latitude = latitude;
-                                        break;
-                                    }
-                                    case 1: // Longitude
-                                    {
-                                        uint32_t longitude = *(int32_t*)ptr;
-//                                         gpx.tracks.back().trackSegs.back().trackPoints[time].longitude = longitude;
-                                        break;
-                                    }
-                                    case 2: // Altitude
-                                    {
-                                        uint16_t altitude = *(uint16_t*)ptr;
-//                                         gpx.tracks.back().trackSegs.back().trackPoints[time].altitude = altitude;
-                                        break;
-                                    }
-                                    case 3: // Heart Rate
-                                    {
-                                        uint8_t heartRate = *(uint8_t*)ptr;
-//                                         gpx.tracks.back().trackSegs.back().trackPoints[time].heartRate = heartRate;
-                                        break;
-                                    }
-                                    case 4: // Cadence
-                                    {
-                                        uint8_t cadence = *(uint8_t*)ptr;
-//                                         gpx.tracks.back().trackSegs.back().trackPoints[time].cadence = cadence;
-                                        break;
-                                    }
+                            case 38 : { //  "Average strokes";
+                                // average nb of strokes of the Lap/Set
+                                e.strk = *(uint16_t *)ptr;
+                                break;
+                            }
+                            }
+                            break;
+                        }
+                        case 101: { // Length
+                            //INFO ("%d.%d : %s (", rd.rfx.globalNum, (unsigned)rf.definitionNum, messageFieldNameMap[rd.rfx.globalNum][rf.definitionNum].c_str());
+                            switch (rf.definitionNum) {
+                            case 2 : { // Start Time
+                                //INFO("%s", getDataString(ptr, 0, BT_UInt32, rd.rfx.globalNum, rf.definitionNum).c_str());
+                                break;
+                            }
+                            case 3 : { // Total Elapsed Time
+                                //INFO("%s", getDataString(ptr, 0, BT_UInt32, rd.rfx.globalNum, rf.definitionNum).c_str());
+                                break;
+                            }
+                            case 4 : { // Total Timer Time
+//                                 INFO("%d.%d : %s (", rd.rfx.globalNum, (unsigned)rf.definitionNum, messageFieldNameMap[rd.rfx.globalNum][rf.definitionNum].c_str());
+//                                 INFO("%s", getDataString(ptr, 0, BT_UInt32, rd.rfx.globalNum, rf.definitionNum).c_str());
+//                                 INFO(")\n");
+                                double time = (double)(*(uint32_t *)ptr) / 1000;
+                                e.len_time.push_back(time);
+                                break;
+                            }
+                            case 5: { // Total Strokes
+//                                 INFO("%d.%d : %s (", rd.rfx.globalNum, (unsigned)rf.definitionNum, messageFieldNameMap[rd.rfx.globalNum][rf.definitionNum].c_str());
+//                                 INFO("%d", *(uint16_t *)ptr);
+//                                 INFO(")\n");
+                                int strokes = *(uint16_t *)ptr;
+                                // add strokes only if valid value
+                                // if not, this is a rest
+                                if (strokes != 65535) {
+                                    e.len_strokes.push_back(strokes);
                                 }
                                 break;
                             }
-                            case 29: // WayPoint
-                            {
-                                switch(rf.definitionNum)
-                                {
-                                    case 253: // Timestamp
-                                    {
-                                        time = *(uint32_t*)ptr;
-//                                         gpx.wayPoints.back().time = time;
-                                        tstamps.push_back(time);
-                                        break;
-                                    }
-                                    case 0: // Name
-                                    {
-                                        string name = GarminConvert::gString(ptr, 16);
-//                                         gpx.wayPoints.back().name = name;
-                                        break;
-                                    }
-                                    case 1: // Latitude
-                                    {
-                                        int32_t latitude = *(int32_t*)ptr;
-//                                         gpx.wayPoints.back().latitude = latitude;
-                                        break;
-                                    }
-                                    case 2: // Longitude
-                                    {
-                                        int32_t longitude = *(int32_t*)ptr;
-//                                         gpx.wayPoints.back().longitude = longitude;
-                                        break;
-                                    }
-                                    case 3: // Symbol
-                                    {
-                                        break;
-                                    }
-                                    case 4: // Altitude
-                                    {
-                                        uint16_t altitude = *(uint16_t*)ptr;
-//                                         gpx.wayPoints.back().altitude = altitude;
-                                        break;
-                                    }
-                                }
+                            case 6: { // Average Speed
+                                // unit: m/s * 1000
+                                double speed = (double)(*(uint16_t *)ptr) / 1000;
+                                //INFO("%1.3f", speed);
                                 break;
                             }
-                            case 31: // Course
-                            {
-                                switch(rf.definitionNum)
-                                {
-                                    case 5: // Name
-                                    {
-                                        string name("Course_");
-                                        name += GarminConvert::gString(ptr, 16);
-//                                         gpx.tracks.back().name = name;
-                                        break;
-                                    }
-                                }
+                            case 7: { // Swimming stroke
+                                //INFO("%s", getDataString(ptr, 0, BT_Enum, rd.rfx.globalNum, rf.definitionNum).c_str());
                                 break;
                             }
-                            case 101: // Length
-                            {
-                                INFO ("%d.%d : %s (", rd.rfx.globalNum, (unsigned)rf.definitionNum, messageFieldNameMap[rd.rfx.globalNum][rf.definitionNum].c_str());
-                                switch (rf.definitionNum)
-                                {
-                                    case 2 : // Start Time
-                                    {
-                                        INFO("%s", getDataString(ptr, 0, BT_UInt32, rd.rfx.globalNum, rf.definitionNum).c_str());
-                                        break;
-                                    }
-                                    case 3 : // Total Elapsed Time
-                                    {
-                                        INFO("%s", getDataString(ptr, 0, BT_UInt32, rd.rfx.globalNum, rf.definitionNum).c_str());
-                                        break;
-                                    }
-                                    case 4 : // Total Timer Time
-                                    {
-                                        INFO("%s", getDataString(ptr, 0, BT_UInt32, rd.rfx.globalNum, rf.definitionNum).c_str());
-                                        break;
-                                    }
-                                    case 5: // Total Strokes
-                                    {
-                                        INFO("%d", *(uint16_t*)ptr);
-                                        break;
-                                    }
-                                    case 6: // Average Speed
-                                    {
-                                        // unit: m/s * 1000
-                                        double speed = (double)(*(uint16_t*)ptr) / 1000;
-                                        INFO("%1.3f", speed);
-                                        
-                                        break;
-                                    }
-                                    case 7: // Swimming stroke
-                                    {
-                                        INFO("%s", getDataString(ptr, 0, BT_Enum, rd.rfx.globalNum, rf.definitionNum).c_str());
-                                        break;
-                                    }
-                                    case 9: // Average Swimming Cadence
-                                    {
-                                        INFO("%d", (int) *(uint8_t*)ptr);
-                                        break;
-                                    }
-                                    case 12: // Length Type
-                                    {
-                                        INFO("%s", getDataString(ptr, 0, BT_Enum, rd.rfx.globalNum, rf.definitionNum).c_str());
-                                        break;
-                                    }
-                                }
-                                INFO(")\n");
+                            case 9: { // Average Swimming Cadence
+                                //INFO("%d", (int) *(uint8_t*)ptr);
                                 break;
                             }
+                            case 12: { // Length Type
+                                //INFO("%s", getDataString(ptr, 0, BT_Enum, rd.rfx.globalNum, rf.definitionNum).c_str());
+                                break;
+                            }
+                            }
+                            //INFO(")\n");
+                            break;
+                        }
                         }
 
                         ptr += rf.size;
                         bytes -= rf.size;
                     }
 
-                    switch(rd.rfx.globalNum)
-                    {
-                        case 0: // File Id
-                        {
-                            switch (fileType)
-                            {
-                                case 4: // Activity
-                                {
+                    switch (rd.rfx.globalNum) {
+                    case 0: { // File Id
+                        switch (fileType) {
+                        case 4: { // Activity
 //                                     gpx.newTrack(string("Track_") + GarminConvert::localTime(fileCreationTime));
-                                    break;
-                                }
-                                case 6: // Course
-                                {
+                            break;
+                        }
+                        case 6: { // Course
 //                                     gpx.newTrack(string("Course_") + GarminConvert::localTime(fileCreationTime));
-                                    break;
-                                }
-                            }
                             break;
                         }
-                        case 19: // Lap
-                        {
-//                             gpx.newTrackSeg();
-                            break;
                         }
+                        break;
                     }
-                }
-                else
-                {
+                    case 19: { // Lap
+                        // now the lap is "closed"
+                        
+                        // don't know what's that yet
+                        e.effic = 0;
+                        e.rate = 0;
+                        
+                        if (e.len_strokes.empty()) {
+                            // no strokes in this lap, this is a rest
+                            e.lens = 0;
+                            e.dist = 0;
+                            e.strk = 0;
+                            // so add the 1 length time to previous lap rest time
+                            dst.back().rest = QTime(0,0).addSecs(e.len_time.back());
+                        } else {
+                            // length are already added to len_strokes & len_time
+                            e.set++;
+                            e.lens = e.len_strokes.size();
+                            total_lengths += e.lens;
+                            e.dist = e.lens * e.pool; // not usefull ?
+
+                            // average nuber of strokes for this lap/set
+                            e.strk = 0;
+                            for(std::vector<int>::iterator j=e.len_strokes.begin();j!=e.len_strokes.end();++j) {
+                                e.strk += *j;
+                            }
+                            e.strk /= e.len_strokes.size();
+                            dst.push_back(e);
+                            INFO ("LAP: set:%d, lens:%d dist:%d, strk:%d, cal:%d\n",
+                                e.set, e.lens, e.dist, e.strk, total_cals);
+                        }
+                        // clear for next lap
+                        e.len_time.clear();
+                        e.len_strokes.clear();
+                        break;
+                    }
+                    }
+                } else {
 //                   logger() << "Undefined Local Message Type: " << (unsigned)rh.normalHeader.localMessageType << "\n";
-                  return false;
+                    return false;
                 }
             }
-        }
-        else
-        {
+        } else {
             // Compressed Timestamp Header
 //             logger() << "Compressed Timestamp Header:" << endl;
 //             logger() << "  Local Message Type " << (unsigned)rh.ctsHeader.localMessageType << endl;
 //             logger() << "  Time Offset " << (unsigned)rh.ctsHeader.timeOffset << "\n";
         }
     }
+    // add total numbers to every ExerciseSet
+    for(std::vector<ExerciseSet>::iterator j=dst.begin();j!=dst.end();++j) {
+        j->lengths = total_lengths;
+        j->cal     = total_cals;
+    }
 
-        std::remove_if(tstamps.begin(), tstamps.end(), isZero);
-        std::sort(tstamps.begin(), tstamps.end());
+    std::remove_if(tstamps.begin(), tstamps.end(), isZero);
+    std::sort(tstamps.begin(), tstamps.end());
 //        for(size_t i = 0; i < tstamps.size(); i++)
 //        {
 //          LOG_VAR2(i, tstamps[i]);
 //        }
-        mFirstTimestamp = tstamps.front();
-        mLastTimestamp = tstamps.back();
+    mFirstTimestamp = tstamps.front();
+    mLastTimestamp = tstamps.back();
 
     return true;
 }
 
-struct DateSorter
-{
-  bool operator()(const ZeroFileRecord& a, const ZeroFileRecord& b) const
-  { return a.timeStamp > b.timeStamp; }
+struct DateSorter {
+    bool operator()(const ZeroFileRecord &a, const ZeroFileRecord &b) const {
+        return a.timeStamp > b.timeStamp;
+    }
 } dateSorter;
 
 
 bool FIT::parseZeroFile(vector<uint8_t> &data, ZeroFileContent &zeroFileContent)
 {
 //     logger() << "Parsing zero file...\n";
-    
+
     DirectoryHeader directoryHeader;
-    if (data.size() < sizeof(directoryHeader))
-    {
+    if (data.size() < sizeof(directoryHeader)) {
 //         LOG(LOG_WARN) << "Zero file data is too short to get header\n";
         return false;
     }
 
     memcpy(&directoryHeader, &data.front(), sizeof(directoryHeader));
-    data.erase(data.begin(), data.begin()+sizeof(directoryHeader));
-    
+    data.erase(data.begin(), data.begin() + sizeof(directoryHeader));
+
 //     logger() << "Directory version: " << hex << setw(2) << (unsigned)directoryHeader.version << "\n";
 //     logger() << "Structure length: " << dec << (unsigned)directoryHeader.structureLength << "\n";
 //     logger() << "Time format: " << dec << (unsigned)directoryHeader.timeFormat << "\n";
@@ -1294,20 +1238,18 @@ bool FIT::parseZeroFile(vector<uint8_t> &data, ZeroFileContent &zeroFileContent)
 
     int records = static_cast<int>(data.size()) / directoryHeader.structureLength;
 
-    if(data.empty() || data.size() < (sizeof(ZeroFileRecord)*records))
-    {
+    if (data.empty() || data.size() < (sizeof(ZeroFileRecord)*records)) {
 //       logger() << "Zero file data is truncated to read...\n";
 
-      return false;
+        return false;
     }
 
     //logger() << uppercase;
 
 //     logger() << "_idx" << "|d" << "ata" << "type|" << "recordType|" << "_rt_" << "++ID++" << "__fileSize|" << "+++++++++++++++++++|" << "flags" << "\n";
     uint8_t *ptr = &data.front();
-    for (int i=0; i<records; i++)
-    {
-      ZeroFileRecord zfRecord;
+    for (int i = 0; i < records; i++) {
+        ZeroFileRecord zfRecord;
         memcpy(&zfRecord, ptr, sizeof(zfRecord));
         ptr += sizeof(zfRecord);
 
@@ -1326,34 +1268,29 @@ bool FIT::parseZeroFile(vector<uint8_t> &data, ZeroFileContent &zeroFileContent)
 //         if (zfRecord.generalFileFlags.archive) { LOG(antpm::LOG_RAW) << "[Ar]"; }
 //         if (zfRecord.generalFileFlags.crypto)  { LOG(antpm::LOG_RAW) << "[C]"; }
 //         LOG(antpm::LOG_RAW) << "\n";
-      zeroFileContent.zfRecords.push_back(zfRecord);
+        zeroFileContent.zfRecords.push_back(zfRecord);
     }
 
     std::sort(zeroFileContent.zfRecords.begin(), zeroFileContent.zfRecords.end(), dateSorter);
 
-    for(size_t i = 0; i < zeroFileContent.zfRecords.size(); i++)
-    {
-      ZeroFileRecord& zfRecord(zeroFileContent.zfRecords[i]);
+    for (size_t i = 0; i < zeroFileContent.zfRecords.size(); i++) {
+        ZeroFileRecord &zfRecord(zeroFileContent.zfRecords[i]);
 //       LOG(LOG_DBG2) << hex << setw(4) << setfill('0') << (unsigned)zfRecord.index << ": " <<
 //                   GarminConvert::localTime(zfRecord.timeStamp) << "\n";
-      switch(zfRecord.recordType)
-      {
-        case 4: // Activity
-        {
-          zeroFileContent.activityFiles.push_back(zfRecord.index);
-          break;
+        switch (zfRecord.recordType) {
+        case 4: { // Activity
+            zeroFileContent.activityFiles.push_back(zfRecord.index);
+            break;
         }
-        case 6: // Course
-        {
-          zeroFileContent.courseFiles.push_back(zfRecord.index);
-          break;
+        case 6: { // Course
+            zeroFileContent.courseFiles.push_back(zfRecord.index);
+            break;
         }
-        case 8: // Waypoints
-        {
-          zeroFileContent.waypointsFiles.push_back(zfRecord.index);
-          break;
+        case 8: { // Waypoints
+            zeroFileContent.waypointsFiles.push_back(zfRecord.index);
+            break;
         }
-      }
+        }
     }
 
     return true;
@@ -1373,6 +1310,6 @@ FIT::getCreationDate(std::vector<uint8_t> &fitData, std::time_t &ct)
 //     return false;
 //   t = GarminConvert::gOffsetTime(t);
 //   ct = t;
-  return true;
+    return true;
 }
 
