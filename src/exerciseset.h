@@ -32,17 +32,17 @@ struct ExerciseSet
     QTime totalduration;        /**< Total duration of workout */
     int cal;                    /**< calories (Kcal) used during this workout */
     int lengths;                /**< number of length in this workout */
-    int totaldistance;          /**< total distance of this workout (in units ?) */
+    int totaldistance;          /**< total distance of this workout (in units) */
 
     int set;                    /**< Set/lap number 1..n */
     QTime duration;             /**< duration of this set/lap */
     int lens;                   /**< number of length for this set/lap */
     int strk;                   /**< average number of strokes for this set/lap */
     int dist;                   /**< distance for this set/lap == e.lens*e.pool  */
-    int speed;                  /**< ? average speed of this set/lap in ???  */
-    int effic;                  /**< ? swolf */
-    int rate;                   /**< ? stroke rate in ??? */
-    QTime rest;                 /**< ? rest time for this set/lap */
+    int speed;                  /**< time to cover 100m */
+    int effic;                  /**< swolf(ish) Poolmate uses number of "stroke cycles" i.e. one arm. Garmin uses "stroke count" i.e. both arms */
+    int rate;                   /**< strokes per minute */
+    QTime rest;                 /**< rest time for this set/lap */
 
     std::vector<double> len_time; /**< duration of each length in this set/lap in seconds */
     std::vector<int> len_strokes; /**< number of strokes for each length for this set/lap */
