@@ -37,7 +37,7 @@ struct ExerciseSet
     int set;                    /**< Set/lap number 1..n */
     QTime duration;             /**< duration of this set/lap */
     int lens;                   /**< number of length for this set/lap */
-    int strk;                   /**< average number of strokes for this set/lap */
+    int strk;                   /**< average number of strokes per length for this set/lap */
     int dist;                   /**< distance for this set/lap == e.lens*e.pool  */
     int speed;                  /**< time to cover 100m */
     int effic;                  /**< swolf(ish) for this set/lap. Poolmate uses number of "stroke cycles" i.e. one arm. Garmin uses "stroke count" i.e. both arms */

@@ -1145,11 +1145,7 @@ bool FIT::parse(vector<uint8_t> &fitData, std::vector<ExerciseSet> &dst)
                     }
                     case 19: { // Lap
                         // now the lap is "closed"
-                        
-                        // don't know what's that yet
-                        e.effic = 0;
-                        e.rate = 0;
-                        
+                                                
                         if (e.len_strokes.empty()) {
                             // no strokes in this lap, this is a rest
                             e.lens = 0;
@@ -1158,17 +1154,19 @@ bool FIT::parse(vector<uint8_t> &fitData, std::vector<ExerciseSet> &dst)
                             // so add the 1 length time to previous lap rest time
                             dst.back().rest = QTime(0,0).addSecs(e.len_time.back());
                         } else {
-                            // length are already added to len_strokes & len_time
+                            // lengths are already added to len_strokes & len_time
                             e.set++;
                             e.lens = e.len_strokes.size();
                             total_lengths += e.lens;
                             e.dist = e.lens * e.pool; // not usefull ?
 
-                            // average nuber of strokes for this lap/set
+                            // average number of strokes for this lap/set
                             e.strk = 0;
                             for(std::vector<int>::iterator j=e.len_strokes.begin();j!=e.len_strokes.end();++j) {
                                 e.strk += *j;
                             }
+                            // number of strokes per minute
+                            e.rate = 60 * e.strk / QTime(0,0).secsTo(e.duration);
                             e.strk /= e.len_strokes.size();
                             
                             // average swolf/efficiency for this lap/set
