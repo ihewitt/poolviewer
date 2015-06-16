@@ -40,7 +40,7 @@ struct ExerciseSet
     int strk;                   /**< average number of strokes for this set/lap */
     int dist;                   /**< distance for this set/lap == e.lens*e.pool  */
     int speed;                  /**< time to cover 100m */
-    int effic;                  /**< swolf(ish) Poolmate uses number of "stroke cycles" i.e. one arm. Garmin uses "stroke count" i.e. both arms */
+    int effic;                  /**< swolf(ish) for this set/lap. Poolmate uses number of "stroke cycles" i.e. one arm. Garmin uses "stroke count" i.e. both arms */
     int rate;                   /**< strokes per minute */
     QTime rest;                 /**< rest time for this set/lap */
 

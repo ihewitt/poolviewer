@@ -20,7 +20,7 @@
  ***************************************************************************/
 // ***** BEGIN LICENSE BLOCK *****
 //////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2011-2014 RALOVICH, KristÃ³f                            //
+// Copyright (c) 2011-2014 RALOVICH, Kristóf                            //
 //                                                                      //
 // This program is free software; you can redistribute it and/or modify //
 // it under the terms of the GNU General Public License as published by //
@@ -1170,6 +1170,14 @@ bool FIT::parse(vector<uint8_t> &fitData, std::vector<ExerciseSet> &dst)
                                 e.strk += *j;
                             }
                             e.strk /= e.len_strokes.size();
+                            
+                            // average swolf/efficiency for this lap/set
+                            e.effic = 0;
+                            for(unsigned int i=0; i < e.len_strokes.size(); i++) {
+                                e.effic += e.len_strokes[i] + e.len_time[i] ;
+                            }
+                            e.effic /= e.len_strokes.size();
+                            
                             dst.push_back(e);
                             INFO ("LAP: set:%d, lens:%d dist:%d, strk:%d, cal:%d\n",
                                 e.set, e.lens, e.dist, e.strk, total_cals);
