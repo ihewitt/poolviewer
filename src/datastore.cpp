@@ -229,6 +229,7 @@ namespace {
 
                 set.times = j->len_time;
                 set.strokes = j->len_strokes;
+                set.styles = j->len_style;
             
                 if (set.effic < min_effic) min_effic = set.effic;
                 if (set.effic > max_effic) max_effic = set.effic;

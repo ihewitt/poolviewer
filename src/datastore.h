@@ -36,6 +36,7 @@ struct Set
 
     std::vector<double> times;
     std::vector<int> strokes;
+    std::vector<QString> styles;
 };
 
 struct Workout

@@ -1108,7 +1108,10 @@ bool FIT::parse(vector<uint8_t> &fitData, std::vector<ExerciseSet> &dst)
                                 break;
                             }
                             case 7: { // Swimming stroke
-                                //INFO("%s", getDataString(ptr, 0, BT_Enum, rd.rfx.globalNum, rf.definitionNum).c_str());
+//                                 INFO("%d %s\n", 
+//                                      *(uint8_t *)ptr,
+//                                      getDataString(ptr, 0, BT_Enum, rd.rfx.globalNum, rf.definitionNum).c_str());
+                                e.len_style.push_back(getDataString(ptr, 0, BT_Enum, rd.rfx.globalNum, rf.definitionNum).c_str());
                                 break;
                             }
                             case 9: { // Average Swimming Cadence

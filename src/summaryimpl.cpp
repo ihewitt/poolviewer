@@ -338,6 +338,11 @@ void SummaryImpl::fillLengths( const Set& set)
         item = new QTableWidgetItem(QString::number(set.strokes[row]));
         item->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
         lengthGrid->setItem( row, col++, item );
+        
+        item = new QTableWidgetItem(set.styles[row]);
+        item->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
+        lengthGrid->setItem( row, col++, item );
+        
     }
 }
 
