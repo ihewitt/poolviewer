@@ -19,9 +19,9 @@
 
 #ifndef _MSC_VER // [
 
-//#include <cstdint>
+#include <stdint.h>
 //#error "Use this header only with Microsoft Visual C++ compilers!"
-#include <boost/cstdint.hpp>
+// #include <boost/cstdint.hpp>
 
 #else
 
