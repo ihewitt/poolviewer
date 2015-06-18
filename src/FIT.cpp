@@ -1071,7 +1071,7 @@ bool FIT::parse(vector<uint8_t> &fitData, std::vector<ExerciseSet> &dst)
                             break;
                         }
                         case 101: { // Length
-                            //INFO ("%d.%d : %s (", rd.rfx.globalNum, (unsigned)rf.definitionNum, messageFieldNameMap[rd.rfx.globalNum][rf.definitionNum].c_str());
+//                             INFO ("%d.%d : %s (", rd.rfx.globalNum, (unsigned)rf.definitionNum, messageFieldNameMap[rd.rfx.globalNum][rf.definitionNum].c_str());
                             switch (rf.definitionNum) {
                             case 2 : { // Start Time
                                 //INFO("%s", getDataString(ptr, 0, BT_UInt32, rd.rfx.globalNum, rf.definitionNum).c_str());
@@ -1103,7 +1103,7 @@ bool FIT::parse(vector<uint8_t> &fitData, std::vector<ExerciseSet> &dst)
                             }
                             case 6: { // Average Speed
                                 // unit: m/s * 1000
-                                double speed = (double)(*(uint16_t *)ptr) / 1000;
+//                                 double speed = (double)(*(uint16_t *)ptr) / 1000;
                                 //INFO("%1.3f", speed);
                                 break;
                             }
@@ -1155,7 +1155,7 @@ bool FIT::parse(vector<uint8_t> &fitData, std::vector<ExerciseSet> &dst)
                             e.dist = 0;
                             e.strk = 0;
                             // so add the 1 length time to previous lap rest time
-                            dst.back().rest = QTime(0,0).addSecs(e.len_time.back());
+                            e.rest.addSecs(e.len_time.back());
                         } else {
                             // lengths are already added to len_strokes & len_time
                             e.set++;
@@ -1186,6 +1186,22 @@ bool FIT::parse(vector<uint8_t> &fitData, std::vector<ExerciseSet> &dst)
                         // clear for next lap
                         e.len_time.clear();
                         e.len_strokes.clear();
+                        e.len_style.clear();
+                        e.rest = QTime(0,0);
+                        break;
+                    }
+                    case 101: // length is closed
+                    {
+                        INFO ("len %f, %d, %s\n", e.len_time.back(), e.len_strokes.back(), e.len_style.back().toLocal8Bit().constData());
+                        
+                        if (! e.len_strokes.empty() && e.len_strokes.back() == 0) {
+                            // add to lap rest
+                            e.rest.addSecs(e.len_time.back());
+                            // remove cur length
+                            e.len_strokes.pop_back();
+                            e.len_time.pop_back();
+                            e.len_style.pop_back();
+                        }
                         break;
                     }
                     }
