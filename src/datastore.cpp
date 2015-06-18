@@ -1,6 +1,6 @@
 /*
  * This file is part of PoolViewer
- * Copyright (c) 2011-2012 Ivor Hewitt
+ * Copyright (c) 2011-2015 Ivor Hewitt
  *
  * PoolViewer is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -45,9 +45,9 @@ bool SaveCSV( const std::string & name, std::vector<ExerciseSet>& exercises )
         for (i=exercises.begin(); i != exercises.end(); ++i)
         {
             out << i->user << ","
-                << i->date.toString("dd/MM/yyyy") << ","
+                << i->date.toString("d/M/yyyy") << ","
                 << i->time.toString("hh:mm:00") << ",";
-            if (i->type == "Swim")
+            if (i->type == "Swim" || i->type == "SwimHR")
             {
                 out << i->type << ","
                     << i->pool << ","
@@ -62,13 +62,34 @@ bool SaveCSV( const std::string & name, std::vector<ExerciseSet>& exercises )
                     << i->lens << ","
                     << i->speed << ","
                     << i->effic << ","
-                    << i->rate << ",Free,";
-                out << ",,,,210,,,\n";
-            }
-//1,31/3/2015,06:38:12,SwimHR,25,,00:32:38,397,52,1300,1,00:06:19,12,12,126,44,22,Free,,,,,0,New,00:32:38,,STARTOFLAPDATA,0,0,0,3908.923,00:14,SwimHR,11,-1,28,12,31,13,31.125,13,31.625,13,31.25,13,31.125,13,29.5,11,33.375,13,30.375,13,31.75,12,33.125,13,33,13
-            else if (i->type == "SwimHR")
-            {
+                    << i->rate << ","
+                    << "Free" << ",";
 
+//1,31/3/2015,06:38:12,SwimHR,25,,00:32:38,397,52,1300,1,00:06:19,12,12,126,44,22,Free,
+//,,,,0,New,00:32:38,,STARTOFLAPDATA,0,0,0,3908.923,00:14,SwimHR,11,-1,
+//28,12,31,13,31.125,13,31.625,13,31.25,13,31.125,13,29.5,11,33.375,13,30.375,13,31.75,12,33.125,13,33,13
+                if (i->type == "SwimHR")
+                {
+                    out << ",,,,0,New," //Can mark edited values
+                        << i->totalduration.toString("hh:mm:ss") << ","
+                        << ",STARTOFLAPDATA,0,0,0,0,"
+                        << i->rest.toString("mm:ss") << ","
+                        << i->type << ","
+                        << i->lens-1 << ","
+                        << "-1";
+
+                    int l;
+                    for (l=0; l<i->lens; ++l)
+                    {
+                        out << "," << i->len_time[l];
+                        out << "," << i->len_strokes[l];
+                    }
+                    out << "\n";
+                }
+                else
+                {
+                    out << ",,,,210,,,\n";
+                }
             }
             else
             {
@@ -110,21 +131,21 @@ bool ReadCSV( const std::string & name, std::vector<ExerciseSet>& dst )
                 ExerciseSet e;
 
                 e.user = strings.value(0).toInt();
-                e.date = QDate::fromString( strings.value(1), QString("dd/MM/yyyy"));
+                e.date = QDate::fromString( strings.value(1), QString("d/M/yyyy"));
                 e.time = QTime::fromString( strings.value(2));
 
                 e.type = strings.value(3);
+                e.totalduration = QTime::fromString(strings.value(6));
+                e.set = strings.value(10).toInt();
+                e.duration = QTime::fromString( strings.value(11));
 
                 if (e.type == "Swim" || e.type == "SwimHR")
                 {
                     e.pool = strings.value(4).toInt();
                     e.unit = strings.value(5);
-                    e.totalduration = QTime::fromString(strings.value(6));
                     e.cal = strings.value(7).toInt();
                     e.lengths = strings.value(8).toInt();
                     e.totaldistance = strings.value(9).toInt();
-                    e.set = strings.value(10).toInt();
-                    e.duration = QTime::fromString( strings.value(11));
                     e.strk = strings.value(12).toInt();
                     e.lens  = strings.value(13).toInt();
 
@@ -144,10 +165,23 @@ bool ReadCSV( const std::string & name, std::vector<ExerciseSet>& dst )
 //11,-1,28,12,31,13,31.125,13,31.625,13,31.25,13,31.125,13,29.5,11,33.375,13,30.375,13,31.75,12,33.125,13,33,13
 //Ignore HR part of data for now.
 
+                if (e.type == "HRChrono")
+                {
+                    if (strings.value(23) == "Deleted")
+                    {
+                        continue; //just drop deleted rows.
+                    }
+                }
+
                 if (e.type == "SwimHR") // Read length data
                 {
+                    if (strings.value(23) == "Deleted")
+                    {
+                        continue; //just drop deleted rows.
+                    }
+
                     double num = strings.value(30).toDouble(); //no idea what this is
-                    e.rest = QTime::fromString( strings.value(31));
+                    e.rest = QTime::fromString( strings.value(31),"mm:ss");
 
                     // we already know the number of lengths.
                     int l;
@@ -286,6 +320,10 @@ namespace {
                 s.speed = j->speed;
                 s.effic = j->effic;
                 s.rate = j->rate;
+                s.rest = j->rest;
+
+                s.len_time = j->times;
+                s.len_strokes = j->strokes;
 
                 sets.push_back(s);
             }

@@ -141,8 +141,9 @@ void SummaryImpl::setData( const std::vector<Workout>& workouts)
     std::vector<Workout>::const_iterator i;
     for ( i = workouts.begin(); i != workouts.end(); ++i)
     {
-        if ( i->date >= start &&
-             i->date <= end)
+        if ( (i->type == "Swim"|| i->type=="SwimHR") &&
+              i->date >= start &&
+              i->date <= end)
         {
             QString axLabel;
             if (scale == YEARBYWEEK)
@@ -266,30 +267,32 @@ void SummaryImpl::fillWorkouts( const std::vector<Workout>& workouts)
         item->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
         workoutGrid->setItem( row, col++, item );
 
-        item = new QTableWidgetItem(QString::number(i->pool));
-        item->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
-        workoutGrid->setItem( row, col++, item );
+        if (i->type == "Swim" || i->type=="SwimHR")
+        {
+            item = new QTableWidgetItem(QString::number(i->pool));
+            item->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
+            workoutGrid->setItem( row, col++, item );
 
-        item = new QTableWidgetItem(i->totalduration.toString());
-        item->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
-        workoutGrid->setItem( row, col++, item );
+            item = new QTableWidgetItem(i->totalduration.toString());
+            item->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
+            workoutGrid->setItem( row, col++, item );
 
-        item = new QTableWidgetItem(QString::number(i->cal));
-        item->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
-        workoutGrid->setItem( row, col++, item );
+            item = new QTableWidgetItem(QString::number(i->cal));
+            item->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
+            workoutGrid->setItem( row, col++, item );
 
-        item = new QTableWidgetItem(QString::number(i->lengths));
-        item->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
-        workoutGrid->setItem( row, col++, item );
+            item = new QTableWidgetItem(QString::number(i->lengths));
+            item->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
+            workoutGrid->setItem( row, col++, item );
 
-        item = new QTableWidgetItem(QString::number(i->totaldistance));
-        item->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
-        workoutGrid->setItem( row, col++, item );
+            item = new QTableWidgetItem(QString::number(i->totaldistance));
+            item->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
+            workoutGrid->setItem( row, col++, item );
 
-        item = new QTableWidgetItem(i->rest.toString());
-        item->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
-        workoutGrid->setItem( row, col++, item );
-
+            item = new QTableWidgetItem(i->rest.toString());
+            item->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
+            workoutGrid->setItem( row, col++, item );
+        }
         row++;
     }
 
