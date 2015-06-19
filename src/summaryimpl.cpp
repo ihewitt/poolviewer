@@ -430,6 +430,10 @@ void SummaryImpl::setSelected()
     {
         fillLengths(set);
     }
+    else {
+        lengthGrid->clearContents();
+        lengthGrid->setRowCount(0);
+    }
 }
 
 //
