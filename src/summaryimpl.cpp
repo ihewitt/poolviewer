@@ -353,6 +353,8 @@ void SummaryImpl::fillLengths( const Set& set)
 
 void SummaryImpl::fillSets( const std::vector<Set>& sets)
 {
+    // clearContents() does not reset selected line
+    setGrid->setCurrentCell(0,0);
     setGrid->clearContents();
 
     std::vector<Set>::const_iterator i;
