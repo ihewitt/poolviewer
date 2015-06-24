@@ -84,6 +84,10 @@ bool SaveCSV( const std::string & name, std::vector<ExerciseSet>& exercises )
                         out << "," << i->len_time[l];
                         out << "," << i->len_strokes[l];
                     }
+//                     printf("set %d, styles:%d\n", i->set, i->len_style.size());
+                    for (l=0; l < i->len_style.size(); l++) {
+                        out << "," << i->len_style[l];
+                    }
                     out << "\n";
                 }
                 else
@@ -189,9 +193,11 @@ bool ReadCSV( const std::string & name, std::vector<ExerciseSet>& dst )
                     {
                         double time = strings.value(35+l*2).toDouble();
                         int strk = strings.value(36+l*2).toInt();
+                        QString style = strings.value(35+e.lens*2+l);
 
                         e.len_time.push_back(time);
                         e.len_strokes.push_back(strk);
+                        e.len_style.push_back(style);
                     }
                 }
                 dst.push_back(e);
@@ -263,6 +269,7 @@ namespace {
 
                 set.times = j->len_time;
                 set.strokes = j->len_strokes;
+                set.styles = j->len_style;
             
                 if (set.effic < min_effic) min_effic = set.effic;
                 if (set.effic > max_effic) max_effic = set.effic;
@@ -324,6 +331,7 @@ namespace {
 
                 s.len_time = j->times;
                 s.len_strokes = j->strokes;
+                s.len_style = j->styles;
 
                 sets.push_back(s);
             }

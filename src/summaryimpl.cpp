@@ -341,11 +341,20 @@ void SummaryImpl::fillLengths( const Set& set)
         item = new QTableWidgetItem(QString::number(set.strokes[row]));
         item->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
         lengthGrid->setItem( row, col++, item );
+        
+        if (set.styles.size() > row) {
+            item = new QTableWidgetItem(set.styles[row]);
+            item->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
+            lengthGrid->setItem( row, col++, item );
+        }
+        
     }
 }
 
 void SummaryImpl::fillSets( const std::vector<Set>& sets)
 {
+    // clearContents() does not reset selected line
+    setGrid->setCurrentCell(0,0);
     setGrid->clearContents();
 
     std::vector<Set>::const_iterator i;
@@ -422,6 +431,10 @@ void SummaryImpl::setSelected()
     if (set.times.size())
     {
         fillLengths(set);
+    }
+    else {
+        lengthGrid->clearContents();
+        lengthGrid->setRowCount(0);
     }
 }
 

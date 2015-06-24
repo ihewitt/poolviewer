@@ -24,6 +24,8 @@
 
 #include "datastore.h"
 
+#include "FIT.hpp"
+
 bool ReadCSV( const std::string & name, std::vector<ExerciseSet>& );
 bool SaveCSV( const std::string & name, std::vector<ExerciseSet>& );
 
@@ -94,15 +96,29 @@ void UploadImpl::importButton()
     file = QFileDialog::getOpenFileName(this,
                                         tr("Import Exercise Data"),
                                         "",
-                                        tr("Comma separated files (*.csv *.txt)"));
+                                        tr("Comma separated files (*.csv *.txt);;Garmin FIT file (*.fit)"));
     
     if (!file.isEmpty())
     {
-        ReadCSV(qPrintable(file), exdata);
+	if ( QFileInfo(file.toLower()).suffix() == "fit") {
+	  // Garmin FIT file
+            QFile fitFile(file);
+            if (!fitFile.open(QIODevice::ReadOnly)) return;
+            QByteArray blob = fitFile.readAll();            
+            std::vector<uint8_t> fitData(blob.begin(), blob.end());
+           
+            FIT fit;
+            fit.parse (fitData, exdata);
+	  
+	} else {
+	  // csv file
+	  ReadCSV(qPrintable(file), exdata);
+	}
         if (exdata.size())
-        {
-            fillList();
-        }
+          {
+              fillList();
+          }
+
     }
 }
 

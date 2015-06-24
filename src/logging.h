@@ -2,7 +2,7 @@
 #define LOGGING_H
 
 //#define TEST
-////#define VERBOSE_DEBUG
+#define VERBOSE_DEBUG
 
 #ifdef VERBOSE_DEBUG
 #define INFO(x,...) do { fprintf(stderr,x, ##__VA_ARGS__ );} while(0)
