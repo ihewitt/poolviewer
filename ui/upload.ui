@@ -10,6 +10,18 @@
     <height>307</height>
    </rect>
   </property>
+  <property name="minimumSize">
+   <size>
+    <width>417</width>
+    <height>307</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>417</width>
+    <height>307</height>
+   </size>
+  </property>
   <property name="windowTitle">
    <string>Upload</string>
   </property>
