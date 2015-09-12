@@ -39,17 +39,17 @@ int main(int argc, char ** argv)
         settings.setValue("dataFile", path);
     }
 
-    DataStore *d = new DataStore();
-    d->setFile(path);
-    d->load();
+    DataStore d;
+    d.setFile(path);
+    d.load();
 
 	QApplication app( argc, argv );
 	
 	SummaryImpl win;
-	win.setDataStore( d );
+    win.setDataStore( &d );
 
     //TODO tidy this!, for now refill grid and data from datastore.
-    win.fillWorkouts(d->Workouts());
+    win.fillWorkouts(d.Workouts());
 
 	win.show();
 	app.connect( &app, SIGNAL( lastWindowClosed() ), &app, SLOT( quit() ) );
