@@ -68,6 +68,7 @@ public:
     virtual void scaleChanged(int);
     virtual void printButton();
     virtual void on_check_clicked();
+    virtual void bestTimesButton();
 
 private:
     DataStore *ds;

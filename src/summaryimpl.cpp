@@ -32,6 +32,7 @@
 #include "syncimpl.h"
 #include "datastore.h"
 #include "configimpl.h"
+#include "besttimesimpl.h"
 
 
 SummaryImpl::SummaryImpl( QWidget * parent, Qt::WindowFlags f) 
@@ -644,3 +645,11 @@ void SummaryImpl::on_check_clicked()
 
 }
 
+/* open Best Times window */
+void SummaryImpl::bestTimesButton()
+{
+    BestTimesImpl win(this);
+
+    win.setDataStore(ds);
+    win.exec();
+}
