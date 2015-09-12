@@ -81,11 +81,11 @@ BestTimesImpl::BestTimesImpl(QWidget *parent) :
 {
     setupUi(this);
 
-    // not done in on_pushButton_clicked() not to override user choice
+    // not done in on_calculateButton_clicked() not to override user choice
 
     // sort by speed as the ditance might be different
     // (if number of lanes is not integer)
-    tableWidget->sortItems(5);
+    timesTable->sortItems(5);
 }
 
 void BestTimesImpl::setDataStore(const DataStore *_ds)
@@ -93,14 +93,14 @@ void BestTimesImpl::setDataStore(const DataStore *_ds)
     ds = _ds;
 }
 
-void BestTimesImpl::on_pushButton_clicked()
+void BestTimesImpl::on_calculateButton_clicked()
 {
-    tableWidget->clearContents();
-    tableWidget->setRowCount(0);
+    timesTable->clearContents();
+    timesTable->setRowCount(0);
 
     // otherwise the rows move around while they are added
     // and we set the item in the wrong place
-    tableWidget->setSortingEnabled(false);
+    timesTable->setSortingEnabled(false);
 
     const QString distStr = distanceBox->currentText();
     bool ok = false;
@@ -140,9 +140,9 @@ void BestTimesImpl::on_pushButton_clicked()
                 continue;
             }
 
-            addSet(set, w, numberOfLanes, tableWidget);
+            addSet(set, w, numberOfLanes, timesTable);
         }
     }
 
-    tableWidget->setSortingEnabled(true);
+    timesTable->setSortingEnabled(true);
 }

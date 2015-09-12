@@ -33,7 +33,7 @@ public:
     void setDataStore(const DataStore *_ds);
 
 private slots:
-    void on_pushButton_clicked();
+    void on_calculateButton_clicked();
 
 private:
     const DataStore *ds;
