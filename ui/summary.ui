@@ -529,6 +529,13 @@
         <item>
          <layout class="QHBoxLayout" name="control_buttons">
           <item>
+           <widget class="QPushButton" name="bestTimesButton">
+            <property name="text">
+             <string>Best Times</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <spacer name="horizontalSpacer_3">
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
@@ -848,6 +855,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>bestTimesButton</sender>
+   <signal>clicked()</signal>
+   <receiver>Summary</receiver>
+   <slot>bestTimesButton()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>543</x>
+     <y>619</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>478</x>
+     <y>322</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>selectedDate(QDate)</slot>
@@ -864,5 +887,6 @@
   <slot>printButton()</slot>
   <slot>setSelected()</slot>
   <slot>on_check_clicked()</slot>
+  <slot>bestTimesButton()</slot>
  </slots>
 </ui>
