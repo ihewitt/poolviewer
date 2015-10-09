@@ -100,7 +100,7 @@ void PodLive::getData( std::vector<ExerciseSet>& exdata )
 
     do
     {
-        char *ptr = buffer;
+        unsigned char *ptr = (unsigned char*)buffer;
         type = *(uint16_t*)ptr;
 
         if (type == 0) // workout header
