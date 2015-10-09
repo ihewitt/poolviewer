@@ -95,11 +95,12 @@ void read(QSerialPort *serialPort, unsigned long len)
     while (serialPort->waitForReadyRead(100) != false);
 
     char tmp[len];
-    serialPort->read(tmp, len+1); //read echo back, skip initial zero.
+    serialPort->read(tmp, len); // read back echo
 
     if (serialPort->bytesAvailable())
     {
-        data = serialPort->readAll();
+        serialPort->read(tmp,1);
+	data = serialPort->readAll();
     }
 }
 
@@ -242,19 +243,23 @@ void download(QSerialPort *serialPort)
     QByteArray buffer;
 
     int i;
-    for (i=0; i<=0x30; ++i) // determine upper value
+    for (i=0; i<=0x1f; ++i) // determine upper value
     {
         if (req & 1)
         {      
             buf[9]=i;
             uint32_t crc = crc32a(&buf[6], 10);
             memcpy(&buf[16], &crc, sizeof(uint32_t));
-         
+
+            if (req & 1)
+            {
+                printf("Tag ");
+            }
             printf("Request set %02x ", i); 
             write(serialPort, buf, 20);
             read(serialPort, 20);
 
-            printf("Read %d\n", data.length());	    
+            printf("Read %d\n", data.length());
             //check crc.
             buffer.append(data.data(), data.length()-4);
         }
@@ -271,9 +276,9 @@ void download(QSerialPort *serialPort)
             }
 	}
     }
-    printf("Data buffer:\n");
+    printf("\nData buffer:\n");
     display(buffer);
-    
+   
     uint16_t type;
     char *ptr = buffer.data();
     do
@@ -312,7 +317,7 @@ int main()
 //    sendandwait(serialPort, d4, sizeof(d4));
 
     sendandwait(serialPort, d5, sizeof(d5)); //get data to decode.
-    printf("Data header:\n");
+    printf("\nData header:\n");
     display(data);
 
 //pulldown all data and dump
