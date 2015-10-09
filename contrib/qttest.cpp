@@ -298,7 +298,7 @@ int main()
 
     serialPort->setPortName(serialPortName);
     if (!serialPort->open(QIODevice::ReadWrite)) {
-        exit;
+        return 1;
     }
 
     init(serialPort);
