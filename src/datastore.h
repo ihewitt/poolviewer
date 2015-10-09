@@ -33,6 +33,7 @@ struct Set
     int effic;
     int rate;
     QTime rest;
+    double num; // dummy value to keep files in sync
 
     std::vector<double> times;
     std::vector<int> strokes;

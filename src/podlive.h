@@ -1,6 +1,6 @@
 /*
  * This file is part of PoolViewer
- * Copyright (c) 2011-2015 Ivor Hewitt
+ * Copyright (c) 2015 Ivor Hewitt
  *
  * PoolViewer is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,39 +16,38 @@
  * along with PoolViewer.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SYNCIMPL_H
-#define SYNCIMPL_H
-//
-#include <QDialog>
+#ifndef PODLIVE_H
+#define PODLIVE_H
 
-#include "ui_sync.h"
-#include "exerciseset.h"
+#include "podlink.h"
 
-class PodBase;
+// New UsbLive interface
 
-class SyncImpl : public QDialog, public Ui::syncDlg
+class PodLive : public PodBase
 {
-Q_OBJECT
+    Q_OBJECT
 public:
-    typedef enum {
-        PODA,
-        POD,
-        PODLIVE } PODTYPE;
+    PodLive();
+    ~PodLive();
 
-    SyncImpl( QWidget * parent = 0, Qt::WindowFlags f = 0 );
-    ~SyncImpl();
+    void run();
 
-    void getData(std::vector<ExerciseSet>& data);
+    virtual void getData(std::vector<ExerciseSet>& data);
+
+signals:
+    void info(QString msg);
+    void error(QString msg);
+    void progress(int progress);
 
 private slots:
-    void podMsg(QString);
-    void podProgress(int);
+    void handleError(QSerialPort::SerialPortError error);
 
 private:
-    void start();
-    
-    PodBase *pod;
-    PODTYPE mDevice;  
+    QString      find();
+    QSerialPort *serialPort;
+    QString      serialPortName;
+    QByteArray   readData;
+
 };
 
-#endif
+#endif //PODLIVE_H

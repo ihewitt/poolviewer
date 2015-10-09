@@ -406,7 +406,13 @@ int poolmate_cleanup()
     c->img_transfer=0;
     c->irq_transfer=0;
     
-    int errCode = libusb_release_interface(c->devh, 0);
+    int errCode = 0;
+
+    if (c->devh)
+    {
+	errCode= libusb_release_interface(c->devh, 0);
+    }
+    
     if  (errCode)
     {
         return -1;

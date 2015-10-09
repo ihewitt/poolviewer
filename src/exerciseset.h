@@ -43,6 +43,7 @@ struct ExerciseSet
     int effic;                  /**< swolf(ish) for this set/lap. Poolmate uses number of "stroke cycles" i.e. one arm. Garmin uses "stroke count" i.e. both arms */
     int rate;                   /**< strokes per minute */
     QTime rest;                 /**< rest time for this set/lap */
+    double num;                 /**< dummy value to keep file import/output compatible */
 
     std::vector<double> len_time; /**< duration of each length in this set/lap in seconds */
     std::vector<int> len_strokes; /**< number of strokes for each length for this set/lap */

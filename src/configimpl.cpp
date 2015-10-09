@@ -29,13 +29,17 @@ ConfigImpl::ConfigImpl( QWidget * parent, Qt::WindowFlags f)
     QString path = settings.value("dataFile").toString();
     int pod = settings.value("podType").toInt(); //use int in case we need to add another
 
-    if (pod == 0) // 0 - original 1 - type A
+    if (pod == 0) // 0 - original, 1 - type A
     {
         podOriginal->setChecked(true);
     }
-    else
+    else if (pod == 1)
     {
         podTypeA->setChecked(true);
+    }
+    else
+    {
+        podLive->setChecked(true);
     }
 
     dataFile->setText(path);
@@ -52,9 +56,13 @@ void ConfigImpl::on_buttonBox_accepted()
     {
         podsetting = 0;
     }
-    else
+    else if (podTypeA->isChecked())
     {
         podsetting = 1;
+    }
+    else
+    {
+        podsetting = 2;
     }
 
     int pod = settings.value("podType").toInt(); //use int in case we need to add another

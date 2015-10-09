@@ -50,13 +50,13 @@ void UploadImpl::fillList()
             
             // TODO replace this with custom drawn control
             QString line = QString("[%1] \t%2")
-                .arg(run.toString("yyyy/MM/dd hh:mm"))
-                .arg(i->lengths);
+                    .arg(run.toString("yyyy/MM/dd hh:mm"))
+                    .arg(i->lengths);
             
             QListWidgetItem* i = new QListWidgetItem(line);
             i->setData(Qt::UserRole, pos);
 
-// if set already uploaded, check and disable
+            // if set already uploaded, check and disable
             if (ds->findExercise(run) >= 0)
             {
                 //                i->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
@@ -100,24 +100,24 @@ void UploadImpl::importButton()
     
     if (!file.isEmpty())
     {
-	if ( QFileInfo(file.toLower()).suffix() == "fit") {
-	  // Garmin FIT file
+        if ( QFileInfo(file.toLower()).suffix() == "fit") {
+            // Garmin FIT file
             QFile fitFile(file);
             if (!fitFile.open(QIODevice::ReadOnly)) return;
-            QByteArray blob = fitFile.readAll();            
+            QByteArray blob = fitFile.readAll();
             std::vector<uint8_t> fitData(blob.begin(), blob.end());
-           
+
             FIT fit;
             fit.parse (fitData, exdata);
-	  
-	} else {
-	  // csv file
-	  ReadCSV(qPrintable(file), exdata);
-	}
+
+        } else {
+            // csv file
+            ReadCSV(qPrintable(file), exdata);
+        }
         if (exdata.size())
-          {
-              fillList();
-          }
+        {
+            fillList();
+        }
 
     }
 }
@@ -144,7 +144,7 @@ void UploadImpl::selectNone()
         if ( (i->checkState() == Qt::Checked) &&
              (i->flags() & Qt::ItemIsEnabled) )
         {
-            i->setCheckState(Qt::Unchecked);            
+            i->setCheckState(Qt::Unchecked);
         }
     }
 }
@@ -166,7 +166,7 @@ void UploadImpl::add()
     // checked rather than selected seems more intuitive
     //	QList<QListWidgetItem *> items;
     //  items = listWidget->selectedItems();
-	
+
     for (int n=0; n< listWidget->count(); ++n)
     {
         QListWidgetItem* i = listWidget->item(n);

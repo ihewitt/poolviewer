@@ -37,7 +37,7 @@ bool SaveCSV( const std::string & name, std::vector<ExerciseSet>& exercises )
     {
         QTextStream out(&file);
 
-//New format
+        //New format
         out << "User Number,Date,Time,Type,Pool Length,,Duration,Calories,Total Laps,Total Distance,Set Number,Set Duration,Average Strokes,Distance,Speed,Efficiency,Stroke Rate,,,,,,Watch Version,Status,Notes\n";
 
         std::vector<ExerciseSet>::iterator i;
@@ -46,13 +46,27 @@ bool SaveCSV( const std::string & name, std::vector<ExerciseSet>& exercises )
         {
             out << i->user << ","
                 << i->date.toString("d/M/yyyy") << ","
-                << i->time.toString("hh:mm:00") << ",";
+                << i->time.toString("hh:mm:ss") << ",";
             if (i->type == "Swim" || i->type == "SwimHR")
             {
                 out << i->type << ","
-                    << i->pool << ","
-                    << i->unit << ","
-                    << i->totalduration.toString("hh:mm:ss") << ","
+                    << i->pool << ",";
+                //                    << i->unit << ","
+                // This field is now unused so we'll use this one to insert custom lap styles
+                if (i->len_style.size())
+                {
+                    uint l;
+                    for (l=0; l < i->len_style.size(); l++) {
+                        out << i->len_style[l] << ";";
+                    }
+                    out << ",";
+                }
+                else
+                {
+                    out << ",";
+                }
+
+                out << i->totalduration.toString("hh:mm:ss") << ","
                     << i->cal << ","
                     << i->lengths << ","
                     << i->totaldistance << ","
@@ -65,14 +79,16 @@ bool SaveCSV( const std::string & name, std::vector<ExerciseSet>& exercises )
                     << i->rate << ","
                     << "Free" << ",";
 
-//1,31/3/2015,06:38:12,SwimHR,25,,00:32:38,397,52,1300,1,00:06:19,12,12,126,44,22,Free,
-//,,,,0,New,00:32:38,,STARTOFLAPDATA,0,0,0,3908.923,00:14,SwimHR,11,-1,
-//28,12,31,13,31.125,13,31.625,13,31.25,13,31.125,13,29.5,11,33.375,13,30.375,13,31.75,12,33.125,13,33,13
+                //1,31/3/2015,06:38:12,SwimHR,25,,00:32:38,397,52,1300,1,00:06:19,12,12,126,44,22,Free,
+                //,,,,0,New,00:32:38,,STARTOFLAPDATA,0,0,0,3908.923,00:14,SwimHR,11,-1,
+                //28,12,31,13,31.125,13,31.625,13,31.25,13,31.125,13,29.5,11,33.375,13,30.375,13,31.75,12,33.125,13,33,13
                 if (i->type == "SwimHR")
                 {
                     out << ",,,,0,New," //Can mark edited values
                         << i->totalduration.toString("hh:mm:ss") << ","
-                        << ",STARTOFLAPDATA,0,0,0,0,"
+                        << ",STARTOFLAPDATA,0,0,0,"
+                           //<< i->num << ","
+                        << QString::number(i->num,'g',3)  << ","
                         << i->rest.toString("mm:ss") << ","
                         << i->type << ","
                         << i->lens-1 << ","
@@ -84,10 +100,7 @@ bool SaveCSV( const std::string & name, std::vector<ExerciseSet>& exercises )
                         out << "," << i->len_time[l];
                         out << "," << i->len_strokes[l];
                     }
-//                     printf("set %d, styles:%d\n", i->set, i->len_style.size());
-                    for (l=0; l < i->len_style.size(); l++) {
-                        out << "," << i->len_style[l];
-                    }
+
                     out << "\n";
                 }
                 else
@@ -98,7 +111,7 @@ bool SaveCSV( const std::string & name, std::vector<ExerciseSet>& exercises )
             else
             {
                 out << i->type << ","
-                    << ",," 
+                    << ",,"
                     << i->totalduration.toString("hh:mm:ss") << ","
                     << ",,,"
                     << i->set << ","
@@ -114,7 +127,7 @@ bool SaveCSV( const std::string & name, std::vector<ExerciseSet>& exercises )
 //
 bool ReadCSV( const std::string & name, std::vector<ExerciseSet>& dst )
 {
-// Simplistic csv format reading
+    // Simplistic csv format reading
     QFile file(name.c_str());
     if (file.open(QIODevice::ReadOnly))
     {
@@ -146,7 +159,7 @@ bool ReadCSV( const std::string & name, std::vector<ExerciseSet>& dst )
                 if (e.type == "Swim" || e.type == "SwimHR")
                 {
                     e.pool = strings.value(4).toInt();
-                    e.unit = strings.value(5);
+                    // e.unit = strings.value(5); //no longer used
                     e.cal = strings.value(7).toInt();
                     e.lengths = strings.value(8).toInt();
                     e.totaldistance = strings.value(9).toInt();
@@ -163,11 +176,11 @@ bool ReadCSV( const std::string & name, std::vector<ExerciseSet>& dst )
                     e.rate  = strings.value(16).toInt();
                 }
 
-//1,31/3/2015,06:38:12,SwimHR,25,,00:32:38,397,52,1300,1,00:06:19,12,12,126,44,22,Free,,,,,0,
-//New,00:32:38,,STARTOFLAPDATA,
-//0,0,0,3908.923,00:14,SwimHR,
-//11,-1,28,12,31,13,31.125,13,31.625,13,31.25,13,31.125,13,29.5,11,33.375,13,30.375,13,31.75,12,33.125,13,33,13
-//Ignore HR part of data for now.
+                //1,31/3/2015,06:38:12,SwimHR,25,,00:32:38,397,52,1300,1,00:06:19,12,12,126,44,22,Free,,,,,0,
+                //New,00:32:38,,STARTOFLAPDATA,
+                //0,0,0,3908.923,00:14,SwimHR,
+                //11,-1,28,12,31,13,31.125,13,31.625,13,31.25,13,31.125,13,29.5,11,33.375,13,30.375,13,31.75,12,33.125,13,33,13
+                //Ignore HR part of data for now.
 
                 if (e.type == "HRChrono")
                 {
@@ -185,19 +198,38 @@ bool ReadCSV( const std::string & name, std::vector<ExerciseSet>& dst )
                     }
 
                     double num = strings.value(30).toDouble(); //no idea what this is
+                    e.num = num;
                     e.rest = QTime::fromString( strings.value(31),"mm:ss");
 
-                    // we already know the number of lengths.
+                    QStringList styles = strings.value(5).split(";");
+                    bool hasstyles=false;
+                    if (styles.count()>1)
+                    {
+                        hasstyles=true;
+                    }
+
+                    //Are we loading a file with the styles appended at the end?
+                    bool oldstyles = (strings.count() > 35+e.lens*2);
                     int l;
                     for (l = 0; l <e.lens; ++l)
                     {
                         double time = strings.value(35+l*2).toDouble();
                         int strk = strings.value(36+l*2).toInt();
-                        QString style = strings.value(35+e.lens*2+l);
+
+                        QString style;
+                        if (oldstyles)
+                        {
+                            style = strings.value(35+e.lens*2+l);
+                        }
+                        else if (hasstyles)
+                        {
+                            style = styles.value(l);
+                        }
 
                         e.len_time.push_back(time);
                         e.len_strokes.push_back(strk);
-                        e.len_style.push_back(style);
+                        if (hasstyles || oldstyles)
+                            e.len_style.push_back(style);
                     }
                 }
                 dst.push_back(e);
@@ -205,7 +237,7 @@ bool ReadCSV( const std::string & name, std::vector<ExerciseSet>& dst )
         }
         file.close();
 
-    }   
+    }
     return true;
 }
 
@@ -220,123 +252,125 @@ DataStore::DataStore()
 }
 
 namespace {
-    // import
-    void setsToWorkouts( const std::vector<ExerciseSet>& sets,
-                         std::vector<Workout>& workouts)
+// import
+void setsToWorkouts( const std::vector<ExerciseSet>& sets,
+                     std::vector<Workout>& workouts)
+{
+    std::vector<ExerciseSet>::const_iterator i;
+
+    for (i=sets.begin(); i != sets.end();)
     {
-        std::vector<ExerciseSet>::const_iterator i;
-        
-        for (i=sets.begin(); i != sets.end();)
+        Workout wrk;
+        wrk.user = i->user;
+        wrk.date = i->date;
+        wrk.time = i->time;
+        wrk.type = i->type;
+        wrk.pool = i->pool;
+        wrk.unit = i->unit;
+        wrk.totalduration = i->totalduration;
+        wrk.cal = i->cal;
+        wrk.lengths = i->lengths;
+        wrk.totaldistance = i->totaldistance;
+
+        QDateTime td(i->date, i->time);
+        std::vector<ExerciseSet>::const_iterator j;
+        j=i;
+        int n=0;
+        QTime rest;
+        int total=0;
+
+        int min_effic=999;
+        int avg_effic=0;
+        int max_effic=0;
+
+        while( j != sets.end() &&
+               td == QDateTime(j->date, j->time) )
         {
-            Workout wrk;
-            wrk.user = i->user;
-            wrk.date = i->date;
-            wrk.time = i->time;
-            wrk.type = i->type;
-            wrk.pool = i->pool;
-            wrk.unit = i->unit;
-            wrk.totalduration = i->totalduration;
-            wrk.cal = i->cal;
-            wrk.lengths = i->lengths;
-            wrk.totaldistance = i->totaldistance;
+            Set set;
+            set.set = ++n;
+            total += QTime(0,0,0).secsTo(j->duration);
 
-            QDateTime td(i->date, i->time);
-            std::vector<ExerciseSet>::const_iterator j;
-            j=i;
-            int n=0;
-            QTime rest;
-            int total=0;
+            set.duration = j->duration;
+            set.lens = j->lens;
+            set.strk = j->strk;
+            set.dist = j->dist;
+            set.speed = j->speed;
+            set.effic = j->effic;
+            set.rate = j->rate;
+            set.rest = j->rest;
+            set.num = j->num;
 
-            int min_effic=999;
-            int avg_effic=0;
-            int max_effic=0;
-
-            while( j != sets.end() &&
-                   td == QDateTime(j->date, j->time) )
-            {
-                Set set;
-                set.set = ++n;
-                total += QTime(0,0,0).secsTo(j->duration);
-
-                set.duration = j->duration;
-                set.lens = j->lens;
-                set.strk = j->strk;
-                set.dist = j->dist;
-                set.speed = j->speed;
-                set.effic = j->effic;
-                set.rate = j->rate;
-                set.rest = j->rest;
-
-                set.times = j->len_time;
-                set.strokes = j->len_strokes;
-                set.styles = j->len_style;
+            set.times = j->len_time;
+            set.strokes = j->len_strokes;
+            set.styles = j->len_style;
             
-                if (set.effic < min_effic) min_effic = set.effic;
-                if (set.effic > max_effic) max_effic = set.effic;
+            if (set.effic < min_effic) min_effic = set.effic;
+            if (set.effic > max_effic) max_effic = set.effic;
 
-                avg_effic += set.effic;
-                
-                wrk.sets.push_back(set);
-                ++j;
-            }
-            rest = QTime(0,0,0).addSecs(QTime(0,0,0).secsTo(i->totalduration) - total);
+            avg_effic += set.effic;
 
-            wrk.rest = rest;
-            wrk.min_eff = min_effic;
-            wrk.avg_eff = avg_effic / wrk.sets.size();
-            wrk.max_eff = max_effic;
-
-            workouts.push_back(wrk);
-            i = j;
+            wrk.sets.push_back(set);
+            ++j;
         }
+        rest = QTime(0,0,0).addSecs(QTime(0,0,0).secsTo(i->totalduration) - total);
+
+        wrk.rest = rest;
+        wrk.min_eff = min_effic;
+        wrk.avg_eff = avg_effic / wrk.sets.size();
+        wrk.max_eff = max_effic;
+
+        workouts.push_back(wrk);
+        i = j;
     }
+}
 
 
-    // export
-    void workoutsToSets( const std::vector<Workout>& workouts,
-                         std::vector<ExerciseSet>& sets )
-    {
-        std::vector<Workout>::const_iterator i;
+// export
+void workoutsToSets( const std::vector<Workout>& workouts,
+                     std::vector<ExerciseSet>& sets )
+{
+    std::vector<Workout>::const_iterator i;
     
-        for (i = workouts.begin(); i != workouts.end(); ++i)
+    for (i = workouts.begin(); i != workouts.end(); ++i)
+    {
+        std::vector<Set>::const_iterator j;
+
+        int setcount = 1;
+        for (j = i->sets.begin(); j!= i->sets.end(); ++j)
         {
-            std::vector<Set>::const_iterator j;
+            ExerciseSet s;
 
-            int setcount = 1;
-            for (j = i->sets.begin(); j!= i->sets.end(); ++j)
-            {
-                ExerciseSet s;
+            s.user = i->user;
+            s.date = i->date;
+            s.time = i->time;
+            s.type = i->type;
+            s.pool = i->pool;
+            s.unit = i->unit;
+            s.totalduration = i->totalduration;
+            s.cal = i->cal;
+            s.lengths = i->lengths;
+            s.totaldistance = i->totaldistance;
 
-                s.user = i->user;
-                s.date = i->date;
-                s.time = i->time;
-                s.type = i->type;
-                s.pool = i->pool;
-                s.unit = i->unit;
-                s.totalduration = i->totalduration;
-                s.cal = i->cal;
-                s.lengths = i->lengths;
-                s.totaldistance = i->totaldistance;
+            //Recalc setids in case of deletions for compatibility with Poolmate software
+            s.set = setcount++; //j->set;
+            s.duration = j->duration;
+            s.lens = j->lens;
+            s.strk = j->strk;
+            s.dist = j->dist;
+            s.speed = j->speed;
+            s.effic = j->effic;
+            s.rate = j->rate;
+            s.rest = j->rest;
+            s.num = j->num;
 
-                //Recalc setids in case of deletions for compatibility with Poolmate software
-                s.set = setcount++; //j->set;
-                s.duration = j->duration;
-                s.lens = j->lens;
-                s.strk = j->strk;
-                s.dist = j->dist;
-                s.speed = j->speed;
-                s.effic = j->effic;
-                s.rate = j->rate;
-                s.rest = j->rest;
+            s.len_time = j->times;
+            s.len_strokes = j->strokes;
+            s.len_style = j->styles;
 
-                s.len_time = j->times;
-                s.len_strokes = j->strokes;
-                s.len_style = j->styles;
-
-                sets.push_back(s);
-            }
+            sets.push_back(s);
         }
     }
+}
 } //namespace
 
 bool DataStore::load()

@@ -1,6 +1,6 @@
 /*
  * This file is part of PoolViewer
- * Copyright (c) 2011-2012 Ivor Hewitt
+ * Copyright (c) 2011-2015 Ivor Hewitt
  *
  * PoolViewer is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -329,10 +329,10 @@ void SummaryImpl::fillLengths( const Set& set)
     lengthGrid->setColumnWidth(0,50);
     lengthGrid->setColumnWidth(1,50);
 
-    int row;
-    for (row=0; row<set.lens; ++row)
+    uint row;
+    for (row = 0; row < (uint)set.lens; ++row)
     {
-        int col=0;
+        uint col=0;
         QTableWidgetItem *item;
 
         item = new QTableWidgetItem(QString::number(set.times[row]));
