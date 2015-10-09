@@ -57,7 +57,7 @@ char d2b[] = {0x01,0x07,0x16,0x05,0x0f,0x00,0x1c,0x01,0x0b,0x00};
 //returns single 00
 
 char d3[] = {0x00, 0x01, 0x00, 0x00, 0x08, 0x08};
- //returns 00 2D 01 00 00 4A 86 B8 8A 
+//returns 00 2D 01 00 00 4A 86 B8 8A 
 
 char d4[] = {0x00, 0x03, 0x04, 0x00, 0x00, 0x00};
 //returns 00 33 0B 00 00 09 6A DD 49
@@ -170,6 +170,7 @@ unsigned char * decode_sets(unsigned char* data, int sets)
             }
             else // sometimes time field not complete, attempt to detect and skip.
             {
+                printf("        Not complete!\n");
                 time = (((data[2] & 0x7f) <<8))/8.0;
                 strks = data[3];
                 data += 5;
@@ -204,7 +205,7 @@ char * decode_wrk(char* data)
     }
     else if (data[2] >= 2)
     {
-        printf("Swim\n");
+        printf("Swim: %d\n", data[2]); //Lets see what numbers we get
 
         int Y = data[6]; //see if there's a year high byte.
         int h = data[7]  & 0x7f;
@@ -228,6 +229,11 @@ char * decode_wrk(char* data)
 
 void download(QSerialPort *serialPort)
 {
+    if (data.length() == 0)
+    {
+        printf("Watch attached?\n");
+        return;
+    }
     uint32_t req;
     req = *(uint32_t*)data.data();
 
@@ -303,7 +309,7 @@ int main()
 
     serialPort->setPortName(serialPortName);
     if (!serialPort->open(QIODevice::ReadWrite)) {
-        exit;
+        return 1;
     }
 
     init(serialPort);
