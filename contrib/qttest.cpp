@@ -95,10 +95,12 @@ void read(QSerialPort *serialPort, unsigned long len)
     while (serialPort->waitForReadyRead(100) != false);
 
     char tmp[len];
-    serialPort->read(tmp, len+1); //read echo back, skip initial zero.
+    serialPort->read(tmp, len); //read echo back
 
     if (serialPort->bytesAvailable())
     {
+        // swallow initial zero
+        serialPort->read(tmp, 1);
         data = serialPort->readAll();
     }
 }
@@ -169,6 +171,7 @@ unsigned char * decode_sets(unsigned char* data, int sets)
             }
             else // sometimes time field not complete, attempt to detect and skip.
             {
+                printf("        Not complete!\n");
                 time = (((data[2] & 0x7f) <<8))/8.0;
                 strks = data[3];
                 data += 5;
@@ -201,9 +204,10 @@ char * decode_wrk(char* data)
         return data+256;
     }
     else if (data[2] == 2 ||
-	     data[2] == 3)   //Seems to start either 2 or 3 for a swim session for some reason.
+	     data[2] == 3 ||
+	     data[2] == 4)   //Seems to start either 2 or 3 for a swim session for some reason.
     {
-        printf("Swim\n");
+        printf("Swim: %d\n", data[2]);
 
         int Y = data[6]; //see if there's a year high byte.
         int h = data[7]  & 0x7f;
@@ -222,11 +226,20 @@ char * decode_wrk(char* data)
         printf("   Pool: %dm, Sets %d, Dur: %02d:%02d:%02d\n", pool, sets, d_h, d_m, d_s);
         data = (char*)decode_sets((unsigned char*)data+20, sets);
     }
+    else
+    {
+        printf("Unknown type: %d\n", data[2]);
+    }
     return data;
 }
 
 void download(QSerialPort *serialPort)
 {
+    if (data.length() == 0)
+    {
+        printf("Watch attached?\n");
+        return;
+    }
     uint32_t req;
     req = *(uint32_t*)data.data();
 
