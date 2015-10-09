@@ -17,7 +17,7 @@ uint32_t crc32a(char *message, int len)
     int i, j;
     uint32_t crc;
     char byte;
-   
+
     for (crc=~0,i=0; i<len; ++i)
     {
 	byte = message[i];
@@ -57,7 +57,7 @@ char d2b[] = {0x01,0x07,0x16,0x05,0x0f,0x00,0x1c,0x01,0x0b,0x00};
 //returns single 00
 
 char d3[] = {0x00, 0x01, 0x00, 0x00, 0x08, 0x08};
- //returns 00 2D 01 00 00 4A 86 B8 8A 
+ //returns 00 2D 01 00 00 4A 86 B8 8A
 
 char d4[] = {0x00, 0x03, 0x04, 0x00, 0x00, 0x00};
 //returns 00 33 0B 00 00 09 6A DD 49
@@ -95,10 +95,12 @@ void read(QSerialPort *serialPort, unsigned long len)
     while (serialPort->waitForReadyRead(100) != false);
 
     char tmp[len];
-    serialPort->read(tmp, len+1); //read echo back, skip initial zero.
+    serialPort->read(tmp, len); //read echo back
 
     if (serialPort->bytesAvailable())
     {
+        // swallow initial zero
+        serialPort->read(tmp, 1);
         data = serialPort->readAll();
     }
 }
@@ -125,11 +127,11 @@ void init(QSerialPort* serialPort)
 void sendandstart(QSerialPort *serialPort, char*data, int len)
 {
     uint32_t crc = crc32a(data,len);
- 
+
     char buf[256];
     char head[]={0x00,0x00,0x55,0x55,0x55,0x55};
     memcpy(buf, head, 6);
-    memcpy(&buf[6], data, len);  
+    memcpy(&buf[6], data, len);
     memcpy(buf+6+len, &crc, sizeof(uint32_t));
 
     write(serialPort, buf, 6+len+sizeof(uint32_t));
@@ -140,11 +142,11 @@ void sendandstart(QSerialPort *serialPort, char*data, int len)
 void sendandwait(QSerialPort *serialPort, char*data, int len)
 {
     uint32_t crc = crc32a(data,len);
- 
-    char buf[256]; 
+
+    char buf[256];
     char head[]={0x00,0x00,0xff,0xff,0xff,0xff};
     memcpy(buf, head, 6);
-    memcpy(&buf[6], data, len);  
+    memcpy(&buf[6], data, len);
     memcpy(buf+6+len, &crc, sizeof(uint32_t));
 
     write(serialPort, buf, 6+len+sizeof(uint32_t));
@@ -169,6 +171,7 @@ unsigned char * decode_sets(unsigned char* data, int sets)
             }
             else // sometimes time field not complete, attempt to detect and skip.
             {
+                printf("        Not complete!\n");
                 time = (((data[2] & 0x7f) <<8))/8.0;
                 strks = data[3];
                 data += 5;
@@ -182,7 +185,7 @@ unsigned char * decode_sets(unsigned char* data, int sets)
             int m = data[5]&0x7f;  //add hours
             int s = data[6];
             int cal = data[10];    //add high byte.
-	
+
             data += 16;
 
             sets--;
@@ -201,9 +204,10 @@ char * decode_wrk(char* data)
         return data+256;
     }
     else if (data[2] == 2 ||
-	     data[2] == 3)   //Seems to start either 2 or 3 for a swim session for some reason.
+	     data[2] == 3 ||
+	     data[2] == 4)   //Seems to start either 2 or 3 for a swim session for some reason.
     {
-        printf("Swim\n");
+        printf("Swim: %d\n", data[2]);
 
         int Y = data[6]; //see if there's a year high byte.
         int h = data[7]  & 0x7f;
@@ -222,11 +226,20 @@ char * decode_wrk(char* data)
         printf("   Pool: %dm, Sets %d, Dur: %02d:%02d:%02d\n", pool, sets, d_h, d_m, d_s);
         data = (char*)decode_sets((unsigned char*)data+20, sets);
     }
+    else
+    {
+        printf("Unknown type: %d\n", data[2]);
+    }
     return data;
 }
 
 void download(QSerialPort *serialPort)
 {
+    if (data.length() == 0)
+    {
+        printf("Watch attached?\n");
+        return;
+    }
     uint32_t req;
     req = *(uint32_t*)data.data();
 
@@ -245,23 +258,23 @@ void download(QSerialPort *serialPort)
     for (i=0; i<=0x30; ++i) // determine upper value
     {
         if (req & 1)
-        {      
+        {
             buf[9]=i;
             uint32_t crc = crc32a(&buf[6], 10);
             memcpy(&buf[16], &crc, sizeof(uint32_t));
-         
-            printf("Request set %02x ", i); 
+
+            printf("Request set %02x ", i);
             write(serialPort, buf, 20);
             read(serialPort, 20);
 
-            printf("Read %d\n", data.length());	    
+            printf("Read %d\n", data.length());
             //check crc.
             buffer.append(data.data(), data.length()-4);
         }
         req = req >> 1;
 
         // Bitfield doesnt seems to match populated datasets so
-        // Try to spot packet run ons. 
+        // Try to spot packet run ons.
         if (data[data.length()-5] != (char)255) // <Improve this logic
 	{
             if ((req & 1) == 0)
@@ -273,11 +286,11 @@ void download(QSerialPort *serialPort)
     }
     printf("Data buffer:\n");
     display(buffer);
-    
+
     uint16_t type;
     char *ptr = buffer.data();
     do
-    {  
+    {
         type = *(uint16_t*)ptr;
 
         if (type == 0) // workout header
@@ -298,7 +311,7 @@ int main()
 
     serialPort->setPortName(serialPortName);
     if (!serialPort->open(QIODevice::ReadWrite)) {
-        exit;
+        return 1;
     }
 
     init(serialPort);
@@ -321,4 +334,3 @@ int main()
     serialPort->close();
     delete serialPort;
 }
-
