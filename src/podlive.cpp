@@ -106,7 +106,7 @@ void PodLive::getData( std::vector<ExerciseSet>& exdata )
         if (type == 0) // workout header
         {
             std::vector<ExerciseSet> exercises;
-            int lengths=0, totaldistance=0;
+            int lengths=0, totaldistance=0, calories=0;
 
             if (ptr[2] >=2) //1 == chrono, dump for now >2 seems to be swim
             {
@@ -158,13 +158,14 @@ void PodLive::getData( std::vector<ExerciseSet>& exdata )
                     }
                     else if (type == 0x200) // set end
                     {
-                        int lens = ptr[2];
-                        int m = ptr[5]&0x7f;  // add hours
+                        int lens = ptr[2] + ((ptr[3]&0x7f)<<8);
+                        int h = ptr[4];
+                        int m = ptr[5]&0x7f;  //add hours
                         int s = ptr[6];
-                        int cal = ptr[10];    // add high byte.
+                        int cal = ptr[10] + ((ptr[11] & 0x7f)<<8);
 
                         QTime dur(0, m, s);
-                        int secs = m*60 + s;  // TODO find hours.
+                        int secs = (h*60 + m)*60 + s;  // TODO find hours.
 
                         ptr += 16;
                         sets--;
@@ -183,7 +184,8 @@ void PodLive::getData( std::vector<ExerciseSet>& exdata )
                         
                         lengths += lens;
                         totaldistance += lens*pool;
-                        
+                        calories += cal;
+
                         set.dist = lens * pool; // Set data
                         set.lens = lens;
 
@@ -191,12 +193,17 @@ void PodLive::getData( std::vector<ExerciseSet>& exdata )
                         int all_strokes = std::accumulate(strokes.begin(),strokes.end(),0);
                         double all_time = std::accumulate(times.begin(), times.end(), 0);
 
-                        set.speed = 100 * all_time / set.dist;
-                        set.effic = ((25 * all_time / lens) + (25 * all_strokes)) / pool;
-                        set.rate = (60 * all_strokes * lens) / all_time;
+                        //For some reason Swimovate goes off the duration not the total seconds:
+                        int setsecs = ((dur.hour()*60+dur.minute())*60+dur.second());
 
-                        set.strk = all_strokes;
-                        
+                        if (lens)
+                        {
+                            set.speed = 100 * setsecs / set.dist;
+                            set.strk = all_strokes / lens;
+                            set.effic = ((25 * setsecs / lens) + (25 * set.strk)) / pool;
+                            set.rate = (60 * set.strk * lens) / setsecs;
+                        }
+
                         set.len_time = times;
                         set.len_strokes = strokes;
 
@@ -215,6 +222,7 @@ void PodLive::getData( std::vector<ExerciseSet>& exdata )
             {
                 i->lengths = lengths;
                 i->totaldistance = totaldistance;
+                i->cal = calories;
                 exdata.push_back(*i);
             }
         }
@@ -235,6 +243,22 @@ void PodLive::handleError(QSerialPort::SerialPortError serialPortError)
 unsigned char d1[] = {0x00, 0x63, 0x63, 0x00, 0x00, 0x00}; //5555 prefixed
 unsigned char d5[] = {0x00,0x06,0x80,0x00,0x00,0x00}; //Download start
 
+void display(QByteArray& data)
+{
+    int i;
+    printf("%d :", data.length());
+    for (i=0; i < data.length(); ++i)
+    {
+        printf("%02x ", (unsigned char)data[i]);
+        if ((i & 0xff) == 0xff)
+        {
+            printf("\n");
+        }
+    }
+    printf("\n");
+}
+
+
 namespace
 {
 QByteArray data;
@@ -246,12 +270,14 @@ void read(QSerialPort *serialPort, unsigned long len)
     while (serialPort->waitForReadyRead(100) != false);
 
     char tmp[len];
-    serialPort->read(tmp, len+1); //read echo back, skip initial zero.
+    serialPort->read(tmp, len);  //read echo back
 
     if (serialPort->bytesAvailable())
     {
+        serialPort->read(tmp,1); //Skip initial zero byte
         data = serialPort->readAll();
     }
+    display(data);
 }
 
 void write(QSerialPort *serialPort, unsigned char* data, unsigned long len)
@@ -306,7 +332,7 @@ void download(QSerialPort *serialPort, QByteArray& readData)
     memcpy(buf, msg, 16);
 
     int i;
-    for (i=0; i<=0x30; ++i) // determine upper value
+    for (i=0; i<=0x1f; ++i) // determine upper value
     {
         if (req & 1)
         {

@@ -329,8 +329,8 @@ void SummaryImpl::fillLengths( const Set& set)
     lengthGrid->setColumnWidth(0,50);
     lengthGrid->setColumnWidth(1,50);
 
-    uint row;
-    for (row = 0; row < (uint)set.lens; ++row)
+    int row;
+    for (row = 0; row < set.lens; ++row)
     {
         uint col=0;
         QTableWidgetItem *item;
@@ -423,19 +423,23 @@ void SummaryImpl::setSelected()
     setSel = true;
     deleteButton->setText("Delete set");
 
-    int row = workoutGrid->currentRow();
-    const std::vector<Set>& sets = ds->Workouts()[row].sets;
-
-    const Set& set = sets[setGrid->currentRow()];
-
-    //Just check we have some for now.
-    if (set.times.size())
+    int r = setGrid->currentRow();
+    if (r>=0)
     {
-        fillLengths(set);
-    }
-    else {
-        lengthGrid->clearContents();
-        lengthGrid->setRowCount(0);
+        int row = workoutGrid->currentRow();
+        const std::vector<Set>& sets = ds->Workouts()[row].sets;
+
+        const Set& set = sets[setGrid->currentRow()];
+
+        //Just check we have some for now.
+        if (set.times.size())
+        {
+            fillLengths(set);
+        }
+        else {
+            lengthGrid->clearContents();
+            lengthGrid->setRowCount(0);
+        }
     }
 }
 
@@ -520,6 +524,7 @@ void SummaryImpl::deleteClick()
                     ds->remove(i);
                 }
             }
+            workoutGrid->clearSelection();
             fillWorkouts(ds->Workouts());
         }
     }

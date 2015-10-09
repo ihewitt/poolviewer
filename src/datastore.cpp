@@ -88,7 +88,7 @@ bool SaveCSV( const std::string & name, std::vector<ExerciseSet>& exercises )
                         << i->totalduration.toString("hh:mm:ss") << ","
                         << ",STARTOFLAPDATA,0,0,0,"
                            //<< i->num << ","
-                        << QString::number(i->num,'g',3)  << ","
+                        << QString::number(i->num,'f',3)  << ","
                         << i->rest.toString("mm:ss") << ","
                         << i->type << ","
                         << i->lens-1 << ","

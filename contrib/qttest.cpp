@@ -179,15 +179,16 @@ unsigned char * decode_sets(unsigned char* data, int sets)
         }
         else if (type == 0x200)    //set end
         {
-            int lens = data[2];
+            int lens = data[2] + ((data[3]&0x7f)<<8);
+            int h = data[4];
             int m = data[5]&0x7f;  //add hours
             int s = data[6];
-            int cal = data[10];    //add high byte.
+            int cal = data[10] + ((data[11] & 0x7f)<<8);    //add high byte.
 	
             data += 16;
 
             sets--;
-            printf("Set lengths %d, Time: %02d:%02d\n", lens, m,s);
+            printf("Set lengths %d, Time: %02d:%02d Cal: %d \n ", lens, m,s,cal);
         }
     } while(sets>0);
 
@@ -201,8 +202,7 @@ char * decode_wrk(char* data)
         printf("Chrono\n");
         return data+256;
     }
-    else if (data[2] == 2 ||
-	     data[2] == 3)   //Seems to start either 2 or 3 for a swim session for some reason.
+    else if (data[2] >= 2)
     {
         printf("Swim\n");
 
