@@ -179,17 +179,17 @@
               </column>
               <column>
                <property name="text">
-                <string>Cal</string>
-               </property>
-              </column>
-              <column>
-               <property name="text">
                 <string>Lengths</string>
                </property>
               </column>
               <column>
                <property name="text">
                 <string>Total m</string>
+               </property>
+              </column>
+              <column>
+               <property name="text">
+                <string>Cal</string>
                </property>
               </column>
               <column>
@@ -278,12 +278,17 @@
               </column>
               <column>
                <property name="text">
-                <string>Strokes</string>
+                <string>Lengths</string>
                </property>
               </column>
               <column>
                <property name="text">
                 <string>Dist</string>
+               </property>
+              </column>
+              <column>
+               <property name="text">
+                <string>Strokes</string>
                </property>
               </column>
               <column>
@@ -335,6 +340,11 @@
               <attribute name="verticalHeaderDefaultSectionSize">
                <number>19</number>
               </attribute>
+              <column>
+               <property name="text">
+                <string>Length</string>
+               </property>
+              </column>
               <column>
                <property name="text">
                 <string>Time</string>

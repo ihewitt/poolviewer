@@ -266,13 +266,13 @@ void SummaryImpl::fillWorkouts( const std::vector<Workout>& workouts)
             item = createReadOnlyItem(QVariant(i->totalduration.toString()));
             workoutGrid->setItem( row, col++, item );
 
-            item = createReadOnlyItem(QVariant(i->cal));
-            workoutGrid->setItem( row, col++, item );
-
             item = createReadOnlyItem(QVariant(i->lengths));
             workoutGrid->setItem( row, col++, item );
 
             item = createReadOnlyItem(QVariant(i->totaldistance));
+            workoutGrid->setItem( row, col++, item );
+
+            item = createReadOnlyItem(QVariant(i->cal));
             workoutGrid->setItem( row, col++, item );
 
             item = createReadOnlyItem(QVariant(i->rest.toString()));
@@ -317,6 +317,9 @@ void SummaryImpl::fillLengths( const Set& set)
         uint col=0;
         QTableWidgetItem *item;
 
+        item = createReadOnlyItem(QVariant(1 + row));
+        lengthGrid->setItem( row, col++, item );
+
         item = createReadOnlyItem(QVariant(set.times[row]));
         lengthGrid->setItem( row, col++, item );
 
@@ -354,10 +357,13 @@ void SummaryImpl::fillSets( const std::vector<Set>& sets)
         item = createReadOnlyItem(QVariant(i->duration.toString()));
         setGrid->setItem( row, col++, item );
 
-        item = createReadOnlyItem(QVariant(i->strk));
+        item = createReadOnlyItem(QVariant(i->lens));
         setGrid->setItem( row, col++, item );
 
         item = createReadOnlyItem(QVariant(i->dist));
+        setGrid->setItem( row, col++, item );
+
+        item = createReadOnlyItem(QVariant(i->strk));
         setGrid->setItem( row, col++, item );
 
         item = createReadOnlyItem(QVariant(i->speed));
