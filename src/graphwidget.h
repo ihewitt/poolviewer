@@ -162,10 +162,10 @@ public:
                         minTime = times[i];
                 }
 
-                maxTime = QTime(0,maxTime.minute() + 5, 0);
+                maxTime = QTime(maxTime.hour(),maxTime.minute() + 5, 0);
                 int min = minTime.minute()-1;
                 if (min<0) min=0;
-                minTime = QTime(0,min,0);
+                minTime = QTime(minTime.hour(),min,0);
             }
             scaled = true;
         }

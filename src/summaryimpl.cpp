@@ -64,7 +64,10 @@ void SummaryImpl::scaleChanged(int sc)
     lengthWidget->update();
 }
 
-
+/*
+ * populate graph control based on grouping settings
+ * TODO break this up.
+ */
 void SummaryImpl::setData( const std::vector<Workout>& workouts)
 {
     //current date/selection
