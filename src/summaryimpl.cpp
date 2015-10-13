@@ -162,8 +162,8 @@ void SummaryImpl::setData( const std::vector<Workout>& workouts)
 
             volumeWidget->series[0].integers.push_back(i->cal);
             volumeWidget->series[1].integers.push_back(i->totaldistance);
-            volumeWidget->series[2].times.push_back(i->rest);
-            volumeWidget->series[3].times.push_back(i->totalduration);
+            volumeWidget->series[2].seconds.push_back(QTime(0,0,0).secsTo(i->rest));
+            volumeWidget->series[3].seconds.push_back(QTime(0,0,0).secsTo(i->totalduration));
 
             if (scale != WORKOUTS)
             {
@@ -346,7 +346,7 @@ void SummaryImpl::fillLengths( const Set& set)
         item->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
         lengthGrid->setItem( row, col++, item );
         
-        if (set.styles.size() > row) {
+        if ((int)set.styles.size() > row) {
             item = new QTableWidgetItem(set.styles[row]);
             item->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
             lengthGrid->setItem( row, col++, item );
