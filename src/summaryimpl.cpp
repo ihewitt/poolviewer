@@ -255,30 +255,30 @@ void SummaryImpl::fillWorkouts( const std::vector<Workout>& workouts)
         int col=0;
         QTableWidgetItem *item;
 
-        item = createReadOnlyItem(QVariant(i->date));
+        item = createTableWidgetItem(QVariant(i->date));
         workoutGrid->setItem( row, col++, item );
 
-        item = createReadOnlyItem(QVariant(i->time));
+        item = createTableWidgetItem(QVariant(i->time));
         workoutGrid->setItem( row, col++, item );
 
         if (i->type == "Swim" || i->type=="SwimHR")
         {
-            item = createReadOnlyItem(QVariant(i->pool));
+            item = createTableWidgetItem(QVariant(i->pool));
             workoutGrid->setItem( row, col++, item );
 
-            item = createReadOnlyItem(QVariant(i->totalduration.toString()));
+            item = createTableWidgetItem(QVariant(i->totalduration.toString()));
             workoutGrid->setItem( row, col++, item );
 
-            item = createReadOnlyItem(QVariant(i->lengths));
+            item = createTableWidgetItem(QVariant(i->lengths));
             workoutGrid->setItem( row, col++, item );
 
-            item = createReadOnlyItem(QVariant(i->totaldistance));
+            item = createTableWidgetItem(QVariant(i->totaldistance));
             workoutGrid->setItem( row, col++, item );
 
-            item = createReadOnlyItem(QVariant(i->cal));
+            item = createTableWidgetItem(QVariant(i->cal));
             workoutGrid->setItem( row, col++, item );
 
-            item = createReadOnlyItem(QVariant(i->rest.toString()));
+            item = createTableWidgetItem(QVariant(i->rest.toString()));
             workoutGrid->setItem( row, col++, item );
         }
         row++;
@@ -320,17 +320,17 @@ void SummaryImpl::fillLengths( const Set& set)
         uint col=0;
         QTableWidgetItem *item;
 
-        item = createReadOnlyItem(QVariant(1 + row));
+        item = createTableWidgetItem(QVariant(1 + row));
         lengthGrid->setItem( row, col++, item );
 
-        item = createReadOnlyItem(QVariant(set.times[row]));
+        item = createTableWidgetItem(QVariant(set.times[row]));
         lengthGrid->setItem( row, col++, item );
 
-        item = createReadOnlyItem(QVariant(set.strokes[row]));
+        item = createTableWidgetItem(QVariant(set.strokes[row]));
         lengthGrid->setItem( row, col++, item );
 
         if ((int)set.styles.size() > row) {
-            item = createReadOnlyItem(QVariant(set.styles[row]));
+            item = createTableWidgetItem(QVariant(set.styles[row]));
             lengthGrid->setItem( row, col++, item );
         }
     }
@@ -354,28 +354,28 @@ void SummaryImpl::fillSets( const std::vector<Set>& sets)
         int col=0;
         QTableWidgetItem *item;
 
-        item = createReadOnlyItem(QVariant(i->set));
+        item = createTableWidgetItem(QVariant(i->set));
         setGrid->setItem( row, col++, item );
 
-        item = createReadOnlyItem(QVariant(i->duration.toString()));
+        item = createTableWidgetItem(QVariant(i->duration.toString()));
         setGrid->setItem( row, col++, item );
 
-        item = createReadOnlyItem(QVariant(i->lens));
+        item = createTableWidgetItem(QVariant(i->lens));
         setGrid->setItem( row, col++, item );
 
-        item = createReadOnlyItem(QVariant(i->dist));
+        item = createTableWidgetItem(QVariant(i->dist));
         setGrid->setItem( row, col++, item );
 
-        item = createReadOnlyItem(QVariant(i->strk));
+        item = createTableWidgetItem(QVariant(i->strk));
         setGrid->setItem( row, col++, item );
 
-        item = createReadOnlyItem(QVariant(i->speed));
+        item = createTableWidgetItem(QVariant(i->speed));
         setGrid->setItem( row, col++, item );
 
-        item = createReadOnlyItem(QVariant(i->effic));
+        item = createTableWidgetItem(QVariant(i->effic));
         setGrid->setItem( row, col++, item );
 
-        item = createReadOnlyItem(QVariant(i->rate));
+        item = createTableWidgetItem(QVariant(i->rate));
         setGrid->setItem( row, col++, item );
 
         row++;

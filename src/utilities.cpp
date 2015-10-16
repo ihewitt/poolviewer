@@ -3,7 +3,7 @@
 #include <QVariant>
 #include <QTableWidgetItem>
 
-QTableWidgetItem * createReadOnlyItem(const QVariant & content)
+QTableWidgetItem * createTableWidgetItem(const QVariant & content)
 {
     QTableWidgetItem * item = new QTableWidgetItem();
     item->setFlags(item->flags() ^ Qt::ItemIsEditable);

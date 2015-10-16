@@ -5,6 +5,6 @@ class QTableWidgetItem;
 class QVariant;
 
 // ReadOnly, horizontal Right aligned, non editable
-QTableWidgetItem * createReadOnlyItem(const QVariant & content);
+QTableWidgetItem * createTableWidgetItem(const QVariant & content);
 
 #endif // UTILITIES_H

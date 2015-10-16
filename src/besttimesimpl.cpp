@@ -44,25 +44,25 @@ namespace
         const int row = table->rowCount();
         table->setRowCount(row + 1);
 
-        QTableWidgetItem * dateItem = createReadOnlyItem(QVariant(workout.date));
+        QTableWidgetItem * dateItem = createTableWidgetItem(QVariant(workout.date));
         table->setItem(row, 0, dateItem);
 
-        QTableWidgetItem * timeItem = createReadOnlyItem(QVariant(workout.time));
+        QTableWidgetItem * timeItem = createTableWidgetItem(QVariant(workout.time));
         table->setItem(row, 1, timeItem);
 
-        QTableWidgetItem * poolItem = createReadOnlyItem(QVariant(workout.pool));
+        QTableWidgetItem * poolItem = createTableWidgetItem(QVariant(workout.pool));
         table->setItem(row, 2, poolItem);
 
-        QTableWidgetItem * distanceItem = createReadOnlyItem(QVariant(distance));
+        QTableWidgetItem * distanceItem = createTableWidgetItem(QVariant(distance));
         table->setItem(row, 3, distanceItem);
 
-        QTableWidgetItem * durationItem = createReadOnlyItem(QVariant(duration.toString()));
+        QTableWidgetItem * durationItem = createTableWidgetItem(QVariant(duration.toString()));
         table->setItem(row, 4, durationItem);
 
-        QTableWidgetItem * speedItem = createReadOnlyItem(QVariant(speed));
+        QTableWidgetItem * speedItem = createTableWidgetItem(QVariant(speed));
         table->setItem(row, 5, speedItem);
 
-        QTableWidgetItem * totalItem = createReadOnlyItem(QVariant(total));
+        QTableWidgetItem * totalItem = createTableWidgetItem(QVariant(total));
         table->setItem(row, 6, totalItem);
     }
 }
