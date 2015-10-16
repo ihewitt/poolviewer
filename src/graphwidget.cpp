@@ -38,7 +38,7 @@ void drawBar(QPainter &painter,
     painter.fillRect(rect.right(), rect.top(), -w*2, rect.height(), lo);
 }
 
-void GraphWidget::Series::getValue(double &ret, int i, int j)
+void GraphWidget::Series::getDouble(double &ret, int i, int j)
 {
     double t = doubles[i];
 
@@ -48,11 +48,11 @@ void GraphWidget::Series::getValue(double &ret, int i, int j)
     }
     if (j<0)
         ret = t;
-    else 
+    else
         ret = t/(j-i);
 }
 
-void GraphWidget::Series::getValue(int &ret, int i, int j)
+void GraphWidget::Series::getInt(int &ret, int i, int j)
 {
     int t = integers[i];
 
@@ -62,27 +62,27 @@ void GraphWidget::Series::getValue(int &ret, int i, int j)
     }
     if (j<=0)
         ret = t;
-    else 
+    else
         ret = t/(j-i);
 }
 
-void GraphWidget::Series::getValue(QTime &ret, int i, int j)
+void GraphWidget::Series::getTime(int &ret, int i, int j)
 {
-    int t = times[i].second() + times[i].minute()*60 + times[i].hour()*60*60;
+    int t = seconds[i];
 
     for (int c = i + 1; c < j; c++)
     {
-        t += times[c].second() + times[c].minute()*60 + times[c].hour()*60*60;
+        t += seconds[c];
     }
     if (j>0)
         t = t/(j-i);
 
-    ret = QTime(0,0,0).addSecs(t);
+    ret = t;
 }
 
 
 GraphWidget::GraphWidget(QWidget *parent)
-	: QWidget(parent)
+    : QWidget(parent)
 {
 }
 
@@ -106,8 +106,8 @@ void GraphWidget::drawBars( QPainter &painter,
 
     graph.calcScales();
 
-	size_t i;
-	size_t j=graph.size();
+    size_t i;
+    size_t j=graph.size();
 
     if (!j)
         return;
@@ -118,8 +118,8 @@ void GraphWidget::drawBars( QPainter &painter,
     QString label;
 
     //aggregate data to draw.
-	for (i=0; i < j;)
-	{
+    for (i=0; i < j;)
+    {
         int val=0;
         int num=0;
         label = xaxis[i];
@@ -137,12 +137,12 @@ void GraphWidget::drawBars( QPainter &painter,
     int thick = w/(vals.size()*3.25);
     if (thick<0) thick=2;
     
-	for (i=0; i < vals.size(); i++)
-	{
+    for (i=0; i < vals.size(); i++)
+    {
         int x = (set*thick) + w * i / (vals.size());
 
         int l = vals[i];
-		int y = h - l;
+        int y = h - l;
 
         drawBar(painter, QRect(x,y,thick-4,l), pen);
     }
@@ -166,10 +166,10 @@ void GraphWidget::drawBars( QPainter &painter,
     if (graph1.maxTime > graph2.maxTime)
         graph2.maxTime = graph1.maxTime;
     else
-        graph1.maxTime = graph2.maxTime;        
+        graph1.maxTime = graph2.maxTime;
 
-	int i;
-	int j=graph1.size();
+    int i;
+    int j=graph1.size();
     if (!j)
         return;
 
@@ -178,8 +178,8 @@ void GraphWidget::drawBars( QPainter &painter,
 
     QString label;
     //aggregate data to draw.
-	for (i=0; i < j;)
-	{
+    for (i=0; i < j;)
+    {
         int val1=0,val2=0;
         int num=0;
         label = xaxis[i];
@@ -200,14 +200,14 @@ void GraphWidget::drawBars( QPainter &painter,
     if (thick<0) thick=2;
     
     j=labels.size();
-	for (i=0; i < j; i++)
-	{
+    for (i=0; i < j; i++)
+    {
         int x = (set2 * thick) + w * i / j;
 
         int l1 = vals1[i];
         int l2 = vals2[i];
 
-		int y = h - l1;
+        int y = h - l1;
 
         //        painter.setPen(pen);
         drawBar(painter, QRect(x,y,thick-4,l1), pen1);
@@ -217,7 +217,7 @@ void GraphWidget::drawBars( QPainter &painter,
 
 // Draw series line graph
 void GraphWidget::drawSeries( QPainter &painter,
-			      QColor pen,
+                              QColor pen,
                               int set)
 {
     int w = width();
@@ -258,20 +258,37 @@ void GraphWidget::drawSeries( QPainter &painter,
         if (graph.hasDoubles())
         {
             double dblVal;
-            graph.getValue( dblVal, s, s+num );
+            graph.getDouble( dblVal, s, s+num );
             text = QString::number(dblVal, 'g', 3);
         }
         else if (graph.hasInts())
         {
             int intVal;
-            graph.getValue( intVal, s, s+num );
+            graph.getInt( intVal, s, s+num );
             text = QString::number(intVal);
         }
         else if (graph.hasTimes())
         {
-            QTime timeVal;
-            graph.getValue( timeVal, s, s+num );
-            text = timeVal.toString("mm:ss");
+            int timeVal;
+            graph.getTime( timeVal, s, s+num );
+            int s = timeVal % 60;
+            timeVal = timeVal/60;
+            int m = timeVal % 60;
+            timeVal = timeVal/60;
+            int h = timeVal;
+            if (h>0)
+            {
+                text = QString("%1:%2:%3")
+                        .arg(h,2,10,QChar('0'))
+                        .arg(m,2,10,QChar('0'))
+                        .arg(s,2,10,QChar('0'));
+            }
+            else
+            {
+                text = QString("%1:%2")
+                        .arg(m,2,10,QChar('0'))
+                        .arg(s,2,10,QChar('0'));
+            }
         }
         tags.push_back(text);
     }
@@ -279,11 +296,11 @@ void GraphWidget::drawSeries( QPainter &painter,
     j=labels.size();
     int space = w / j;
 
-	int l=0;
+    int l=0;
 
-	QPoint pt(0,0);
-	for (i=0; i<j; i++)
-	{
+    QPoint pt(0,0);
+    for (i=0; i<j; i++)
+    {
         l=vals[i];
 
         if (labels[i].isEmpty()) //Gap in series
@@ -292,10 +309,10 @@ void GraphWidget::drawSeries( QPainter &painter,
             continue;
         }
 
-		int x =  (space/2)+i * space;
-		int y = h - l;
+        int x =  (space/2)+i * space;
+        int y = h - l;
 
-		QPoint pt1(x,y);
+        QPoint pt1(x,y);
 
         painter.setPen(Qt::gray);
         if (!pt.isNull())
@@ -333,18 +350,18 @@ void GraphWidget::drawXAxis(QPainter &painter,
                             QColor pen )
 {
     int h = height();
-	int w = width();
+    int w = width();
 
-	painter.setPen(pen);
-	painter.drawLine(0, h, w, h);
+    painter.setPen(pen);
+    painter.drawLine(0, h, w, h);
 
     //aggregate to unique labels
     std::vector<QString> labels;
     QString label;
-	int i;
+    int i;
     int j = xaxis.size();
-	for (i=0; i < j;)
-	{
+    for (i=0; i < j;)
+    {
         label = xaxis[i];
         while ( i < j && label == xaxis[i])
         {
@@ -353,27 +370,27 @@ void GraphWidget::drawXAxis(QPainter &painter,
         labels.push_back(label);
     }
 
-	j=labels.size();
+    j=labels.size();
     int space = w / j;
 
     if (!j)
         return;
 
-	QPoint pt(0,0);
-	for (i=0; i < j; i++)
-	{
-		int x =  (space/2)+space*i;
+    QPoint pt(0,0);
+    for (i=0; i < j; i++)
+    {
+        int x =  (space/2)+space*i;
 
         painter.save();
-		
-		QString s=labels[i];
-		
+
+        QString s=labels[i];
+
         painter.translate(x-5,10);
         // painter.rotate(45);
-		painter.drawText(5,0,s);
-		painter.restore();
-	}
-	
+        painter.drawText(5,0,s);
+        painter.restore();
+    }
+
 }
 
 void GraphWidget::drawVAxis( QPainter &painter,
@@ -381,7 +398,7 @@ void GraphWidget::drawVAxis( QPainter &painter,
                              int set )
 {
     int h = height();
-	int w = width();
+    int w = width();
 
     painter.setPen(pen);
 
@@ -397,9 +414,9 @@ void GraphWidget::drawVAxis( QPainter &painter,
 
     painter.drawLine(pos, 15, pos, h);
 
-	bool right=false;
-	if (pos > (w/2))
-		right=true;
+    bool right=false;
+    if (pos > (w/2))
+        right=true;
 
 
     if (right)
@@ -408,23 +425,23 @@ void GraphWidget::drawVAxis( QPainter &painter,
         painter.drawText(set * 50, 10, series[set].label);
 
 
-	for (int tick=0; tick<10; tick++)
-	{
-		int y = (tick)*(h/10);
+    for (int tick=0; tick<10; tick++)
+    {
+        int y = (tick)*(h/10);
 
-		QString s = series[set].getV( tick, 10 ); //y,h);
+        QString s = series[set].getV( tick, 10 ); //y,h);
 
-		if (right)
-		{
-			painter.drawLine(pos+5,h-y,pos,h-y);
-			painter.drawText(pos+3,h-y-5,s);
-		}
-		else
-		{
-			painter.drawLine(pos-5,h-y,pos,h-y);
-			painter.drawText(pos-25,h-y-5,s);
-		}
-	}
+        if (right)
+        {
+            painter.drawLine(pos+5,h-y,pos,h-y);
+            painter.drawText(pos+3,h-y-5,s);
+        }
+        else
+        {
+            painter.drawLine(pos-5,h-y,pos,h-y);
+            painter.drawText(pos-25,h-y-5,s);
+        }
+    }
 
 }
 
@@ -440,8 +457,8 @@ void GraphWidget::paintEvent(QPaintEvent *)
     int w = width();
     int h = height();
 
-	painter.save();
-	painter.fillRect(0,0,w,h,Qt::white);
+    painter.save();
+    painter.fillRect(0,0,w,h,Qt::white);
 
     drawVAxis(painter, Qt::red, 0);
     drawVAxis(painter, Qt::darkGreen, 1);
@@ -454,7 +471,7 @@ void GraphWidget::paintEvent(QPaintEvent *)
     painter.setViewport(QRect(60,0,w-140,h));
 
 
-	drawXAxis(painter, Qt::black);
+    drawXAxis(painter, Qt::black);
 
     // horizontal gridlines
     {
@@ -485,7 +502,7 @@ void GraphWidget::paintEvent(QPaintEvent *)
         drawBars(painter, Qt::blue,Qt::magenta,      3,2);
     }
 
-	painter.restore();
+    painter.restore();
 }
 
 void GraphWidget::clear()

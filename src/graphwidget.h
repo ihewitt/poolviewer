@@ -43,17 +43,17 @@ public:
 
         bool hasDoubles() { return !doubles.empty();}
         bool hasInts() { return !integers.empty();}
-        bool hasTimes() { return !times.empty();}
+        bool hasTimes() { return !seconds.empty();}
 
         int size() {
             if (hasDoubles()) return doubles.size();
             if (hasInts()) return integers.size();
-            if (hasTimes()) return times.size();
+            if (hasTimes()) return seconds.size();
             return 0;}
 
-        void getValue( double &ret, int i, int j=-1);
-        void getValue( int &ret, int i, int j=-1);
-        void getValue( QTime &ret, int i, int j=-1);
+        void getDouble( double &ret, int i, int j=-1);
+        void getInt( int &ret, int i, int j=-1);
+        void getTime( int &ret, int i, int j=-1);
         
         // scale point at i between min and max
         int getY( int i, int h)
@@ -64,22 +64,25 @@ public:
             if (hasDoubles())
             {
                 double data = doubles[i];
-                double result = ((data - minDbl) * h) / (maxDbl-minDbl);
+                double s=(maxDbl-minDbl);
+                if (s==0) return 0;
+                double result = ((data - minDbl) * h) / s;
                 return abs(result);
             }
             else if (hasInts())
             {
                 int data = integers[i];
-                int result = ((data - minInt) * h) / (maxInt-minInt);
+                int s = maxInt-minInt;
+                if (s==0) return 0;
+                int result = ((data - minInt) * h) / s;
                 return result;
             }
             else if (hasTimes())
             {
-                QTime data = times[i];
-                int s = minTime.secsTo(maxTime); //scale in secs;
-                int r = minTime.secsTo(data);
-
-                int result = r * h / s;
+                int data = seconds[i];
+                int s = maxTime-minTime;
+                if (s==0) return 0;
+                int result = ((data - minTime) *h) / s;
                 return result;
             }
             return 0;           
@@ -102,12 +105,29 @@ public:
             }
             else if (hasTimes())
             {
-                
-                int secs = QTime(0,0,0).secsTo(minTime)+ y* minTime.secsTo(maxTime)/ h;
-                QTime t(0,0,0);
-                t = t.addSecs(secs);
+                QString text;
+                int timeVal = minTime + y *(maxTime-minTime)/h;
+                //convert secs to h:m:s
 
-                return t.toString("mm:ss");
+                int s = timeVal % 60;
+                timeVal = timeVal/60;
+                int m = timeVal % 60;
+                timeVal = timeVal/60;
+                int h = timeVal;
+                if (h>0)
+                {
+                    text = QString("%1:%2:%3")
+                            .arg(h,2,10,QChar('0'))
+                            .arg(m,2,10,QChar('0'))
+                            .arg(s,2,10,QChar('0'));
+                }
+                else
+                {
+                    text = QString("%1:%2")
+                            .arg(m,2,10,QChar('0'))
+                            .arg(s,2,10,QChar('0'));
+                }
+                return text;
             }
             return QString(); 
         }
@@ -149,23 +169,15 @@ public:
             }
             else if (hasTimes())
             {
-                //                minTime = QTime(0,59,59);
-                minTime = QTime(0,0,0);
-                maxTime = QTime(0,0,0);
+                minTime = 0;
+                maxTime = 0;
 
-                for (size_t i=0; i < times.size(); i++)
+                for (size_t i=0; i < seconds.size(); i++)
                 {
-                    if (times[i] > maxTime)
-                        maxTime = times[i];
-
-                    if (times[i] < minTime)
-                        minTime = times[i];
+                    if (seconds[i] > maxTime)
+                        maxTime = seconds[i];
                 }
-
-                maxTime = QTime(0,maxTime.minute() + 5, 0);
-                int min = minTime.minute()-1;
-                if (min<0) min=0;
-                minTime = QTime(0,min,0);
+                maxTime = maxTime + (maxTime/60);
             }
             scaled = true;
         }
@@ -177,8 +189,8 @@ public:
         std::vector<int> integers;
         int minInt, maxInt;
 
-        std::vector<QTime> times;
-        QTime minTime, maxTime;
+        std::vector<int> seconds;
+        int minTime, maxTime;
 
         QString label;
 

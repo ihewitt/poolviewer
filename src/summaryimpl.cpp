@@ -36,7 +36,7 @@
 #include "utilities.h"
 
 
-SummaryImpl::SummaryImpl( QWidget * parent, Qt::WindowFlags f) 
+SummaryImpl::SummaryImpl( QWidget * parent, Qt::WindowFlags f)
     : QDialog(parent, f)
 {
     setupUi(this);
@@ -65,12 +65,15 @@ void SummaryImpl::scaleChanged(int sc)
     lengthWidget->update();
 }
 
-
+/*
+ * populate graph control based on grouping settings
+ * TODO break this up.
+ */
 void SummaryImpl::setData( const std::vector<Workout>& workouts)
 {
     //current date/selection
     QDate day = calendarWidget->selectedDate();
-    
+
     QDate start, end;
 
     switch (scale)
@@ -160,8 +163,8 @@ void SummaryImpl::setData( const std::vector<Workout>& workouts)
 
             volumeWidget->series[0].integers.push_back(i->cal);
             volumeWidget->series[1].integers.push_back(i->totaldistance);
-            volumeWidget->series[2].times.push_back(i->rest);
-            volumeWidget->series[3].times.push_back(i->totalduration);
+            volumeWidget->series[2].seconds.push_back(QTime(0,0,0).secsTo(i->rest));
+            volumeWidget->series[3].seconds.push_back(QTime(0,0,0).secsTo(i->totalduration));
 
             if (scale != WORKOUTS)
             {
@@ -226,7 +229,7 @@ void SummaryImpl::fillWorkouts( const std::vector<Workout>& workouts)
     workoutGrid->clearContents();
 
     std::vector<Workout>::const_iterator i;
-    
+
     workoutGrid->setRowCount(workouts.size());
 
     std::map<QDate, CalendarWidget::Totals> day_totals;
@@ -325,8 +328,8 @@ void SummaryImpl::fillLengths( const Set& set)
 
         item = createReadOnlyItem(QVariant(set.strokes[row]));
         lengthGrid->setItem( row, col++, item );
-        
-        if (set.styles.size() > row) {
+
+        if ((int)set.styles.size() > row) {
             item = createReadOnlyItem(QVariant(set.styles[row]));
             lengthGrid->setItem( row, col++, item );
         }
@@ -342,7 +345,7 @@ void SummaryImpl::fillSets( const std::vector<Set>& sets)
     setGrid->clearContents();
 
     std::vector<Set>::const_iterator i;
-    
+
     setGrid->setRowCount(sets.size());
 
     int row=0;
@@ -424,7 +427,7 @@ void SummaryImpl::workoutSelected()
     // get selection
     // fill sets
     int row = workoutGrid->currentRow();
-    
+
     const std::vector<Set>& sets = ds->Workouts()[row].sets;
     fillSets( sets );
 
@@ -507,7 +510,7 @@ void SummaryImpl::editButton()
 
 //
 // since we are a dialog application, handle escape as a close request
-// 
+//
 void SummaryImpl::keyPressEvent(QKeyEvent *event)
 {
     if (event->key() != Qt::Key_Escape)
