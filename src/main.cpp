@@ -43,16 +43,16 @@ int main(int argc, char ** argv)
     d.setFile(path);
     d.load();
 
-	QApplication app( argc, argv );
-	
-	SummaryImpl win;
+    QApplication app( argc, argv );
+
+    SummaryImpl win;
     win.setDataStore( &d );
 
     //TODO tidy this!, for now refill grid and data from datastore.
     win.fillWorkouts(d.Workouts());
 
-	win.show();
-	app.connect( &app, SIGNAL( lastWindowClosed() ), &app, SLOT( quit() ) );
+    win.show();
+    app.connect( &app, SIGNAL( lastWindowClosed() ), &app, SLOT( quit() ) );
 
-	return app.exec();
+    return app.exec();
 }

@@ -35,18 +35,18 @@ uint32_t crc32a(unsigned char *message, int len)
     int i, j;
     uint32_t crc;
     char byte;
-   
+
     for (crc=~0,i=0; i<len; ++i)
     {
-	byte = message[i];
-	for (j = 0; j <= 7; j++)
-	{
-	    if ((crc>>24 ^ byte) & 0x80)
-		crc = (crc << 1) ^ 0x04C11DB7;
-	    else
-		crc = crc << 1;
-	    byte = byte << 1;
-	}
+        byte = message[i];
+        for (j = 0; j <= 7; j++)
+        {
+            if ((crc>>24 ^ byte) & 0x80)
+                crc = (crc << 1) ^ 0x04C11DB7;
+            else
+                crc = crc << 1;
+            byte = byte << 1;
+        }
     }
     return ~crc;
 }
@@ -54,19 +54,19 @@ uint32_t crc32a(unsigned char *message, int len)
 namespace
 {
     void dataToWorkouts( unsigned char *buf, std::vector<ExerciseSet>& data )
-    {       
+    {
         // some sort of checksum exists in 0x1000,1001,1002,1003
         // need to work out how to validate it.
         // just do based on length of transfer for now.
-        
+
         /* seems to be missing from poda transfer so skip.
            if (usb->len() != 4104)
-           return;    
+           return;
            int version = buf[0x1004];
            int user = buf[0x1005];
         */
         int user = 1;
-        
+
 //TODO tidy buffer looping logic.
 //at the moment will only work if the header doesn't wrap.
         for (int i=0; i<= 4096;)
@@ -78,25 +78,25 @@ namespace
                 int cal, pool;
                 QString type;
                 QString units;
-                
+
                 year  = buf[i+2] + 2000;
                 month = buf[i+4];
                 day   = buf[i+6];
                 QDate date(year, month, day);
-                
+
                 hour  = buf[i+3] & 0x7f;
                 min   = buf[i+5] & 0x7f;
                 QTime time(hour, min);
-                
+
                 hour  = buf[i+7] & 0x7f;
                 min   = buf[i+9] & 0x7f;
                 sec   = buf[i+11] & 0x7f;
                 QTime t_dur(hour, min, sec);
-                
+
                 int sets   = buf[i+10];
-                
-                cal = ((buf[i+13] & 0x7f) << 8) | (buf[i+12]); 
-                pool = buf[i + 8]; 
+
+                cal = ((buf[i+13] & 0x7f) << 8) | (buf[i+12]);
+                pool = buf[i + 8];
                 if (buf[i + 14] == 0)
                 {
                     units = "m";
@@ -105,25 +105,25 @@ namespace
                 {
                     units = "yd";
                 }
-                
+
                 // step over header
                 i += 16;
-                
+
                 if (buf[i+7] == 0x80)
                 {
                     type = "Swim";
-                    
+
                     int total_len=0;
                     for (int j = 0; j<sets; j++)
                     {
                         int c = (i+j*8)%4096;
-                        
+
                         int len = ((buf[c + 2] & 0x7f) << 8) |
                             buf[c + 0];
-                        
+
                         total_len += len;
                     }
-                    
+
                     for (int j = 0; j<sets; j++)
                     {
                         int c = (i+j*8)%4096;
@@ -132,20 +132,20 @@ namespace
                             DEBUG("%02x ", buf[c+ct]);
                         }
                         DEBUG(" - ");
-                        
+
                         hour = buf[c + 1] & 0x7f;
                         min = buf[c + 3] & 0x7f;
                         sec = buf[c + 5] & 0x7f;
                         QTime dur(hour, min, sec);
-                        
+
                         int secs = ((hour*60)+min)*60+sec;
-                        
+
                         int len = ((buf[c + 2] & 0x7f) << 8) |
                             buf[c + 0];
-                        
+
                         int str = ((buf[c + 6] & 0x7f) << 8) |
                             buf[c + 4];
-                    
+
                         ExerciseSet set;
                         set.user = user;
                         set.date = date;
@@ -154,20 +154,20 @@ namespace
                         set.totalduration = t_dur;
                         set.set = j+1;
                         set.duration = dur;
-                        
+
                         set.cal = cal;
                         set.unit = units;
 
                         set.pool = pool;
-                        
+
                         set.lengths = total_len;
                         set.totaldistance = total_len * pool;
-                        
+
                         set.dist = len * pool;
                         set.lens = len;
-                        
+
                         set.strk = str;
-                        
+
                         if (len)
                         {
                             set.speed = 100*secs / set.dist;
@@ -185,7 +185,7 @@ namespace
                         }
 
                         DEBUG(" %d %d %d, %d %d %d \n", hour, min, sec, pool, len, secs);
-                    
+
                         data.push_back(set);
                     }
                     i += sets * 8;
@@ -211,11 +211,11 @@ namespace
                         set.totalduration = t_dur;
                         set.set = j+1;
                         set.duration = dur;
-                    
+
                         data.push_back(set);
                     }
                     i += sets * 8;
-                }  
+                }
             }
             else
             {
@@ -336,7 +336,7 @@ void PodOrig::getData( std::vector<ExerciseSet>& data )
 
     if (!buf)
         return;
-    
+
     dataToWorkouts(buf, data);
 }
 

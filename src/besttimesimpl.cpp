@@ -27,13 +27,13 @@ namespace
         const int distance = workout.pool * numberOfLanes;
         QTime duration(0, 0);
 
-        if (set.times.size() != set.lens)
+        if ((int)set.times.size() != set.lens)
         {
             // error, ignore set
             return;
         }
 
-        for (size_t i = 0; i < numberOfLanes; ++i)
+        for (int i = 0; i < numberOfLanes; ++i)
         {
             duration = duration.addMSecs(set.times[i] * 1000.0);
         }
@@ -120,7 +120,7 @@ void BestTimesImpl::on_calculateButton_clicked()
         }
 
         // this is the number of lanes to get above or equal the desired distance
-        const uint numberOfLanes = (distance + pool - 1) / pool; // round up
+        const int numberOfLanes = (distance + pool - 1) / pool; // round up
 
         for (size_t j = 0; j < w.sets.size(); ++j)
         {

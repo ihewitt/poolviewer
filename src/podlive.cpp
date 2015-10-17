@@ -60,7 +60,7 @@ PodLive::PodLive()
     }
 
     sleep(1);
-    
+
     readData.clear();
     //    connect(serialPort, SIGNAL(readyRead()), SLOT(handleReadyRead()));
     connect(serialPort, SIGNAL(error(QSerialPort::SerialPortError)), SLOT(handleError(QSerialPort::SerialPortError)));
@@ -118,7 +118,7 @@ void PodLive::getData( std::vector<ExerciseSet>& exdata )
                 int s = ptr[11] & 0x7f;
                 QDate date(Y,M,D);
                 QTime time(h,m,s);
-                
+
                 int d_m = ptr[15]& 0x7f;
                 int d_s = ptr[17]& 0x7f;
                 int d_h = ptr[13]& 0x7f; //Check hour location
@@ -164,8 +164,8 @@ void PodLive::getData( std::vector<ExerciseSet>& exdata )
                         int s = ptr[6];
                         int cal = ptr[10] + ((ptr[11] & 0x7f)<<8);
 
-                        QTime dur(0, m, s);
-                        int secs = (h*60 + m)*60 + s;  // TODO find hours.
+                        QTime dur(h, m, s);
+//                        int secs = (h*60 + m)*60 + s;  // TODO find hours.
 
                         ptr += 16;
                         sets--;
@@ -181,7 +181,7 @@ void PodLive::getData( std::vector<ExerciseSet>& exdata )
                         set.cal = cal;
                         set.unit = "m";
                         set.pool = pool;
-                        
+
                         lengths += lens;
                         totaldistance += lens*pool;
                         calories += cal;
@@ -191,7 +191,7 @@ void PodLive::getData( std::vector<ExerciseSet>& exdata )
 
                         //strokes for set:
                         int all_strokes = std::accumulate(strokes.begin(),strokes.end(),0);
-                        double all_time = std::accumulate(times.begin(), times.end(), 0);
+//                        double all_time = std::accumulate(times.begin(), times.end(), 0);
 
                         //For some reason Swimovate goes off the duration not the total seconds:
                         int setsecs = ((dur.hour()*60+dur.minute())*60+dur.second());
