@@ -33,9 +33,10 @@
 #include "datastore.h"
 #include "configimpl.h"
 #include "besttimesimpl.h"
+#include "utilities.h"
 
 
-SummaryImpl::SummaryImpl( QWidget * parent, Qt::WindowFlags f) 
+SummaryImpl::SummaryImpl( QWidget * parent, Qt::WindowFlags f)
     : QDialog(parent, f)
 {
     setupUi(this);
@@ -72,7 +73,7 @@ void SummaryImpl::setData( const std::vector<Workout>& workouts)
 {
     //current date/selection
     QDate day = calendarWidget->selectedDate();
-    
+
     QDate start, end;
 
     switch (scale)
@@ -228,17 +229,8 @@ void SummaryImpl::fillWorkouts( const std::vector<Workout>& workouts)
     workoutGrid->clearContents();
 
     std::vector<Workout>::const_iterator i;
-    
-    workoutGrid->setRowCount(workouts.size());
 
-    workoutGrid->setColumnWidth(0,85); //date
-    workoutGrid->setColumnWidth(1,50); //time
-    workoutGrid->setColumnWidth(2,35); //pool
-    workoutGrid->setColumnWidth(3,70); //duration
-    workoutGrid->setColumnWidth(4,45); //cal
-    workoutGrid->setColumnWidth(5,55); //length
-    workoutGrid->setColumnWidth(6,60); //total m
-    workoutGrid->setColumnWidth(7,60); //rest
+    workoutGrid->setRowCount(workouts.size());
 
     std::map<QDate, CalendarWidget::Totals> day_totals;
     std::map<QDate, int> day_nums;
@@ -263,38 +255,30 @@ void SummaryImpl::fillWorkouts( const std::vector<Workout>& workouts)
         int col=0;
         QTableWidgetItem *item;
 
-        item = new QTableWidgetItem(i->date.toString(Qt::SystemLocaleShortDate));
-        item->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
+        item = createTableWidgetItem(QVariant(i->date));
         workoutGrid->setItem( row, col++, item );
 
-        item = new QTableWidgetItem(i->time.toString(QString("HH:mm")));
-        item->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
+        item = createTableWidgetItem(QVariant(i->time));
         workoutGrid->setItem( row, col++, item );
 
         if (i->type == "Swim" || i->type=="SwimHR")
         {
-            item = new QTableWidgetItem(QString::number(i->pool));
-            item->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
+            item = createTableWidgetItem(QVariant(i->pool));
             workoutGrid->setItem( row, col++, item );
 
-            item = new QTableWidgetItem(i->totalduration.toString());
-            item->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
+            item = createTableWidgetItem(QVariant(i->totalduration.toString()));
             workoutGrid->setItem( row, col++, item );
 
-            item = new QTableWidgetItem(QString::number(i->cal));
-            item->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
+            item = createTableWidgetItem(QVariant(i->lengths));
             workoutGrid->setItem( row, col++, item );
 
-            item = new QTableWidgetItem(QString::number(i->lengths));
-            item->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
+            item = createTableWidgetItem(QVariant(i->totaldistance));
             workoutGrid->setItem( row, col++, item );
 
-            item = new QTableWidgetItem(QString::number(i->totaldistance));
-            item->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
+            item = createTableWidgetItem(QVariant(i->cal));
             workoutGrid->setItem( row, col++, item );
 
-            item = new QTableWidgetItem(i->rest.toString());
-            item->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
+            item = createTableWidgetItem(QVariant(i->rest.toString()));
             workoutGrid->setItem( row, col++, item );
         }
         row++;
@@ -318,6 +302,7 @@ void SummaryImpl::fillWorkouts( const std::vector<Workout>& workouts)
     }
 
     workoutGrid->selectRow(workoutGrid->rowCount()-1);
+    workoutGrid->resizeColumnsToContents();
 
     //populate graph
     setData(ds->Workouts());
@@ -329,50 +314,39 @@ void SummaryImpl::fillLengths( const Set& set)
     lengthGrid->clearContents();
     lengthGrid->setRowCount(set.lens);
 
-    lengthGrid->setColumnWidth(0,50);
-    lengthGrid->setColumnWidth(1,50);
-
     int row;
     for (row = 0; row < set.lens; ++row)
     {
         uint col=0;
         QTableWidgetItem *item;
 
-        item = new QTableWidgetItem(QString::number(set.times[row]));
-        item->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
+        item = createTableWidgetItem(QVariant(1 + row));
         lengthGrid->setItem( row, col++, item );
 
-        item = new QTableWidgetItem(QString::number(set.strokes[row]));
-        item->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
+        item = createTableWidgetItem(QVariant(set.times[row]));
         lengthGrid->setItem( row, col++, item );
-        
+
+        item = createTableWidgetItem(QVariant(set.strokes[row]));
+        lengthGrid->setItem( row, col++, item );
+
         if ((int)set.styles.size() > row) {
-            item = new QTableWidgetItem(set.styles[row]);
-            item->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
+            item = createTableWidgetItem(QVariant(set.styles[row]));
             lengthGrid->setItem( row, col++, item );
         }
-        
     }
+    lengthGrid->resizeColumnsToContents();
 }
 
 void SummaryImpl::fillSets( const std::vector<Set>& sets)
 {
     // clearContents() does not reset selected line
     setGrid->setCurrentCell(0,0);
+
     setGrid->clearContents();
 
     std::vector<Set>::const_iterator i;
-    
-    setGrid->setRowCount(sets.size());
 
-    setGrid->setColumnWidth(0,35); //set
-    setGrid->setColumnWidth(1,70); //duration
-    setGrid->setColumnWidth(2,55); //strokes
-    setGrid->setColumnWidth(3,50); //dist
-    setGrid->setColumnWidth(4,50); //speed
-    setGrid->setColumnWidth(5,50); //effic
-    setGrid->setColumnWidth(6,50); //rate
-    setGrid->setColumnWidth(7,50); //rate
+    setGrid->setRowCount(sets.size());
 
     int row=0;
     for (i=sets.begin(); i != sets.end(); ++i)
@@ -380,36 +354,33 @@ void SummaryImpl::fillSets( const std::vector<Set>& sets)
         int col=0;
         QTableWidgetItem *item;
 
-        item = new QTableWidgetItem(QString::number(i->set));
-        item->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
+        item = createTableWidgetItem(QVariant(i->set));
         setGrid->setItem( row, col++, item );
 
-        item = new QTableWidgetItem(i->duration.toString());
-        item->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
+        item = createTableWidgetItem(QVariant(i->duration.toString()));
         setGrid->setItem( row, col++, item );
 
-        item = new QTableWidgetItem(QString::number(i->strk));
-        item->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
+        item = createTableWidgetItem(QVariant(i->lens));
         setGrid->setItem( row, col++, item );
 
-        item = new QTableWidgetItem(QString::number(i->dist));
-        item->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
+        item = createTableWidgetItem(QVariant(i->dist));
         setGrid->setItem( row, col++, item );
 
-        item = new QTableWidgetItem(QString::number(i->speed));
-        item->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
+        item = createTableWidgetItem(QVariant(i->strk));
         setGrid->setItem( row, col++, item );
 
-        item = new QTableWidgetItem(QString::number(i->effic));
-        item->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
+        item = createTableWidgetItem(QVariant(i->speed));
         setGrid->setItem( row, col++, item );
 
-        item = new QTableWidgetItem(QString::number(i->rate));
-        item->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
+        item = createTableWidgetItem(QVariant(i->effic));
+        setGrid->setItem( row, col++, item );
+
+        item = createTableWidgetItem(QVariant(i->rate));
         setGrid->setItem( row, col++, item );
 
         row++;
     }
+    setGrid->resizeColumnsToContents();
 }
 
 //
@@ -456,7 +427,7 @@ void SummaryImpl::workoutSelected()
     // get selection
     // fill sets
     int row = workoutGrid->currentRow();
-    
+
     const std::vector<Set>& sets = ds->Workouts()[row].sets;
     fillSets( sets );
 
@@ -539,7 +510,7 @@ void SummaryImpl::editButton()
 
 //
 // since we are a dialog application, handle escape as a close request
-// 
+//
 void SummaryImpl::keyPressEvent(QKeyEvent *event)
 {
     if (event->key() != Qt::Key_Escape)

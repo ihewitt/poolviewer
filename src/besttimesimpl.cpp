@@ -18,19 +18,10 @@
 
 #include "besttimesimpl.h"
 #include "datastore.h"
+#include "utilities.h"
 
 namespace
 {
-    QTableWidgetItem * createReadOnlyItem(const QVariant & content, int horizAlignment)
-    {
-        QTableWidgetItem * item = new QTableWidgetItem();
-        item->setFlags(item->flags() ^ Qt::ItemIsEditable);
-        item->setData(Qt::DisplayRole, content);
-        item->setTextAlignment(horizAlignment | Qt::AlignVCenter);
-
-        return item;
-    }
-
     void addSet(const Set & set, const Workout & workout, const int numberOfLanes, QTableWidget * table)
     {
         const int distance = workout.pool * numberOfLanes;
@@ -53,25 +44,25 @@ namespace
         const int row = table->rowCount();
         table->setRowCount(row + 1);
 
-        QTableWidgetItem * dateItem = createReadOnlyItem(QVariant(workout.date), Qt::AlignLeft);
+        QTableWidgetItem * dateItem = createTableWidgetItem(QVariant(workout.date));
         table->setItem(row, 0, dateItem);
 
-        QTableWidgetItem * timeItem = createReadOnlyItem(QVariant(workout.time), Qt::AlignLeft);
+        QTableWidgetItem * timeItem = createTableWidgetItem(QVariant(workout.time));
         table->setItem(row, 1, timeItem);
 
-        QTableWidgetItem * poolItem = createReadOnlyItem(QVariant(workout.pool), Qt::AlignRight);
+        QTableWidgetItem * poolItem = createTableWidgetItem(QVariant(workout.pool));
         table->setItem(row, 2, poolItem);
 
-        QTableWidgetItem * distanceItem = createReadOnlyItem(QVariant(distance), Qt::AlignRight);
+        QTableWidgetItem * distanceItem = createTableWidgetItem(QVariant(distance));
         table->setItem(row, 3, distanceItem);
 
-        QTableWidgetItem * durationItem = createReadOnlyItem(QVariant(duration.toString()), Qt::AlignRight);
+        QTableWidgetItem * durationItem = createTableWidgetItem(QVariant(duration.toString()));
         table->setItem(row, 4, durationItem);
 
-        QTableWidgetItem * speedItem = createReadOnlyItem(QVariant(speed), Qt::AlignRight);
+        QTableWidgetItem * speedItem = createTableWidgetItem(QVariant(speed));
         table->setItem(row, 5, speedItem);
 
-        QTableWidgetItem * totalItem = createReadOnlyItem(QVariant(total), Qt::AlignRight);
+        QTableWidgetItem * totalItem = createTableWidgetItem(QVariant(total));
         table->setItem(row, 6, totalItem);
     }
 }
@@ -144,5 +135,6 @@ void BestTimesImpl::on_calculateButton_clicked()
         }
     }
 
+    timesTable->resizeColumnsToContents();
     timesTable->setSortingEnabled(true);
 }
