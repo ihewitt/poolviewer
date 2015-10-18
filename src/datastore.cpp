@@ -131,16 +131,18 @@ bool ReadCSV( const std::string & name, std::vector<ExerciseSet>& dst )
     QFile file(name.c_str());
     if (file.open(QIODevice::ReadOnly))
     {
+        QTextStream in(&file);
+
         bool oldformat = false;
-        QString head = file.readLine(); //skip header
+        QString head = in.readLine(); //skip header
         if (head.contains("LogDate"))
         {
             oldformat = true;
         }
 
-        while (!file.atEnd())
+        while (!in.atEnd())
         {
-            QString line = file.readLine();
+            QString line = in.readLine();
             QStringList strings = line.split(",");
 
             if (strings.count())
@@ -235,7 +237,6 @@ bool ReadCSV( const std::string & name, std::vector<ExerciseSet>& dst )
                 dst.push_back(e);
             }
         }
-        file.close();
 
     }
     return true;

@@ -49,7 +49,8 @@ HEADERS = src/uploadimpl.h src/syncimpl.h src/configimpl.h src/summaryimpl.h src
     src/logging.h \
     src/FIT.hpp src/stdintfwd.hpp src/GarminConvert.hpp \
     src/besttimesimpl.h \
-    src/utilities.h
+    src/utilities.h \
+    src/exerciseset.h
 SOURCES = src/uploadimpl.cpp src/syncimpl.cpp src/configimpl.cpp src/summaryimpl.cpp src/main.cpp src/graphwidget.cpp src/datastore.cpp src/poolmate.c src/calendar.cpp \
     src/podlink.cpp \
     src/podlive.cpp \
