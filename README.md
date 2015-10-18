@@ -37,6 +37,7 @@ To make this persistent add a udev rule such as:
 
 ```
 /etc/udev/rules.d/99-ftdi.rules
+SUBSYSTEMS=="usb" ATTRS{idVendor}=="0403" ATTRS{idProduct}=="8b30" MODE:="0666"
 ACTION=="add", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="8b30", RUN+="/sbin/modprobe ftdi_sio" RUN+="/bin/sh -c 'echo 0403 8b30 > /sys/bus/usb-serial/drivers/ftdi_sio/new_id'"
 ```
 
@@ -49,17 +50,6 @@ SUBSYSTEMS=="usb" ATTRS{idVendor}=="0451" ATTRS{idProduct}=="5051" MODE:="0666"
 
 ## Binary packages ##
 **Note** - the Linux binary installs currenly just install the executable "poolview" in /usr/bin no desktop or menu item is added. This will change at some point.
-
-Caution! These might not be updated with the latest fixes at the moment, the best option is to compile from the latest source code.
-
-openSUSE 13.2 -
-https://build.opensuse.org/package/binaries/home:ivorhewitt:poolsync/poolsync?repository=openSUSE_13.2
-
-Fedora 21 -
-https://build.opensuse.org/package/binaries/home:ivorhewitt:poolsync/poolsync?repository=Fedora_21
-
-Ubuntu 14.10 -
-https://build.opensuse.org/package/binaries/home:ivorhewitt:poolsync/poolsync?repository=xUbuntu_14.10
 
 # License #
 PoolViewer is free software: you can redistribute it and/or modify
