@@ -41,7 +41,7 @@ bool SaveCSV( const std::string & name, std::vector<ExerciseSet>& exercises )
         out << "User Number,Date,Time,Type,Pool Length,,Duration,Calories,Total Laps,Total Distance,Set Number,Set Duration,Average Strokes,Distance,Speed,Efficiency,Stroke Rate,,,,,,Watch Version,Status,Notes\n";
 
         std::vector<ExerciseSet>::iterator i;
-        
+
         for (i=exercises.begin(); i != exercises.end(); ++i)
         {
             out << i->user << ","
@@ -176,6 +176,13 @@ bool ReadCSV( const std::string & name, std::vector<ExerciseSet>& dst )
                     e.speed  = strings.value(14).toInt();
                     e.effic = strings.value(15).toInt();
                     e.rate  = strings.value(16).toInt();
+
+                    if (e.lens == 0) //Duplicate swimovate data
+                    {
+                        e.speed = 0;
+                        e.rate = 0;
+                        e.effic = e.strk;
+                    }
                 }
 
                 //1,31/3/2015,06:38:12,SwimHR,25,,00:32:38,397,52,1300,1,00:06:19,12,12,126,44,22,Free,,,,,0,
@@ -233,6 +240,16 @@ bool ReadCSV( const std::string & name, std::vector<ExerciseSet>& dst )
                         if (hasstyles || oldstyles)
                             e.len_style.push_back(style);
                     }
+
+                    //Check we have nothing but empty styles
+                    uint j;
+                    bool empty=true;
+                    for (j=0; j < e.len_style.size(); j++) {
+                        if (e.len_style[j].length())
+                            empty=false;
+                    }
+                    if (empty)
+                        e.len_style.clear();
                 }
                 dst.push_back(e);
             }
@@ -304,7 +321,7 @@ void setsToWorkouts( const std::vector<ExerciseSet>& sets,
             set.times = j->len_time;
             set.strokes = j->len_strokes;
             set.styles = j->len_style;
-            
+
             if (set.effic < min_effic) min_effic = set.effic;
             if (set.effic > max_effic) max_effic = set.effic;
 
@@ -331,7 +348,7 @@ void workoutsToSets( const std::vector<Workout>& workouts,
                      std::vector<ExerciseSet>& sets )
 {
     std::vector<Workout>::const_iterator i;
-    
+
     for (i = workouts.begin(); i != workouts.end(); ++i)
     {
         std::vector<Set>::const_iterator j;

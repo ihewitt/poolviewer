@@ -203,6 +203,13 @@ void PodLive::getData( std::vector<ExerciseSet>& exdata )
                             set.effic = ((25 * setsecs / lens) + (25 * set.strk)) / pool;
                             set.rate = (60 * set.strk * lens) / setsecs;
                         }
+                        else //Match swimovate data
+                        {
+                            set.speed = 0;
+                            set.strk = all_strokes;
+                            set.rate = 0;
+                            set.effic = all_strokes;
+                        }
 
                         set.len_time = times;
                         set.len_strokes = strokes;
