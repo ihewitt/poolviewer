@@ -230,8 +230,12 @@ namespace
 // what we need to do.
 
 PodOrig::PodOrig()
+{}
+
+//noop
+bool PodOrig::init()
 {
-    state = STARTUP;
+    return true;
 }
 
 PodOrig::~PodOrig()
@@ -342,18 +346,19 @@ void PodOrig::getData( std::vector<ExerciseSet>& data )
 
 // Type A pod interface
 
-PodA::PodA()
+PodA::PodA() : serialPort(NULL)
 {
-    state = STARTUP;
+}
 
-    serialPort=NULL;
+bool PodA::init()
+{
     serialPortName=this->find();
 
     if(serialPortName==QString(""))
     {
         state = ERROR;
         emit error("Unable to locate TypeA pod.");
-        return;
+        return false;
     }
 
     serialPort= new QSerialPort();
@@ -363,7 +368,7 @@ PodA::PodA()
     if (!serialPort->open(QIODevice::ReadWrite)) {
         emit error("Unable to open serial device, check permissions.");
         state = ERROR;
-        return;
+        return false;
     }
 
     int serialPortBaudRate = QSerialPort::Baud115200;
@@ -375,12 +380,14 @@ PodA::PodA()
     {
         emit error("Unable to set serial port parameters.");
         state = ERROR;
-        return;
+        return false;
     }
 
     readData.clear();
     connect(serialPort, SIGNAL(readyRead()), SLOT(handleReadyRead()));
     connect(serialPort, SIGNAL(error(QSerialPort::SerialPortError)), SLOT(handleError(QSerialPort::SerialPortError)));
+
+    return true;
 }
 
 QString PodA::find()

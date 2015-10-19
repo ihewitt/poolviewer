@@ -23,18 +23,27 @@
 #include <numeric>
 
 ///
-PodLive::PodLive()
+PodLive::PodLive() : serialPort(NULL)
 {
-    state = STARTUP;
+}
 
-    serialPort=NULL;
+PodLive::~PodLive()
+{
+    if(serialPort != NULL && serialPort->isOpen())
+        serialPort->close();
+
+    delete serialPort;
+}
+
+bool PodLive::init()
+{
     serialPortName=this->find();
 
     if(serialPortName==QString(""))
     {
         state = ERROR;
         emit error("Unable to locate Live pod.");
-        return;
+        return false;
     }
 
     serialPort= new QSerialPort();
@@ -44,7 +53,7 @@ PodLive::PodLive()
     if (!serialPort->open(QIODevice::ReadWrite)) {
         emit error("Unable to open serial device, check permissions.");
         state = ERROR;
-        return;
+        return false;
     }
 
     int serialPortBaudRate = 250000;
@@ -56,23 +65,18 @@ PodLive::PodLive()
     {
         emit error("Unable to set serial port parameters.");
         state = ERROR;
-        return;
+        return false;
     }
-
+    state = INITIALISED;
     sleep(1);
 
     readData.clear();
     //    connect(serialPort, SIGNAL(readyRead()), SLOT(handleReadyRead()));
     connect(serialPort, SIGNAL(error(QSerialPort::SerialPortError)), SLOT(handleError(QSerialPort::SerialPortError)));
+
+    return true;
 }
 
-PodLive::~PodLive()
-{
-    if(serialPort != NULL && serialPort->isOpen())
-        serialPort->close();
-
-    delete serialPort;
-}
 //Same usb vendor and product as PodA
 QString PodLive::find()
 {
@@ -375,15 +379,14 @@ void download(QSerialPort *serialPort, QByteArray& readData)
     printf("done\n");
 }
 
-
-};
+}; //namespace
 
 //
 // Begin sync, just use the simple synchronous transfer from qttest for now:
 //
 void PodLive::run()
 {
-    if (serialPort)
+    if (serialPort && state == INITIALISED )
     {
         sendandstart(serialPort, d1, sizeof(d1));
         sendandwait(serialPort, d5, sizeof(d5)); //get data to decode.
@@ -392,9 +395,5 @@ void PodLive::run()
         download(serialPort, readData);
         state = DONE;
         emit progress( 100 );
-    }
-    else
-    {
-        emit error("No serial interface connected.");
     }
 }

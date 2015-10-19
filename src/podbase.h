@@ -31,7 +31,7 @@ class PodBase : public QThread
 Q_OBJECT
 
 public:
-    PodBase() {}
+    PodBase() : state(STARTUP) {}
     ~PodBase() {}
 
     //remove state machine
@@ -45,6 +45,7 @@ public:
     };
     State state;
 
+    virtual bool init() = 0;
     virtual void getData(std::vector<ExerciseSet>& data) = 0;
 };
 

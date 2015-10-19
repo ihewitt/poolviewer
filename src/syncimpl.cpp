@@ -29,7 +29,7 @@
 // tidy messages
 // remove logging from poolmate.c
 
-SyncImpl::SyncImpl( QWidget * parent, Qt::WindowFlags f) 
+SyncImpl::SyncImpl( QWidget * parent, Qt::WindowFlags f)
     : QDialog(parent, f), pod(0)
 {
     setupUi(this);
@@ -61,7 +61,7 @@ void SyncImpl::getData(std::vector<ExerciseSet>& data)
 }
 
 //
-// 
+//
 void SyncImpl::start()
 {
     QSettings settings("Swim","Poolmate");
@@ -83,7 +83,7 @@ void SyncImpl::start()
         pod = new PodLive();
         break;
     }
-    
+
     void info(QString msg);
     void error(QString msg);
     void progress(int progress);
@@ -92,6 +92,7 @@ void SyncImpl::start()
     connect(pod, SIGNAL(error(QString)), SLOT(podMsg(QString)));
     connect(pod, SIGNAL(progress(int)), SLOT(podProgress(int)));
 
-    pod->start();
+    if (pod->init())
+        pod->start();
 }
 
