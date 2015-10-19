@@ -30,7 +30,7 @@ void drawBar(QPainter &painter,
 {
     QColor hi = col.lighter(160);
     QColor lo = col.darker(150);
-    
+
     int w = rect.width()/4;
 
     painter.fillRect(rect, col);
@@ -114,7 +114,7 @@ void GraphWidget::drawBars( QPainter &painter,
 
     std::vector<QString> labels;
     std::vector<int> vals; // Y axis values to display
-    
+
     QString label;
 
     //aggregate data to draw.
@@ -136,7 +136,7 @@ void GraphWidget::drawBars( QPainter &painter,
 
     int thick = w/(vals.size()*3.25);
     if (thick<0) thick=2;
-    
+
     for (i=0; i < vals.size(); i++)
     {
         int x = (set*thick) + w * i / (vals.size());
@@ -198,7 +198,7 @@ void GraphWidget::drawBars( QPainter &painter,
 
     int thick = w/(labels.size()*3.25);
     if (thick<0) thick=2;
-    
+
     j=labels.size();
     for (i=0; i < j; i++)
     {
@@ -418,11 +418,10 @@ void GraphWidget::drawVAxis( QPainter &painter,
     if (pos > (w/2))
         right=true;
 
-
     if (right)
-        painter.drawText(w - (set-1)*50, 10, series[set].label);
+        painter.drawText(pos+3, 10, series[set].label);
     else
-        painter.drawText(set * 50, 10, series[set].label);
+        painter.drawText(pos-28, 10, series[set].label);
 
 
     for (int tick=0; tick<10; tick++)
@@ -452,7 +451,10 @@ void GraphWidget::paintEvent(QPaintEvent *)
 
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing);
-    painter.setRenderHint(QPainter::HighQualityAntialiasing);
+    painter.setRenderHint(QPainter::TextAntialiasing);
+
+    // Add this to config dialog
+    painter.setFont(QFont("FreeSans",9,-1,true));
 
     int w = width();
     int h = height();

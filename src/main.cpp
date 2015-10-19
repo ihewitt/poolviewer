@@ -50,7 +50,6 @@ int main(int argc, char ** argv)
 
     //TODO tidy this!, for now refill grid and data from datastore.
     win.fillWorkouts(d.Workouts());
-
     win.show();
     app.connect( &app, SIGNAL( lastWindowClosed() ), &app, SLOT( quit() ) );
 

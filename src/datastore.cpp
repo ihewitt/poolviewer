@@ -493,9 +493,11 @@ int DataStore::add(const std::vector<ExerciseSet> &sets)
 
 const std::vector<Workout>& DataStore::Workouts() const
 {
-    if (!sorted)
+    if (!sorted && workouts.size())
+    {
         std::sort(workouts.begin(), workouts.end(), sortfn);
-    sorted=true;
+        sorted=true;
+    }
     return workouts;
 }
 

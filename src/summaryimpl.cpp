@@ -42,7 +42,7 @@ SummaryImpl::SummaryImpl( QWidget * parent, Qt::WindowFlags f)
     setupUi(this);
     setWindowFlags(Qt::WindowMinimizeButtonHint|Qt::WindowMaximizeButtonHint);
 
-// Graph control settings
+    // Graph control settings
     efficCheck->setChecked(true);
     strokeCheck->setChecked(true);
     rateCheck->setChecked(true);
@@ -51,6 +51,9 @@ SummaryImpl::SummaryImpl( QWidget * parent, Qt::WindowFlags f)
 
     lengthWidget->setGraphs(true,true,true,true);
     scale = WORKOUTS;
+    tabs->setTabEnabled(0,false);
+    tabs->setCurrentIndex(1);
+
     //    setEscapeButton(pushButton);
 }
 
@@ -58,8 +61,23 @@ void SummaryImpl::scaleChanged(int sc)
 {
     scale = (Scale)sc;
 
-    setData(ds->Workouts());
+    switch (scale)
+    {
+    case WORKOUTS:
+        tabs->setTabEnabled(0,false);
+        tabs->setTabEnabled(1,true);
+        tabs->setTabEnabled(2,true);
+        tabs->setCurrentIndex(1);
+        break;
+    default:
+        tabs->setTabEnabled(0,true);
+        tabs->setTabEnabled(1,true);
+        tabs->setTabEnabled(2,false);
+        tabs->setCurrentIndex(0);
+        break;
+    }
 
+    setData(ds->Workouts());
     volumeWidget->update();
     graphWidget->update();
     lengthWidget->update();
@@ -142,32 +160,72 @@ void SummaryImpl::setData( const std::vector<Workout>& workouts)
         lengthWidget->series[3].label = "Rte";
     }
 
-
-    std::vector<Workout>::const_iterator i;
-    for ( i = workouts.begin(); i != workouts.end(); ++i)
+    if (scale == WORKOUTS)
     {
-        if ( (i->type == "Swim"|| i->type=="SwimHR") &&
-              i->date >= start &&
-              i->date <= end)
+        int row = 0;
+        const Workout& workout = ds->Workouts()[workoutGrid->currentRow()];
+
+        std::vector<Set>::const_iterator i;
+        for (i = workout.sets.begin(); i != workout.sets.end(); ++i)
         {
-            QString axLabel;
-            if (scale == YEARBYWEEK)
-                axLabel=QString("%1/%2")
-                        .arg(i->date.weekNumber())
-                        .arg(i->date.year());
-            else if (scale == YEARBYMONTH)
-                axLabel=i->date.toString("MMM");
-            else
-                axLabel=i->date.toString("dd/MM");
-            volumeWidget->xaxis.push_back(axLabel);
+            graphWidget->xaxis.push_back( QString::number(++row) );
+            graphWidget->series[0].integers.push_back(i->effic);
+            graphWidget->series[1].integers.push_back(i->speed);
+            graphWidget->series[2].doubles.push_back( i->strk ? (double)workout.pool/i->strk : 0.0 );
+            graphWidget->series[3].integers.push_back(i->rate);
+        }
 
-            volumeWidget->series[0].integers.push_back(i->cal);
-            volumeWidget->series[1].integers.push_back(i->totaldistance);
-            volumeWidget->series[2].seconds.push_back(QTime(0,0,0).secsTo(i->rest));
-            volumeWidget->series[3].seconds.push_back(QTime(0,0,0).secsTo(i->totalduration));
-
-            if (scale != WORKOUTS)
+        if (workout.sets[0].times.size())
+        {
+            int n=0;
+            std::vector<Set>::const_iterator i;
+            for (i = workout.sets.begin(); i != workout.sets.end(); ++i)
             {
+                int j;
+                for ( j=0; j < i->lens; ++j )
+                {
+                    double rate = 60 * i->strokes[j]/i->times[j];
+                    int effic = ((25 * i->times[j]) + (25*i->strokes[j]))/workout.pool;
+
+                    lengthWidget->xaxis.push_back(QString::number(++n));
+
+                    lengthWidget->series[0].integers.push_back(effic);
+                    lengthWidget->series[1].integers.push_back(100*i->times[j]/workout.pool);
+                    lengthWidget->series[2].doubles.push_back((double)workout.pool/i->strokes[j]);
+                    lengthWidget->series[3].integers.push_back(rate);
+                }
+                lengthWidget->xaxis.push_back(QString());
+                lengthWidget->series[0].integers.push_back(-1);
+                lengthWidget->series[1].integers.push_back(-1);
+                lengthWidget->series[2].doubles.push_back(-1);
+                lengthWidget->series[3].integers.push_back(-1);
+            }
+        }
+    }
+    else
+    {
+        std::vector<Workout>::const_iterator i;
+        for ( i = workouts.begin(); i != workouts.end(); ++i)
+        {
+            if ( (i->type == "Swim"|| i->type=="SwimHR") &&
+                 i->date >= start &&
+                 i->date <= end)
+            {
+                QString axLabel;
+                if (scale == YEARBYWEEK)
+                    axLabel=QString("%1")
+                            .arg(i->date.weekNumber());
+                else if (scale == YEARBYMONTH)
+                    axLabel=i->date.toString("MMM");
+                else
+                    axLabel=i->date.toString("dd/MM");
+                volumeWidget->xaxis.push_back(axLabel);
+
+                volumeWidget->series[0].integers.push_back(i->cal);
+                volumeWidget->series[1].integers.push_back(i->totaldistance);
+                volumeWidget->series[2].seconds.push_back(QTime(0,0,0).secsTo(i->rest));
+                volumeWidget->series[3].seconds.push_back(QTime(0,0,0).secsTo(i->totalduration));
+
                 std::vector<Set>::const_iterator j;
                 for (j = i->sets.begin(); j != i->sets.end(); ++j)
                 {
@@ -176,47 +234,6 @@ void SummaryImpl::setData( const std::vector<Workout>& workouts)
                     graphWidget->series[1].integers.push_back(j->speed);
                     graphWidget->series[2].doubles.push_back( j->strk ? (double)i->pool/j->strk : 0.0 );
                     graphWidget->series[3].integers.push_back(j->rate);
-                }
-            } else
-            {
-                int row = 0;
-                const Workout& workout = ds->Workouts()[workoutGrid->currentRow()];
-
-                std::vector<Set>::const_iterator i;
-                for (i = workout.sets.begin(); i != workout.sets.end(); ++i)
-                {
-                    graphWidget->xaxis.push_back( QString::number(++row) );
-                    graphWidget->series[0].integers.push_back(i->effic);
-                    graphWidget->series[1].integers.push_back(i->speed);
-                    graphWidget->series[2].doubles.push_back( i->strk ? (double)workout.pool/i->strk : 0.0 );
-                    graphWidget->series[3].integers.push_back(i->rate);
-                }
-
-                if (workout.sets[0].times.size())
-                {
-                    int n=0;
-                    std::vector<Set>::const_iterator i;
-                    for (i = workout.sets.begin(); i != workout.sets.end(); ++i)
-                    {
-                        int j;
-                        for ( j=0; j < i->lens; ++j )
-                        {
-                            double rate = 60 * i->strokes[j]/i->times[j];
-                            int effic = ((25 * i->times[j]) + (25*i->strokes[j]))/workout.pool;
-
-                            lengthWidget->xaxis.push_back(QString::number(++n));
-
-                            lengthWidget->series[0].integers.push_back(effic);
-                            lengthWidget->series[1].integers.push_back(100*i->times[j]/workout.pool);
-                            lengthWidget->series[2].doubles.push_back((double)workout.pool/i->strokes[j]);
-                            lengthWidget->series[3].integers.push_back(rate);
-                        }
-                        lengthWidget->xaxis.push_back(QString());
-                        lengthWidget->series[0].integers.push_back(-1);
-                        lengthWidget->series[1].integers.push_back(-1);
-                        lengthWidget->series[2].doubles.push_back(-1);
-                        lengthWidget->series[3].integers.push_back(-1);
-                    }
                 }
             }
         }
@@ -617,9 +634,9 @@ void SummaryImpl::on_check_clicked()
     graphWidget->update();
 
     lengthWidget->setGraphs(efficCheck->isChecked(),
-                           strokeCheck->isChecked(),
-                           rateCheck->isChecked(),
-                           speedCheck->isChecked());
+                            strokeCheck->isChecked(),
+                            rateCheck->isChecked(),
+                            speedCheck->isChecked());
     lengthWidget->update();
 
 }
