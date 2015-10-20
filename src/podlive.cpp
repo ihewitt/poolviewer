@@ -22,6 +22,29 @@
 #include "podlive.h"
 #include <numeric>
 
+//CRC32 helper function for PoolmateLive protocol
+// Non-optimised crc32 calc.
+// Doesn't need to be fast so leave readable.
+uint32_t crc32a(unsigned char *message, int len)
+{
+    int i, j;
+    uint32_t crc;
+    char byte;
+    for (crc=~0,i=0; i<len; ++i)
+    {
+        byte = message[i];
+        for (j = 0; j <= 7; j++)
+        {
+            if ((crc>>24 ^ byte) & 0x80)
+                crc = (crc << 1) ^ 0x04C11DB7;
+            else
+                crc = crc << 1;
+            byte = byte << 1;
+        }
+    }
+    return ~crc;
+}
+
 ///
 PodLive::PodLive() : serialPort(NULL)
 {
@@ -257,16 +280,16 @@ unsigned char d5[] = {0x00,0x06,0x80,0x00,0x00,0x00}; //Download start
 void display(QByteArray& data)
 {
     int i;
-    printf("%d :", data.length());
+    DEBUG("%d :", data.length());
     for (i=0; i < data.length(); ++i)
     {
-        printf("%02x ", (unsigned char)data[i]);
+        DEBUG("%02x ", (unsigned char)data[i]);
         if ((i & 0xff) == 0xff)
         {
-            printf("\n");
+            DEBUG("\n");
         }
     }
-    printf("\n");
+    DEBUG("\n");
 }
 
 
@@ -333,7 +356,7 @@ void download(QSerialPort *serialPort, QByteArray& readData)
     uint32_t req;
     req = *(uint32_t*)data.data();
 
-    printf("Bitflags: %04x\n", req); //bitflags
+    DEBUG("Bitflags: %04x\n", req); //bitflags
 
     unsigned char buf[20]; //6 header, 10 msg, 4 chksum
     unsigned char msg[]={0x00,0x00,0xff,0xff,0xff,0xff,
@@ -351,11 +374,11 @@ void download(QSerialPort *serialPort, QByteArray& readData)
             uint32_t crc = crc32a(&buf[6], 10);
             memcpy(&buf[16], &crc, sizeof(uint32_t));
 
-            printf("Request set %02x ", i);
+            DEBUG("Request set %02x ", i);
             write(serialPort, buf, 20);
             read(serialPort, 20);
 
-            printf("Read %d\n", data.length());
+            DEBUG("Read %d\n", data.length());
 
             //check crc.
             readData.append(data.data(), data.length()-4);
@@ -369,14 +392,14 @@ void download(QSerialPort *serialPort, QByteArray& readData)
         {
             if ((req & 1) == 0)
             {
-                printf("More data, overriding bitmask.\n");
+                DEBUG("More data, overriding bitmask.\n");
                 req |= 1;
             }
         }
 
         //emit progress( 0x30*100/(1+i) );
     }
-    printf("done\n");
+    DEBUG("done\n");
 }
 
 }; //namespace

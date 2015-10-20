@@ -16,43 +16,10 @@
  * along with PoolViewer.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PODLINK_H
-#define PODLINK_H
+#ifndef PODORIG_H
+#define PODORIG_H
 
 #include "podbase.h"
-
-// Implementation for the poolmate "Pod-A"
-// this is supported by the native linux serial interface so use
-// QSerialPort instead
-
-class PodA : public PodBase
-{
-Q_OBJECT
-public:
-    PodA();
-    ~PodA();
-
-    void run();
-
-    virtual bool init();
-    virtual void getData(std::vector<ExerciseSet>& data);
-
-signals:
-    void info(QString msg);
-    void error(QString msg);
-    void progress(int progress);
-
-private slots:
-    void handleReadyRead();
-    void handleError(QSerialPort::SerialPortError error);
-
-private:
-    int          len();
-    QString      find();
-    QSerialPort *serialPort;
-    QString      serialPortName;
-    QByteArray   readData;
-};
 
 // The original pod. Use internal libusb logic to communicate directly.
 class PodOrig : public PodBase
@@ -73,6 +40,4 @@ signals:
     void progress(int progress);
 };
 
-
-#endif // PODLINK_H
-
+#endif // PODORIG_H

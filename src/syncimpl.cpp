@@ -21,7 +21,8 @@
 #include <QTimer>
 
 #include "syncimpl.h"
-#include "podlink.h"
+#include "podorig.h"
+#include "poda.h"
 #include "podlive.h"
 #include "logging.h"
 

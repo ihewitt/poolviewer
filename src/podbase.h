@@ -25,6 +25,7 @@
 #include "exerciseset.h"
 
 uint32_t crc32a(unsigned char *message, int len);
+void dataToWorkouts( unsigned char *buf, std::vector<ExerciseSet>& data );
 
 class PodBase : public QThread
 {

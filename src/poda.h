@@ -16,18 +16,21 @@
  * along with PoolViewer.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PODLIVE_H
-#define PODLIVE_H
+#ifndef PODA_H
+#define PODA_H
 
-// New UsbLive interface
 #include "podbase.h"
 
-class PodLive : public PodBase
+// Implementation for the poolmate "Pod-A"
+// this is supported by the native linux serial interface so use
+// QSerialPort instead
+
+class PodA : public PodBase
 {
-    Q_OBJECT
+Q_OBJECT
 public:
-    PodLive();
-    ~PodLive();
+    PodA();
+    ~PodA();
 
     void run();
 
@@ -40,14 +43,15 @@ signals:
     void progress(int progress);
 
 private slots:
+    void handleReadyRead();
     void handleError(QSerialPort::SerialPortError error);
 
 private:
+    int          len();
     QString      find();
     QSerialPort *serialPort;
     QString      serialPortName;
     QByteArray   readData;
-
 };
 
-#endif //PODLIVE_H
+#endif // PODA_H
