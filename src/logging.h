@@ -2,7 +2,7 @@
 #define LOGGING_H
 
 //for excessive logging
-#define VERBOSE_DEBUG
+//#define VERBOSE_DEBUG
 
 #if (QT_NO_DEBUG)
 #define INFO(x,...)

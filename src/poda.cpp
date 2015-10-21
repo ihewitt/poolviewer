@@ -122,15 +122,15 @@ void PodA::run()
                 if (count)
                     emit info(QString("Transferring (%1)").arg(count));
 
-                emit progress( count*100/4096 );
+                emit progress( count*100/(4096+8) );
 
                 yieldCurrentThread();
             }
 
             count = len();
-            emit progress( count*100/4096 );
+            emit progress( count*100/(4096+8) );
 
-            if (count < 4196)
+            if (count < (4096+8))
             {
                 emit info(QString("Problem during transfer. Incomplete data."));
                 state = ERROR;
@@ -162,13 +162,13 @@ void PodA::handleReadyRead()
         this->state=TRANSFER;
     }
 
-    if ( readData.length() > 4196)
+    if ( readData.length() > (4096+8))
     {
         this->state = ERROR;
         return;
     }
 
-    if ( readData.length() == 4196)
+    if ( readData.length() == (4096+8))
     {
         INFO("\nDone\n");
         this->state = DONE;

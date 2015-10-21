@@ -30,20 +30,24 @@ extern "C"
 void dataToWorkouts( unsigned char *buf, std::vector<ExerciseSet>& data )
 {
     // some sort of checksum exists in 0x1000,1001,1002,1003
-    // need to work out how to validate it.
-    // just do based on length of transfer for now.
+    int version = buf[0x1004];
+    int user = buf[0x1005];
 
-    /* seems to be missing from poda transfer so skip.
-       if (usb->len() != 4104)
-       return;
-       int version = buf[0x1004];
-       int user = buf[0x1005];
-    */
-    int user = 1;
-
+#ifdef VERBOSE_DEBUG
+    DEBUG("Transfer dump\n");
+    for (int i=0; i< (4096+8); i++)
+    {
+        DEBUG("%02x ", buf[i]);
+        if ((i&0x7) == 0x7 && buf[i-1] == 0)
+        {
+            DEBUG("\n");
+        }            
+    }
+#endif    
+    
 //TODO tidy buffer looping logic.
 //at the moment will only work if the header doesn't wrap.
-    for (int i=0; i<= 4096;)
+    for (int i=0; i< 4096;)
     {
         if (buf[i] == 0 && buf[i+1] == 0)
         {
@@ -276,13 +280,13 @@ void PodOrig::run()
                 if (count)
                 {
                     emit info(QString("Transferring"));
-                    emit progress( count*100/4096 );
+                    emit progress( count*100/(4096+8) );
                 }
             }
             count = poolmate_len();
-            emit progress( count*100/4096);
+            emit progress( count*100/(4096+8));
 
-            if (count < 4096)
+            if (count < (4096+8))
             {
                 emit info(QString("Problem during transfer."));
                 state = ERROR;
