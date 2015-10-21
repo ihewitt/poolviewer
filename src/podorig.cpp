@@ -276,13 +276,13 @@ void PodOrig::run()
                 if (count)
                 {
                     emit info(QString("Transferring"));
-                    emit progress( count*100/4104 );
+                    emit progress( count*100/4096 );
                 }
             }
             count = poolmate_len();
-            emit progress( count*100/4104 );
+            emit progress( count*100/4096);
 
-            if (count < 4104)
+            if (count < 4096)
             {
                 emit info(QString("Problem during transfer."));
                 state = ERROR;
