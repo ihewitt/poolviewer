@@ -35,6 +35,7 @@ public:
     void run();
 
     virtual bool init();
+    virtual void stop();
     virtual void getData(std::vector<ExerciseSet>& data);
 
 signals:

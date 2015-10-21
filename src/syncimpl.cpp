@@ -43,7 +43,10 @@ SyncImpl::SyncImpl( QWidget * parent, Qt::WindowFlags f)
 SyncImpl::~SyncImpl()
 {
     if (pod)
+    {
+        pod->stop();
         delete pod;
+    }
 }
 
 void SyncImpl::podMsg(QString msg)
@@ -54,6 +57,7 @@ void SyncImpl::podMsg(QString msg)
 void SyncImpl::podProgress(int progress)
 {
     progressBar->setValue(progress);
+    update();
 }
 
 void SyncImpl::getData(std::vector<ExerciseSet>& data)

@@ -212,15 +212,23 @@ bool PodOrig::init()
 
 PodOrig::~PodOrig()
 {
-    //wait();
-    if (state != STARTUP)
-        poolmate_cleanup();
+}
+
+void PodOrig::stop()
+{
+    if (state == READY)
+    {
+        state = ERROR;
+        while (state == ERROR)
+        {
+            sleep(1);
+        }
+    }
 }
 
 void PodOrig::run()
 {
     int count;
-
     while ( state != ERROR &&
             state != DONE )
     {
@@ -266,12 +274,13 @@ void PodOrig::run()
                 count=0;
                 count = poolmate_len();
                 if (count)
+                {
                     emit info(QString("Transferring"));
-
-                emit progress( 4104*100/(1+count) );
+                    emit progress( count*100/4104 );
+                }
             }
             count = poolmate_len();
-            emit progress( 4104*100/(1+count) );
+            emit progress( count*100/4104 );
 
             if (count < 4104)
             {
@@ -291,8 +300,9 @@ void PodOrig::run()
         default:
             break;
         }
-    }
 
+        yieldCurrentThread();
+    }
     if (state == ERROR)
     {
         poolmate_cleanup();

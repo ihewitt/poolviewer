@@ -30,7 +30,6 @@ void dataToWorkouts( unsigned char *buf, std::vector<ExerciseSet>& data );
 class PodBase : public QThread
 {
 Q_OBJECT
-
 public:
     PodBase() : state(STARTUP) {}
     ~PodBase() {}
@@ -39,6 +38,7 @@ public:
     enum State {
         STARTUP,
         ERROR,
+        STOP,
         INITIALISED,
         READY,
         TRANSFER,
@@ -47,6 +47,7 @@ public:
     State state;
 
     virtual bool init() = 0;
+    virtual void stop() = 0;
     virtual void getData(std::vector<ExerciseSet>& data) = 0;
 };
 

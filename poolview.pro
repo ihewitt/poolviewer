@@ -8,35 +8,32 @@ CONFIG += qt warn_on debug_and_release
 DESTDIR = bin
 
 release {
-	OBJECTS_DIR = build/release
-	MOC_DIR = build/release
-	UI_DIR = build/release
-	}
+        OBJECTS_DIR = build/release
+        MOC_DIR = build/release
+        UI_DIR = build/release
+        }
 
 debug {
-	OBJECTS_DIR = build/debug
-	MOC_DIR = build/debug
-	UI_DIR = build/debug
-	}
-
+        OBJECTS_DIR = build/debug
+        MOC_DIR = build/debug
+        UI_DIR = build/debug
+        }
 
 unix {
-	LIBS += -lusb-1.0
-	INCLUDEPATH += ./src
+        LIBS += -lusb-1.0
+        INCLUDEPATH += ./src
 }
 
 win32 {
-	INCLUDEPATH += ./src c:/libusb/include
-	QMAKE_LIBDIR += C:/libusb/ms32/dll
-	LIBS += -llibusb-1.0
+        INCLUDEPATH += ./src c:/libusb/include
+        QMAKE_LIBDIR += C:/libusb/ms32/dll
+        LIBS += -llibusb-1.0
 }
 
 CONFIG(debug, debug|release) {
-	unix: TARGET = $$join(TARGET,,,_g)
-	win32: TARGET = $$join(TARGET,,d)
+        unix: TARGET = $$join(TARGET,,,_g)
+        win32: TARGET = $$join(TARGET,,d)
 }
-
-Debug:DEFINES += _DEBUG
 
 target.path = $$PREFIX/usr/bin
 INSTALLS += target

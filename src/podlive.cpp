@@ -58,6 +58,10 @@ PodLive::~PodLive()
     delete serialPort;
 }
 
+void PodLive::stop()
+{
+}
+
 bool PodLive::init()
 {
     serialPortName=this->find();
@@ -351,7 +355,8 @@ void sendandwait(QSerialPort *serialPort, unsigned char* data, int len)
     read(serialPort,6+len+sizeof(uint32_t));
 }
 
-void download(QSerialPort *serialPort, QByteArray& readData)
+}; //namespace
+void PodLive::download(QSerialPort *serialPort, QByteArray& readData)
 {
     uint32_t req;
     req = *(uint32_t*)data.data();
@@ -397,12 +402,11 @@ void download(QSerialPort *serialPort, QByteArray& readData)
             }
         }
 
-        //emit progress( 0x30*100/(1+i) );
+        emit progress( i*100/0x20 );
+        yieldCurrentThread();
     }
     DEBUG("done\n");
 }
-
-}; //namespace
 
 //
 // Begin sync, just use the simple synchronous transfer from qttest for now:

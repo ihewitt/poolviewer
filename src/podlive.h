@@ -32,6 +32,7 @@ public:
     void run();
 
     virtual bool init();
+    virtual void stop();
     virtual void getData(std::vector<ExerciseSet>& data);
 
 signals:
@@ -47,6 +48,7 @@ private:
     QSerialPort *serialPort;
     QString      serialPortName;
     QByteArray   readData;
+    void         download(QSerialPort *serialPort, QByteArray& readData);
 
 };
 

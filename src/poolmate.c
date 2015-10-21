@@ -62,7 +62,7 @@ typedef struct _context
     struct libusb_transfer *ctrl_transfer;
     struct libusb_transfer *img_transfer;
     struct libusb_transfer *irq_transfer;
-    
+
     unsigned char imgbuf[256];
     unsigned char irqbuf[2];
 
@@ -79,7 +79,7 @@ long poolmate_len()
 
 unsigned char* poolmate_data()
 {
-    if (g_c)
+    if (g_c && g_c->len)
         return g_c->data;
     else
         return 0;
@@ -102,7 +102,7 @@ void dump(char* n, unsigned char* buf)
 static int find_poolmate_device()
 {
 //Try first id
-	g_c->devh = libusb_open_device_with_vid_pid(g_c->ctx, 0x0451, 0x5051);
+    g_c->devh = libusb_open_device_with_vid_pid(g_c->ctx, 0x0451, 0x5051);
 
     return g_c->devh ? 0 : -EIO;
 }
@@ -142,7 +142,7 @@ static void LIBUSB_CALL cb_img(struct libusb_transfer *transfer)
 
     if (c->state == READY)
         c->state = TRANSFER;
-    
+
     if (len + c->len > 4104)
     {
         c->state = ERROR;
@@ -183,7 +183,7 @@ static int alloc_transfers()
     g_c->img_transfer = libusb_alloc_transfer(0);
     if (!g_c->img_transfer)
         return -ENOMEM;
-    
+
     g_c->irq_transfer = libusb_alloc_transfer(0);
     if (!g_c->irq_transfer)
         return -ENOMEM;
@@ -204,7 +204,7 @@ static int alloc_transfers()
 int set_serial(unsigned char* config )
 {
     int r;
-    r = libusb_control_transfer(g_c->devh, 0x40, 0x05, 0x00, 0x03, config, 10, 0);	
+    r = libusb_control_transfer(g_c->devh, 0x40, 0x05, 0x00, 0x03, config, 10, 0);
     if (r < 0)
     {
         INFO("control error %d\n", r);
@@ -215,7 +215,7 @@ int set_serial(unsigned char* config )
 int send_ctrl(int bRequest, int wValue)
 {
     int r;
-    r = libusb_control_transfer(g_c->devh, 0x40, bRequest, wValue, 3,  0, 0, 0);	
+    r = libusb_control_transfer(g_c->devh, 0x40, bRequest, wValue, 3,  0, 0, 0);
 
     if (r < 0)
     {
@@ -265,7 +265,7 @@ int poolmate_init()
     r = libusb_init(&ctx);
     if (r)
         return r;
-    
+
     g_c = malloc(sizeof(Context));
     memset( g_c, 0, sizeof(Context));
     g_c->ctx = ctx;
@@ -304,7 +304,7 @@ int poolmate_attach()
         INFO( "configuration error\n");
         return -1;
     }
-    
+
     r = libusb_kernel_driver_active(g_c->devh, 0);
     if (r)
         return r;
@@ -339,7 +339,7 @@ int poolmate_start()
 
     if (g_c->transfer)
     {
-        libusb_cancel_transfer(g_c->img_transfer);    
+        libusb_cancel_transfer(g_c->img_transfer);
         while (g_c->transfer)
             libusb_handle_events(g_c->ctx);
     }
@@ -358,7 +358,7 @@ int poolmate_start()
 //        unsigned char config4[10]={0x00,0x08,0x70,0x00,0x03,0x00,0x00,0x11,0x13,0x00};
 //115200bps, 8data,nodtr,norts
         unsigned char config5[10]={0x00,0x08,0x70,0x02,0x03,0x00,0x00,0x11,0x13,0x00};
-      
+
 //Not sure if this is necessary but drops to 1200bps before opening port
         set_serial(config1);
 
@@ -380,9 +380,8 @@ int poolmate_stop()
     purge_port(0x80);
     libusb_clear_halt(g_c->devh,129);
 
-    libusb_cancel_transfer(g_c->img_transfer);    
-    while (g_c->transfer)
-        libusb_handle_events(g_c->ctx);
+    libusb_cancel_transfer(g_c->img_transfer);
+    libusb_handle_events(g_c->ctx);
 
     return close_port();
 }
@@ -395,32 +394,23 @@ int poolmate_cleanup()
     if (!c)
         return 0;
 
-    if (c->ctrl_transfer)
-        libusb_free_transfer(c->ctrl_transfer);
-    if (c->img_transfer)
-        libusb_free_transfer(c->img_transfer);
-    if (c->irq_transfer)
-        libusb_free_transfer(c->irq_transfer);
-
-    c->ctrl_transfer=0;
-    c->img_transfer=0;
-    c->irq_transfer=0;
-    
     int errCode = 0;
 
     if (c->devh)
     {
-	errCode= libusb_release_interface(c->devh, 0);
+        errCode= libusb_release_interface(c->devh, 0);
     }
-    
+
     if  (errCode)
     {
         return -1;
     }
+
     libusb_close(c->devh);
     libusb_exit(c->ctx);
 
     free(c->data);
+    c->data=0;
     free(c);
 
     return 0;
@@ -451,12 +441,12 @@ int poolmate_run()
 static int sig=0;
 static void sighandler(int signum)
 {
-    sig = 1;	
+    sig = 1;
 }
 
 void main()
 {
-	printf("Test mode\n");
+    printf("Test mode\n");
     struct sigaction sigact;
     sigact.sa_handler = sighandler;
     sigemptyset(&sigact.sa_mask);
@@ -464,20 +454,20 @@ void main()
     sigaction(SIGINT, &sigact, NULL);
     sigaction(SIGTERM, &sigact, NULL);
     sigaction(SIGQUIT, &sigact, NULL);
-    
+
 
     if (poolmate_init())
     {
         DEBUG("unable to init\n");
         return;
     }
-    
+
     if (poolmate_find())
     {
         DEBUG("unable to find\n");
         return;
     }
-    
+
     if (poolmate_attach())
     {
         DEBUG("unable ot attach\n");
@@ -493,15 +483,15 @@ void main()
             DEBUG("unable to start\n");
             return;
         }
-        
+
         while (!sig && poolmate_run() > 0)
         { }
         DEBUG ("\n");
-        
+
         if (poolmate_stop())
             DEBUG("unable to stop\n");
     }
-        
+
 }
 
 #endif

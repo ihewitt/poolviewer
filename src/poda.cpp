@@ -50,8 +50,8 @@ bool PodA::init()
     if (!serialPort->setBaudRate(serialPortBaudRate)  ||
         !serialPort->setDataBits(QSerialPort::Data8)  ||
         !serialPort->setParity(QSerialPort::NoParity) ||
-        !serialPort->setStopBits(QSerialPort::OneStop)||
-        !serialPort->setFlowControl(QSerialPort::SoftwareControl))
+        !serialPort->setStopBits(QSerialPort::TwoStop)||
+        !serialPort->setFlowControl(QSerialPort::NoFlowControl))
     {
         emit error("Unable to set serial port parameters.");
         state = ERROR;
@@ -87,6 +87,12 @@ PodA::~PodA()
     delete serialPort;
 }
 
+void PodA::stop()
+{
+    state = DONE;
+    sleep(1);
+}
+
 void PodA::run()
 {
     int count;
@@ -116,15 +122,15 @@ void PodA::run()
                 if (count)
                     emit info(QString("Transferring (%1)").arg(count));
 
-                emit progress( 4096*100/(1+count) );
+                emit progress( count*100/4096 );
 
                 yieldCurrentThread();
             }
 
             count = len();
-            emit progress( 4096*100/(1+count) );
+            emit progress( count*100/4096 );
 
-            if (count < 4096)
+            if (count < 4196)
             {
                 emit info(QString("Problem during transfer. Incomplete data."));
                 state = ERROR;
@@ -141,10 +147,9 @@ void PodA::run()
         case DONE:
         default:
             break;
-
         }
     }
-
+    state = STARTUP;
 }
 
 void PodA::handleReadyRead()
@@ -157,13 +162,13 @@ void PodA::handleReadyRead()
         this->state=TRANSFER;
     }
 
-    if ( readData.length() > 4096)
+    if ( readData.length() > 4196)
     {
         this->state = ERROR;
         return;
     }
 
-    if ( readData.length() == 4096)
+    if ( readData.length() == 4196)
     {
         INFO("\nDone\n");
         this->state = DONE;

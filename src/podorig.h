@@ -24,7 +24,7 @@
 // The original pod. Use internal libusb logic to communicate directly.
 class PodOrig : public PodBase
 {
-Q_OBJECT
+    Q_OBJECT
 public:
     PodOrig();
     ~PodOrig();
@@ -32,6 +32,7 @@ public:
     void run();
 
     virtual bool init();
+    virtual void stop();
     virtual void getData(std::vector<ExerciseSet>& data);
 
 signals:
