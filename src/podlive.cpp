@@ -60,6 +60,8 @@ PodLive::~PodLive()
 
 void PodLive::stop()
 {
+    state = ERROR;
+    sleep(1);
 }
 
 bool PodLive::init()
@@ -95,7 +97,6 @@ bool PodLive::init()
         return false;
     }
     state = INITIALISED;
-    sleep(1);
 
     readData.clear();
     //    connect(serialPort, SIGNAL(readyRead()), SLOT(handleReadyRead()));
@@ -371,7 +372,7 @@ void PodLive::download(QSerialPort *serialPort, QByteArray& readData)
     memcpy(buf, msg, 16);
 
     int i;
-    for (i=0; i<=0x1f; ++i) // determine upper value
+    for (i=0; i<=0x1f; ++i)
     {
         if (req & 1)
         {
@@ -415,12 +416,24 @@ void PodLive::run()
 {
     if (serialPort && state == INITIALISED )
     {
-        sendandstart(serialPort, d1, sizeof(d1));
-        sendandwait(serialPort, d5, sizeof(d5)); //get data to decode.
+        emit info("Connect watch.");
 
-        state = TRANSFER;
-        download(serialPort, readData);
+        do {
+            sendandstart(serialPort, d1, sizeof(d1));
+            sendandwait(serialPort, d5, sizeof(d5)); //get data to decode.
+            if (data.length()==0)
+                sleep(1);
+        } while (state != ERROR && data.length() == 0);
+
+        if (state != ERROR)
+        {
+            emit info("Transferring.");
+
+            state = TRANSFER;
+            download(serialPort, readData);
+            state = DONE;
+            emit progress( 100 );
+        }
         state = DONE;
-        emit progress( 100 );
     }
 }
