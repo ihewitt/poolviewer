@@ -58,3 +58,8 @@ SOURCES = src/uploadimpl.cpp src/syncimpl.cpp src/configimpl.cpp src/summaryimpl
     src/besttimesimpl.cpp \
     src/utilities.cpp \
     src/poda.cpp
+
+DISTFILES +=
+
+RESOURCES += \
+    poolview.qrc

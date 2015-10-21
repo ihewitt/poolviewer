@@ -36,6 +36,12 @@ private slots:
 
     void on_buttonBox_accepted();
 
+    void on_podLive_clicked(bool checked);
+
+    void on_podOriginal_clicked(bool checked);
+
+    void on_podTypeA_clicked(bool checked);
+
 private:
 };
 

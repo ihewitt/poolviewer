@@ -1,0 +1,7 @@
+<RCC>
+    <qresource>
+        <file>images/pod.png</file>
+        <file>images/poda.png</file>
+        <file>images/podlive.png</file>
+    </qresource>
+</RCC>

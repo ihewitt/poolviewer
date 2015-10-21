@@ -20,7 +20,7 @@
 
 #include "configimpl.h"
 
-ConfigImpl::ConfigImpl( QWidget * parent, Qt::WindowFlags f) 
+ConfigImpl::ConfigImpl( QWidget * parent, Qt::WindowFlags f)
     : QDialog(parent, f)
 {
     setupUi(this);
@@ -32,14 +32,25 @@ ConfigImpl::ConfigImpl( QWidget * parent, Qt::WindowFlags f)
     if (pod == 0) // 0 - original, 1 - type A
     {
         podOriginal->setChecked(true);
+        podorig->setEnabled(true);
+        orighelp->setVisible(true);
+        livehelp->setVisible(false);
     }
     else if (pod == 1)
     {
         podTypeA->setChecked(true);
+        poda->setEnabled(true);
+
+        orighelp->setVisible(false);
+        livehelp->setVisible(true);
     }
     else
     {
         podLive->setChecked(true);
+        podlive->setEnabled(true);
+
+        orighelp->setVisible(false);
+        livehelp->setVisible(true);
     }
 
     dataFile->setText(path);
@@ -76,4 +87,34 @@ void ConfigImpl::on_buttonBox_accepted()
     {
         settings.setValue("dataFile", dataFile->text());
     }
+}
+
+void ConfigImpl::on_podLive_clicked(bool /*checked*/)
+{
+    podorig->setEnabled(false);
+    poda->setEnabled(false);
+    podlive->setEnabled(true);
+
+    orighelp->setVisible(false);
+    livehelp->setVisible(true);
+}
+
+void ConfigImpl::on_podOriginal_clicked(bool /*checked*/)
+{
+    podorig->setEnabled(true);
+    poda->setEnabled(false);
+    podlive->setEnabled(false);
+
+    orighelp->setVisible(true);
+    livehelp->setVisible(false);
+}
+
+void ConfigImpl::on_podTypeA_clicked(bool /*checked*/)
+{
+    podorig->setEnabled(false);
+    poda->setEnabled(true);
+    podlive->setEnabled(false);
+
+    orighelp->setVisible(false);
+    livehelp->setVisible(true);
 }
