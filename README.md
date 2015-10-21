@@ -51,6 +51,8 @@ SUBSYSTEMS=="usb" ATTRS{idVendor}=="0451" ATTRS{idProduct}=="5051" MODE:="0666"
 ## Binary packages ##
 **Note** - the Linux binary installs currenly just install the executable "poolview" in /usr/bin no desktop or menu item is added. This will change at some point.
 
+[OpenSuse Build Service](http://download.opensuse.org/repositories/home:/ivorhewitt:/poolsync/)
+
 # License #
 PoolViewer is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
