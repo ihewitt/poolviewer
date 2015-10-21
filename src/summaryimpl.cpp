@@ -625,7 +625,7 @@ void SummaryImpl::printButton()
 
 }
 
-void SummaryImpl::on_check_clicked()
+void SummaryImpl::onCheckClicked(bool)
 {
     graphWidget->setGraphs(efficCheck->isChecked(),
                            strokeCheck->isChecked(),

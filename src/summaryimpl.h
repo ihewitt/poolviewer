@@ -49,14 +49,14 @@ public:
     void fillSets( const std::vector<Set>& sets );
     void fillLengths( const Set& set);
 
-    void colorRow(int r, QColor c); 
+    void colorRow(int r, QColor c);
 
     void setDataStore(DataStore *_ds) { ds = _ds;}
 
  protected:
     void keyPressEvent(QKeyEvent *event);
     void closeEvent(QCloseEvent *event);
-    
+
  private slots:
     virtual void selectedDate(QDate);
     virtual void workoutSelected();
@@ -67,7 +67,7 @@ public:
     virtual void deleteClick();
     virtual void scaleChanged(int);
     virtual void printButton();
-    virtual void on_check_clicked();
+    virtual void onCheckClicked(bool);
     virtual void bestTimesButton();
 
 private:

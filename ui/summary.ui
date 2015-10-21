@@ -771,9 +771,9 @@
   </connection>
   <connection>
    <sender>efficCheck</sender>
-   <signal>clicked()</signal>
+   <signal>clicked(bool)</signal>
    <receiver>Summary</receiver>
-   <slot>on_check_clicked()</slot>
+   <slot>onCheckClicked(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>560</x>
@@ -787,9 +787,9 @@
   </connection>
   <connection>
    <sender>strokeCheck</sender>
-   <signal>clicked()</signal>
+   <signal>clicked(bool)</signal>
    <receiver>Summary</receiver>
-   <slot>on_check_clicked()</slot>
+   <slot>onCheckClicked(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>641</x>
@@ -803,9 +803,9 @@
   </connection>
   <connection>
    <sender>rateCheck</sender>
-   <signal>clicked()</signal>
+   <signal>clicked(bool)</signal>
    <receiver>Summary</receiver>
-   <slot>on_check_clicked()</slot>
+   <slot>onCheckClicked(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>709</x>
@@ -819,9 +819,9 @@
   </connection>
   <connection>
    <sender>speedCheck</sender>
-   <signal>clicked()</signal>
+   <signal>clicked(bool)</signal>
    <receiver>Summary</receiver>
-   <slot>on_check_clicked()</slot>
+   <slot>onCheckClicked(bool)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>778</x>
@@ -896,7 +896,7 @@
   <slot>scaleChanged(int)</slot>
   <slot>printButton()</slot>
   <slot>setSelected()</slot>
-  <slot>on_check_clicked()</slot>
+  <slot>onCheckClicked(bool)</slot>
   <slot>bestTimesButton()</slot>
  </slots>
 </ui>
