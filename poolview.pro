@@ -25,8 +25,8 @@ unix {
 }
 
 win32 {
-        INCLUDEPATH += ./src c:/libusb/include
-        QMAKE_LIBDIR += C:/libusb/ms32/dll
+        INCLUDEPATH += ./src c:/devel/libusb/include
+        QMAKE_LIBDIR += C:/devel/libusb/ms32/dll
         LIBS += -llibusb-1.0
 }
 

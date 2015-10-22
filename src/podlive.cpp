@@ -308,7 +308,7 @@ void read(QSerialPort *serialPort, unsigned long len)
     //wait for buffer to fill
     while (serialPort->waitForReadyRead(100) != false);
 
-    char tmp[len];
+    char tmp[266];
     serialPort->read(tmp, len);  //read echo back
 
     if (serialPort->bytesAvailable())

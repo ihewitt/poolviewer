@@ -49,7 +49,8 @@ int main(int argc, char ** argv)
     win.setDataStore( &d );
 
     //TODO tidy this!, for now refill grid and data from datastore.
-    win.fillWorkouts(d.Workouts());
+    if (d.Workouts().size())
+        win.fillWorkouts(d.Workouts());
     win.show();
     app.connect( &app, SIGNAL( lastWindowClosed() ), &app, SLOT( quit() ) );
 

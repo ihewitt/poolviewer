@@ -46,7 +46,7 @@ typedef enum {
     READY,
     TRANSFER,
     COMPLETE,
-    ERROR
+    ERRORED
 } STATE;
 
 typedef struct _context
@@ -145,7 +145,7 @@ static void LIBUSB_CALL cb_img(struct libusb_transfer *transfer)
 
     if (len + c->len > 4104)
     {
-        c->state = ERROR;
+        c->state = ERRORED;
         return;
     }
 
@@ -429,7 +429,7 @@ int poolmate_run()
     {
     case COMPLETE:
         return 0;
-    case ERROR:
+    case ERRORED:
         return -1;
     default:
         return 1; //more to do
