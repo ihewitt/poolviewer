@@ -140,7 +140,7 @@ void PodLive::getData( std::vector<ExerciseSet>& exdata )
             std::vector<ExerciseSet> exercises;
             int lengths=0, totaldistance=0, calories=0;
 
-            if (ptr[2] >=2) //1 == chrono, dump for now >2 seems to be swim
+            if (ptr[2] >=1) //Need to determine how/why this increments
             {
                 int Y = 2000+ptr[6]; //see if there's a year high byte.
                 int M = ptr[8];
@@ -158,6 +158,8 @@ void PodLive::getData( std::vector<ExerciseSet>& exdata )
 
                 int sets = ptr[16];      //Check >255 sets
                 int pool = ptr[14];      //check/grab yards flag
+
+                int id = ptr[12];
 
                 ptr += 20;
                 int setnum = 1;
@@ -206,45 +208,63 @@ void PodLive::getData( std::vector<ExerciseSet>& exdata )
                         set.user = 1;    // retrieve
                         set.date = date;
                         set.time = time;
-                        set.type = "SwimHR"; //?
                         set.totalduration = t_dur;
                         set.set = setnum++;
                         set.duration = dur;
-                        set.cal = cal;
-                        set.unit = "m";
-                        set.pool = pool;
 
-                        lengths += lens;
-                        totaldistance += lens*pool;
-                        calories += cal;
-
-                        set.dist = lens * pool; // Set data
-                        set.lens = lens;
-
-                        //strokes for set:
-                        int all_strokes = std::accumulate(strokes.begin(),strokes.end(),0);
-//                        double all_time = std::accumulate(times.begin(), times.end(), 0);
-
-                        //For some reason Swimovate goes off the duration not the total seconds:
-                        int setsecs = ((dur.hour()*60+dur.minute())*60+dur.second());
-
-                        if (lens)
+                        if (id == 0x82) //Chrono
                         {
-                            set.speed = 100 * setsecs / set.dist;
-                            set.strk = all_strokes / lens;
-                            set.effic = ((25 * setsecs / lens) + (25 * set.strk)) / pool;
-                            set.rate = (60 * set.strk * lens) / setsecs;
-                        }
-                        else //Match swimovate data
-                        {
+                            set.type = "Chrono";
                             set.speed = 0;
-                            set.strk = all_strokes;
+                            set.strk = 0;
                             set.rate = 0;
-                            set.effic = all_strokes;
+                            set.effic = 0;
                         }
+                        else if (id == 0x80)
+                        {
+                            set.type = "SwimHR";
 
-                        set.len_time = times;
-                        set.len_strokes = strokes;
+                            set.cal = cal;
+                            set.unit = "m";
+                            set.pool = pool;
+
+                            lengths += lens;
+                            totaldistance += lens*pool;
+                            calories += cal;
+
+                            set.dist = lens * pool; // Set data
+                            set.lens = lens;
+
+                            //strokes for set:
+                            int all_strokes = std::accumulate(strokes.begin(),strokes.end(),0);
+    //                      double all_time = std::accumulate(times.begin(), times.end(), 0);
+
+                            //For some reason Swimovate goes off the duration not the total seconds:
+                            int setsecs = ((dur.hour()*60+dur.minute())*60+dur.second());
+
+                            if (lens)
+                            {
+                                set.speed = 100 * setsecs / set.dist;
+                                set.strk = all_strokes / lens;
+                                set.effic = ((25 * setsecs / lens) + (25 * set.strk)) / pool;
+                                set.rate = (60 * set.strk * lens) / setsecs;
+                            }
+                            else //Match swimovate data
+                            {
+                                set.speed = 0;
+                                set.strk = all_strokes;
+                                set.rate = 0;
+                                set.effic = all_strokes;
+                            }
+
+                            set.len_time = times;
+                            set.len_strokes = strokes;
+                        }
+                        else //Unknown
+                        {
+                            set.type = "Unknown";
+                            printf("Unknown data id type, please report this.\n");
+                        }
 
                         exercises.push_back(set);
 

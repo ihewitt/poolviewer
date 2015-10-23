@@ -163,42 +163,45 @@ void SummaryImpl::setData( const std::vector<Workout>& workouts)
     if (scale == WORKOUTS)
     {
         int row = 0;
-        const Workout& workout = ds->Workouts()[workoutGrid->currentRow()];
-
-        std::vector<Set>::const_iterator i;
-        for (i = workout.sets.begin(); i != workout.sets.end(); ++i)
+        if (ds->Workouts().size())
         {
-            graphWidget->xaxis.push_back( QString::number(++row) );
-            graphWidget->series[0].integers.push_back(i->effic);
-            graphWidget->series[1].integers.push_back(i->speed);
-            graphWidget->series[2].doubles.push_back( i->strk ? (double)workout.pool/i->strk : 0.0 );
-            graphWidget->series[3].integers.push_back(i->rate);
-        }
+            const Workout& workout = ds->Workouts()[workoutGrid->currentRow()];
 
-        if (workout.sets[0].times.size())
-        {
-            int n=0;
             std::vector<Set>::const_iterator i;
             for (i = workout.sets.begin(); i != workout.sets.end(); ++i)
             {
-                int j;
-                for ( j=0; j < i->lens; ++j )
+                graphWidget->xaxis.push_back( QString::number(++row) );
+                graphWidget->series[0].integers.push_back(i->effic);
+                graphWidget->series[1].integers.push_back(i->speed);
+                graphWidget->series[2].doubles.push_back( i->strk ? (double)workout.pool/i->strk : 0.0 );
+                graphWidget->series[3].integers.push_back(i->rate);
+            }
+
+            if (workout.sets[0].times.size())
+            {
+                int n=0;
+                std::vector<Set>::const_iterator i;
+                for (i = workout.sets.begin(); i != workout.sets.end(); ++i)
                 {
-                    double rate = 60 * i->strokes[j]/i->times[j];
-                    int effic = ((25 * i->times[j]) + (25*i->strokes[j]))/workout.pool;
+                    int j;
+                    for ( j=0; j < i->lens; ++j )
+                    {
+                        double rate = 60 * i->strokes[j]/i->times[j];
+                        int effic = ((25 * i->times[j]) + (25*i->strokes[j]))/workout.pool;
 
-                    lengthWidget->xaxis.push_back(QString::number(++n));
+                        lengthWidget->xaxis.push_back(QString::number(++n));
 
-                    lengthWidget->series[0].integers.push_back(effic);
-                    lengthWidget->series[1].integers.push_back(100*i->times[j]/workout.pool);
-                    lengthWidget->series[2].doubles.push_back((double)workout.pool/i->strokes[j]);
-                    lengthWidget->series[3].integers.push_back(rate);
+                        lengthWidget->series[0].integers.push_back(effic);
+                        lengthWidget->series[1].integers.push_back(100*i->times[j]/workout.pool);
+                        lengthWidget->series[2].doubles.push_back((double)workout.pool/i->strokes[j]);
+                        lengthWidget->series[3].integers.push_back(rate);
+                    }
+                    lengthWidget->xaxis.push_back(QString());
+                    lengthWidget->series[0].integers.push_back(-1);
+                    lengthWidget->series[1].integers.push_back(-1);
+                    lengthWidget->series[2].doubles.push_back(-1);
+                    lengthWidget->series[3].integers.push_back(-1);
                 }
-                lengthWidget->xaxis.push_back(QString());
-                lengthWidget->series[0].integers.push_back(-1);
-                lengthWidget->series[1].integers.push_back(-1);
-                lengthWidget->series[2].doubles.push_back(-1);
-                lengthWidget->series[3].integers.push_back(-1);
             }
         }
     }
