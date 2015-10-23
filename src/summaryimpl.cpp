@@ -417,23 +417,33 @@ void SummaryImpl::setSelected()
     setSel = true;
     deleteButton->setText("Delete set");
 
-    int r = setGrid->currentRow();
-    if (r>=0)
+    int setrow = setGrid->currentRow();
+
+    QTableWidgetItem* it = setGrid->item(setrow,0);
+    if (it->isSelected())
     {
         int row = workoutGrid->currentRow();
-        const std::vector<Set>& sets = ds->Workouts()[row].sets;
-
-        const Set& set = sets[setGrid->currentRow()];
-
-        //Just check we have some for now.
-        if (set.times.size())
+        if (row >= 0 && setrow >= 0)
         {
-            fillLengths(set);
+            const std::vector<Set>& sets = ds->Workouts()[row].sets;
+
+            const Set& set = sets[setGrid->currentRow()];
+
+            //Just check we have some for now.
+            if (set.times.size())
+            {
+                fillLengths(set);
+            }
+            else {
+                lengthGrid->clearContents();
+                lengthGrid->setRowCount(0);
+            }
         }
-        else {
-            lengthGrid->clearContents();
-            lengthGrid->setRowCount(0);
-        }
+    }
+    else
+    {
+        lengthGrid->clearContents();
+        lengthGrid->setRowCount(0);
     }
 }
 
@@ -447,21 +457,31 @@ void SummaryImpl::workoutSelected()
     // get selection
     // fill sets
     int row = workoutGrid->currentRow();
-
-    if (ds->Workouts().size())
+    QTableWidgetItem* it = workoutGrid->item(row,0);
+    if (it->isSelected())
     {
-        const std::vector<Set>& sets = ds->Workouts()[row].sets;
-        fillSets( sets );
+        if (ds->Workouts().size())
+        {
+            const std::vector<Set>& sets = ds->Workouts()[row].sets;
+            fillSets( sets );
 
-        //    viewCombo->setCurrentIndex((int)WORKOUTS);
-        calendarWidget->setSelectedDate( ds->Workouts()[row].date );
+            //    viewCombo->setCurrentIndex((int)WORKOUTS);
+            calendarWidget->setSelectedDate( ds->Workouts()[row].date );
+        }
+        setData(ds->Workouts());
+
+        graphWidget->update();
+        volumeWidget->update();
+        lengthWidget->update();
     }
-    setData(ds->Workouts());
+    else
+    {
+        setGrid->clearContents();
+        setGrid->setRowCount(0);
 
-    graphWidget->update();
-    volumeWidget->update();
-    lengthWidget->update();
-
+        lengthGrid->clearContents();
+        lengthGrid->setRowCount(0);
+    }
     setSel = false;
     deleteButton->setText("Delete wrk");
 }
@@ -520,16 +540,7 @@ void SummaryImpl::deleteClick()
                     ds->remove(i);
                 }
             }
-            setGrid->clearContents();
-            setGrid->setRowCount(0);
-            setGrid->setCurrentCell(0,0);
-
-            lengthGrid->clearContents();
-            lengthGrid->setRowCount(0);
-            lengthGrid->setCurrentCell(0,0);
-
             workoutGrid->clearContents();
-            workoutGrid->setCurrentCell(0,0);
             workoutGrid->setRowCount(0);
 
             fillWorkouts(ds->Workouts());
