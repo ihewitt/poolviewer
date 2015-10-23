@@ -448,12 +448,14 @@ void SummaryImpl::workoutSelected()
     // fill sets
     int row = workoutGrid->currentRow();
 
-    const std::vector<Set>& sets = ds->Workouts()[row].sets;
-    fillSets( sets );
+    if (ds->Workouts().size())
+    {
+        const std::vector<Set>& sets = ds->Workouts()[row].sets;
+        fillSets( sets );
 
-    //    viewCombo->setCurrentIndex((int)WORKOUTS);
-    calendarWidget->setSelectedDate( ds->Workouts()[row].date );
-
+        //    viewCombo->setCurrentIndex((int)WORKOUTS);
+        calendarWidget->setSelectedDate( ds->Workouts()[row].date );
+    }
     setData(ds->Workouts());
 
     graphWidget->update();
@@ -518,7 +520,18 @@ void SummaryImpl::deleteClick()
                     ds->remove(i);
                 }
             }
-            workoutGrid->clearSelection();
+            setGrid->clearContents();
+            setGrid->setRowCount(0);
+            setGrid->setCurrentCell(0,0);
+
+            lengthGrid->clearContents();
+            lengthGrid->setRowCount(0);
+            lengthGrid->setCurrentCell(0,0);
+
+            workoutGrid->clearContents();
+            workoutGrid->setCurrentCell(0,0);
+            workoutGrid->setRowCount(0);
+
             fillWorkouts(ds->Workouts());
         }
     }
