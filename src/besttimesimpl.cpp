@@ -29,13 +29,15 @@ namespace
 
         if ((int)set.times.size() != set.lens)
         {
-            // error, ignore set
-            return;
+            //Non poolmate live, try to use set duration.
+            duration = duration.addSecs(QTime(0,0).secsTo(set.duration));
         }
-
-        for (int i = 0; i < numberOfLanes; ++i)
+        else
         {
-            duration = duration.addMSecs(set.times[i] * 1000.0);
+            for (int i = 0; i < numberOfLanes; ++i)
+            {
+                duration = duration.addMSecs(set.times[i] * 1000.0);
+            }
         }
 
         const double speed = duration.msecsSinceStartOfDay() / distance / 10.0;
@@ -86,12 +88,23 @@ void BestTimesImpl::setDataStore(const DataStore *_ds)
 
 void BestTimesImpl::on_calculateButton_clicked()
 {
+    enum period
+    {
+        ALL = 0,
+        THISMONTH,
+        THISYEAR,
+        LASTMONTH,
+        LASTYEAR
+    };
+
     timesTable->clearContents();
     timesTable->setRowCount(0);
 
     // otherwise the rows move around while they are added
     // and we set the item in the wrong place
     timesTable->setSortingEnabled(false);
+
+    int id = periodBox->currentIndex();
 
     const QString distStr = distanceBox->currentText();
     bool ok = false;
@@ -106,6 +119,46 @@ void BestTimesImpl::on_calculateButton_clicked()
     for (size_t i = 0; i < workouts.size(); ++i)
     {
         const Workout & w = workouts[i];
+
+        switch(id)
+        {
+        case ALL:
+            break;
+
+        case THISMONTH:
+        {
+            QDate now = QDate::currentDate();
+            if (w.date.month() != now.month() ||
+                    w.date.year() != now.year())
+                continue;
+            break;
+        }
+
+        case THISYEAR:
+        {
+            QDate now = QDate::currentDate();
+            if (w.date.year() != now.year())
+                continue;
+            break;
+        }
+
+        case LASTMONTH:
+        {
+            QDate then = QDate::currentDate().addMonths(-1);
+            if (w.date.month() != then.month() ||
+                    w.date.year() != then.year())
+                continue;
+            break;
+        }
+
+        case LASTYEAR:
+        {
+            QDate then = QDate::currentDate().addYears(-1);
+            if (w.date.year() != then.year())
+                continue;
+            break;
+        }
+        }
 
         if (w.type != "Swim" && w.type != "SwimHR")
         {
