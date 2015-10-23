@@ -167,9 +167,13 @@ void PodLive::getData( std::vector<ExerciseSet>& exdata )
                 std::vector<double> times;
                 std::vector<int> strokes;
 
+                DEBUG("%02d/%02d/%04d %02d:%02d:%02d %d\n", D,M,Y,h,m,s,sets);
                 do
                 {
                     uint16_t type =  *(uint16_t*)ptr;
+
+                    DEBUG("Type %04x: ", type);
+
                     if (type == 0x100)      // length field
                     {
                         double duration;
@@ -187,6 +191,7 @@ void PodLive::getData( std::vector<ExerciseSet>& exdata )
                             strks = ptr[3];
                             ptr += 5;
                         }
+                        DEBUG("%.2f, %d\n", duration, strks);
                         times.push_back(duration);
                         strokes.push_back(strks);
                     }
@@ -199,7 +204,8 @@ void PodLive::getData( std::vector<ExerciseSet>& exdata )
                         int cal = ptr[10] + ((ptr[11] & 0x7f)<<8);
 
                         QTime dur(h, m, s);
-//                        int secs = (h*60 + m)*60 + s;  // TODO find hours.
+
+                        DEBUG("Lens %d %02d:%02d:%02d\n", lens, h,m,s);
 
                         ptr += 16;
                         sets--;
@@ -237,10 +243,12 @@ void PodLive::getData( std::vector<ExerciseSet>& exdata )
 
                             //strokes for set:
                             int all_strokes = std::accumulate(strokes.begin(),strokes.end(),0);
-    //                      double all_time = std::accumulate(times.begin(), times.end(), 0);
+                            double all_time = std::accumulate(times.begin(), times.end(), 0);
 
                             //For some reason Swimovate goes off the duration not the total seconds:
                             int setsecs = ((dur.hour()*60+dur.minute())*60+dur.second());
+
+                            set.rest  = QTime(0,0,0).addSecs(setsecs - all_time);
 
                             if (lens)
                             {
@@ -403,24 +411,27 @@ void PodLive::download(QSerialPort *serialPort, QByteArray& readData)
             DEBUG("Request set %02x ", i);
             write(serialPort, buf, 20);
             read(serialPort, 20);
-
             DEBUG("Read %d\n", data.length());
 
             //check crc.
             readData.append(data.data(), data.length()-4);
-        }
-        req = req >> 1;
 
-        // Bitfield doesnt seems to match populated datasets so
-        // Try to spot packet run ons.
+            req = req >> 1;
 
-        if (data.length()>5 && data[data.length()-5] != (char)255) // <Improve this logic!
-        {
-            if ((req & 1) == 0)
+            // Bitfield doesnt seems to match populated datasets so
+            // Try to spot packet run ons.
+            if (data.length()>5 && data[data.length()-5] != (char)255) // TODO: Improve this logic!
             {
-                DEBUG("More data, overriding bitmask.\n");
-                req |= 1;
+                if ((req & 1) == 0)
+                {
+                    DEBUG("More data, overriding bitmask.\n");
+                    req |= 1;
+                }
             }
+        }
+        else
+        {
+            req = req >> 1;
         }
 
         emit progress( i*100/0x20 );
@@ -440,7 +451,9 @@ void PodLive::run()
 
         do {
             sendandstart(serialPort, d1, sizeof(d1));
+            usleep(50);
             sendandwait(serialPort, d5, sizeof(d5)); //get data to decode.
+            usleep(50);
             if (data.length()==0)
                 sleep(1);
         } while (state != ERROR && data.length() == 0);
