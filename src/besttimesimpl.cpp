@@ -29,15 +29,26 @@ namespace
 
         if ((int)set.times.size() != set.lens)
         {
-            //Non poolmate live, try to use set duration.
-            duration = duration.addSecs(QTime(0,0).secsTo(set.duration));
+            // Non poolmate live, try to use set duration.
+            // Since we're taking distances >= numberOfLanes which should be slower, assume we can
+            // just divide to get the closes time for shorter distance.
+            duration = duration.addMSecs( (QTime(0,0).msecsTo(set.duration) * numberOfLanes / set.lens ));
         }
         else
         {
-            for (int i = 0; i < numberOfLanes; ++i)
+            // Locate fastest window
+            double min = 0.0;
+            for (int j = 0; j <= (int)set.times.size()-numberOfLanes; ++j)
             {
-                duration = duration.addMSecs(set.times[i] * 1000.0);
+                double cur = 0.0;
+                for (int i = j; i < j + numberOfLanes; ++i)
+                {
+                    cur += set.times[i];
+                }
+                if (cur < min || min == 0.0)
+                    min = cur;
             }
+            duration = duration.addMSecs(min * 1000.0);
         }
 
         const double speed = duration.msecsSinceStartOfDay() / distance / 10.0;
