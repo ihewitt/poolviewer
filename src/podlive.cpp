@@ -199,11 +199,16 @@ void PodLive::getData( std::vector<ExerciseSet>& exdata )
                     {
                         int lens = ptr[2] + ((ptr[3]&0x7f)<<8);
                         int h = ptr[4];
-                        int m = ptr[5]&0x7f;  //add hours
+                        int m = ptr[5]&0x7f;
                         int s = ptr[6];
-                        int cal = ptr[10] + ((ptr[11] & 0x7f)<<8);
-
                         QTime dur(h, m, s);
+
+                        //h = ptr[7]&0x7f; //csv only has mm:ss
+                        m = ptr[8];
+                        s = ptr[9]&0x7f;
+                        QTime rest(0,m,s);
+
+                        int cal = ptr[10] + ((ptr[11] & 0x7f)<<8);
 
                         DEBUG("Lens %d %02d:%02d:%02d\n", lens, h,m,s);
 
@@ -243,12 +248,11 @@ void PodLive::getData( std::vector<ExerciseSet>& exdata )
 
                             //strokes for set:
                             int all_strokes = std::accumulate(strokes.begin(),strokes.end(),0);
-                            double all_time = std::accumulate(times.begin(), times.end(), 0);
 
                             //For some reason Swimovate goes off the duration not the total seconds:
                             int setsecs = ((dur.hour()*60+dur.minute())*60+dur.second());
 
-                            set.rest  = QTime(0,0,0).addSecs(setsecs - all_time);
+                            set.rest = rest;
 
                             if (lens)
                             {

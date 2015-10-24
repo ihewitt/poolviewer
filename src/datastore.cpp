@@ -316,6 +316,14 @@ void setsToWorkouts( const std::vector<ExerciseSet>& sets,
             set.effic = j->effic;
             set.rate = j->rate;
             set.rest = j->rest;
+
+            if (set.rest.isValid()) // Only set rest data from live
+            {
+                if (!rest.isValid())
+                    rest = set.rest;
+                else
+                    rest = rest.addSecs(QTime(0,0,0).secsTo(set.rest));
+            }
             set.num = j->num;
 
             set.times = j->len_time;
@@ -330,7 +338,9 @@ void setsToWorkouts( const std::vector<ExerciseSet>& sets,
             wrk.sets.push_back(set);
             ++j;
         }
-        rest = QTime(0,0,0).addSecs(QTime(0,0,0).secsTo(i->totalduration) - total);
+
+        if (!rest.isValid())
+            rest = QTime(0,0,0).addSecs(QTime(0,0,0).secsTo(i->totalduration) - total);
 
         wrk.rest = rest;
         wrk.min_eff = min_effic;
