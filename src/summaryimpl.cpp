@@ -33,6 +33,7 @@
 #include "datastore.h"
 #include "configimpl.h"
 #include "besttimesimpl.h"
+#include "analysisimpl.h"
 #include "utilities.h"
 
 
@@ -672,6 +673,14 @@ void SummaryImpl::onCheckClicked(bool)
 void SummaryImpl::bestTimesButton()
 {
     BestTimesImpl win(this);
+
+    win.setDataStore(ds);
+    win.exec();
+}
+
+void SummaryImpl::analysisButton()
+{
+    AnalysisImpl win(this);
 
     win.setDataStore(ds);
     win.exec();

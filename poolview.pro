@@ -38,26 +38,49 @@ CONFIG(debug, debug|release) {
 target.path = $$PREFIX/usr/bin
 INSTALLS += target
 
-FORMS = ui/summary.ui ui/sync.ui ui/config.ui ui/upload.ui \
-    ui/besttimesimpl.ui
-HEADERS = src/uploadimpl.h src/syncimpl.h src/configimpl.h src/summaryimpl.h src/graphwidget.h src/datastore.h src/calendar.h \
+FORMS = ui/summary.ui \
+    ui/sync.ui \
+    ui/config.ui \
+    ui/upload.ui \
+    ui/besttimesimpl.ui \
+    ui/analysis.ui
+HEADERS = src/uploadimpl.h \
+    src/syncimpl.h \
+    src/configimpl.h \
+    src/summaryimpl.h \
+    src/graphwidget.h \
+    src/datastore.h \
+    src/calendar.h \
     src/podbase.h \
     src/podorig.h \
     src/podlive.h \
     src/poolmate.h \
     src/logging.h \
-    src/FIT.hpp src/stdintfwd.hpp src/GarminConvert.hpp \
+    src/FIT.hpp \
+    src/stdintfwd.hpp \
+    src/GarminConvert.hpp \
     src/besttimesimpl.h \
     src/utilities.h \
     src/exerciseset.h \
-    src/poda.h
-SOURCES = src/uploadimpl.cpp src/syncimpl.cpp src/configimpl.cpp src/summaryimpl.cpp src/main.cpp src/graphwidget.cpp src/datastore.cpp src/poolmate.c src/calendar.cpp \
+    src/poda.h \
+    src/analysisimpl.h
+SOURCES = src/uploadimpl.cpp \
+    src/syncimpl.cpp \
+    src/configimpl.cpp \
+    src/summaryimpl.cpp \
+    src/main.cpp \
+    src/graphwidget.cpp \
+    src/datastore.cpp \
+    src/poolmate.c \
+    src/calendar.cpp \
     src/podorig.cpp \
     src/podlive.cpp \
-    src/FIT.cpp src/GarminConvert.cpp \
+    src/FIT.cpp \
+    src/GarminConvert.cpp \
     src/besttimesimpl.cpp \
     src/utilities.cpp \
-    src/poda.cpp
+    src/poda.cpp \
+    src/analysisimpl.cpp
 
 DISTFILES +=
 

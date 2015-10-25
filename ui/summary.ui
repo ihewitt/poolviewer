@@ -546,6 +546,13 @@
            </widget>
           </item>
           <item>
+           <widget class="QPushButton" name="analysisButton">
+            <property name="text">
+             <string>Analysis</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <spacer name="horizontalSpacer_3">
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
@@ -881,6 +888,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>analysisButton</sender>
+   <signal>clicked()</signal>
+   <receiver>Summary</receiver>
+   <slot>analysisButton()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>605</x>
+     <y>621</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>478</x>
+     <y>322</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>selectedDate(QDate)</slot>
@@ -898,5 +921,6 @@
   <slot>setSelected()</slot>
   <slot>onCheckClicked(bool)</slot>
   <slot>bestTimesButton()</slot>
+  <slot>analysisButton()</slot>
  </slots>
 </ui>

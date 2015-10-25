@@ -69,6 +69,7 @@ public:
     virtual void printButton();
     virtual void onCheckClicked(bool);
     virtual void bestTimesButton();
+    virtual void analysisButton();
 
 private:
     DataStore *ds;
