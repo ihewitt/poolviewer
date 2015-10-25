@@ -1323,9 +1323,9 @@ bool FIT::parseZeroFile(vector<uint8_t> &data, ZeroFileContent &zeroFileContent)
 
 
 /// returns in GMT/UTC
-bool
-FIT::getCreationDate(std::vector<uint8_t> &fitData, std::time_t &ct)
-{
+//bool
+//FIT::getCreationDate(std::vector<uint8_t> &fitData, std::time_t &ct)
+//{
 //   GPX gpx;
 //   FIT fit;
 //   if(!fit.parse(fitData))
@@ -1335,6 +1335,6 @@ FIT::getCreationDate(std::vector<uint8_t> &fitData, std::time_t &ct)
 //     return false;
 //   t = GarminConvert::gOffsetTime(t);
 //   ct = t;
-    return true;
-}
+//    return true;
+//}
 

@@ -30,7 +30,7 @@ extern "C"
 void dataToWorkouts( unsigned char *buf, std::vector<ExerciseSet>& data )
 {
     // some sort of checksum exists in 0x1000,1001,1002,1003
-    int version = buf[0x1004];
+//    int version = buf[0x1004];
     int user = buf[0x1005];
 
 #ifdef VERBOSE_DEBUG
@@ -41,10 +41,10 @@ void dataToWorkouts( unsigned char *buf, std::vector<ExerciseSet>& data )
         if ((i&0x7) == 0x7 && buf[i-1] == 0)
         {
             DEBUG("\n");
-        }            
+        }
     }
-#endif    
-    
+#endif
+
 //TODO tidy buffer looping logic.
 //at the moment will only work if the header doesn't wrap.
     for (int i=0; i< 4096;)
