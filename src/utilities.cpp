@@ -2,6 +2,7 @@
 
 #include <QVariant>
 #include <QTableWidgetItem>
+#include "datastore.h"
 
 QTableWidgetItem * createTableWidgetItem(const QVariant & content)
 {
@@ -13,3 +14,14 @@ QTableWidgetItem * createTableWidgetItem(const QVariant & content)
     return item;
 }
 
+// sums the duration of all the lanes
+QTime getActualSwimTime(const Set & set)
+{
+    QTime duration(0, 0);
+
+    for (size_t i = 0; i < set.times.size(); ++i)
+    {
+        duration = duration.addMSecs(set.times[i] * 1000);
+    }
+    return duration;
+}
