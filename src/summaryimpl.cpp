@@ -399,6 +399,29 @@ void SummaryImpl::fillSets( const std::vector<Set>& sets)
         item = createTableWidgetItem(QVariant(i->rate));
         setGrid->setItem( row, col++, item );
 
+        col++; // skip stroke
+
+        QTime actual = getActualSwimTime(*i);
+        QTime duration = i->duration;
+        QString sign("");   // nothign for +
+        if (actual > duration)
+        {
+            // we display as negative
+            std::swap(actual, duration);
+            sign = "-";
+        }
+
+        // now duration >= actual
+        const int gapMS = actual.msecsTo(duration);
+
+        // < 1sec: no display
+        if (gapMS >= 1000)
+        {
+            const QTime gap = QTime(0, 0).addMSecs(gapMS);
+            item = createTableWidgetItem(QVariant(sign + gap.toString()));
+            setGrid->setItem( row, col++, item );
+        }
+
         row++;
     }
     setGrid->resizeColumnsToContents();
