@@ -589,7 +589,7 @@ void SummaryImpl::editButton()
             const Set& set = sets[setGrid->currentRow()];
 
             EditGap editGap(this);
-            editGap.setOriginalSet(&set, workout.pool);
+            editGap.setOriginalSet(&set);
 
             editGap.exec();
         }

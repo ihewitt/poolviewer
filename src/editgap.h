@@ -11,7 +11,7 @@ class EditGap : public QDialog, private Ui::EditGap
 public:
     explicit EditGap(QWidget *parent = 0);
 
-    void setOriginalSet(const Set * _set, int _pool);
+    void setOriginalSet(const Set * _set);
 
 private slots:
     void on_lengthsSpin_valueChanged(int arg1);
@@ -19,8 +19,6 @@ private slots:
 private:
 
     void update();
-
-    int pool;
 
     const Set * original;
     Set modified;
