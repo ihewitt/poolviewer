@@ -54,7 +54,7 @@ ConfigImpl::ConfigImpl( QWidget * parent, Qt::WindowFlags f)
     }
 
     dataFile->setText(path);
-
+    backup->setChecked(settings.value("backup").toBool());
 }
 
 
@@ -87,6 +87,8 @@ void ConfigImpl::on_buttonBox_accepted()
     {
         settings.setValue("dataFile", dataFile->text());
     }
+
+    settings.setValue("backup", backup->isChecked());
 }
 
 void ConfigImpl::on_podLive_clicked(bool /*checked*/)

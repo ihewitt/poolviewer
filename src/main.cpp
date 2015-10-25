@@ -39,8 +39,11 @@ int main(int argc, char ** argv)
         settings.setValue("dataFile", path);
     }
 
+    const bool backup = settings.value("backup").toBool();
+
     DataStore d;
     d.setFile(path);
+    d.setBackup(backup);
     d.load();
 
     QApplication app( argc, argv );

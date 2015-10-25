@@ -267,6 +267,7 @@ DataStore::DataStore()
     counter=0;
     sorted=false;
     changed=true;
+    backup=false;
 }
 
 namespace {
@@ -420,6 +421,15 @@ bool DataStore::load()
 bool DataStore::save()
 {
     changed=false;
+
+    if (backup)
+    {
+        QDateTime now = QDateTime::currentDateTime();
+        QString dateSuffix = now.toString("_yyyy-MM-dd_HH-mm-ss");
+        QString backupName = qPrintable(filename) + dateSuffix;
+        QFile::copy(qPrintable(filename), backupName);
+        // should we fail if a backup cannot be performed?
+    }
 
     std::vector<ExerciseSet> output;
     workoutsToSets(workouts, output);

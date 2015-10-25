@@ -86,6 +86,7 @@ public:
 
     //move?
     void setFile(const QString &_filename) { filename=_filename;}
+    void setBackup(bool _backup) { backup = _backup; }
     const QString& getFile() { return filename;}
 
     //once loaded flag any manipulation.
@@ -107,6 +108,7 @@ private:
     bool changed;
     mutable bool sorted;
     QString filename;
+    bool backup;
 };
 
 #endif
