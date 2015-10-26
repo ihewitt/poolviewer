@@ -56,7 +56,11 @@
    <item row="2" column="0">
     <layout class="QGridLayout" name="gridLayout_2">
      <item row="2" column="1">
-      <widget class="QSpinBox" name="lengthsSpin"/>
+      <widget class="QSpinBox" name="lengthsSpin">
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+      </widget>
      </item>
      <item row="0" column="0">
       <widget class="QLabel" name="label">
@@ -72,18 +76,12 @@
        </property>
       </widget>
      </item>
-     <item row="0" column="1">
-      <widget class="QLCDNumber" name="gapTimeLCD"/>
-     </item>
      <item row="1" column="0">
       <widget class="QLabel" name="label_3">
        <property name="text">
         <string>Lengths equivalent:</string>
        </property>
       </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="QLCDNumber" name="equivalentLCD"/>
      </item>
      <item row="3" column="0">
       <widget class="QLabel" name="label_4">
@@ -92,10 +90,33 @@
        </property>
       </widget>
      </item>
+     <item row="0" column="1">
+      <widget class="QLineEdit" name="gapTimeEdit">
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QLineEdit" name="lengthsEquivalentEdit">
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
      <item row="3" column="1">
-      <widget class="QLCDNumber" name="averageLCD">
-       <property name="digitCount">
-        <number>4</number>
+      <widget class="QLineEdit" name="averageTimeEdit">
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+       <property name="readOnly">
+        <bool>true</bool>
        </property>
       </widget>
      </item>
