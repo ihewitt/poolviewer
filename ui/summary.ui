@@ -313,6 +313,11 @@
               </column>
               <column>
                <property name="text">
+                <string>Rest</string>
+               </property>
+              </column>
+              <column>
+               <property name="text">
                 <string>Gap</string>
                </property>
               </column>

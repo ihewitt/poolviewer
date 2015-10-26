@@ -401,6 +401,9 @@ void SummaryImpl::fillSets( const std::vector<Set>& sets)
 
         col++; // skip stroke
 
+        item = createTableWidgetItem(QVariant(i->rest.toString("mm:ss")));
+        setGrid->setItem( row, col++, item );
+
         QTime actual = getActualSwimTime(*i);
         QTime duration = i->duration;
         QString sign("");   // nothign for +
