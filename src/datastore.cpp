@@ -521,3 +521,17 @@ const std::vector<Workout>& DataStore::Workouts() const
     return workouts;
 }
 
+void DataStore::replaceSet( int wid, int sid, const Set & newSet )
+{
+    Workout & workout = workouts[wid];
+    const Set oldSet = workout.sets[sid];
+    workout.sets[sid] = newSet;
+
+    // update workout totals
+    workout.lengths += newSet.lens - oldSet.lens;
+    workout.totaldistance = workout.lengths * workout.pool;
+
+    // should we update max_eff, avg_eff, min_eff and cal as well?
+
+    // and not done yet, mark the ds as modified so it will be saved down
+}

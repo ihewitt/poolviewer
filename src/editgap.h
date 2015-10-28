@@ -12,6 +12,7 @@ public:
     explicit EditGap(QWidget *parent = 0);
 
     void setOriginalSet(const Set * _set);
+    const Set & getModifiedSet() const;
 
 private slots:
     void on_lengthsSpin_valueChanged(int arg1);

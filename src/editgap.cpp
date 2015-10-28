@@ -53,7 +53,6 @@ EditGap::EditGap(QWidget *parent) :
 void EditGap::setOriginalSet(const Set * _set)
 {
     original = _set;
-    modified = *original;
 
     int lengths;
     QTime duration;
@@ -71,7 +70,13 @@ void EditGap::setOriginalSet(const Set * _set)
     const double equivalent = gap / average;
     lengthsEquivalentEdit->setText(QString("%1").arg(equivalent, 0, 'f', 2));
 
-    update();
+    // simulate the 0 to update GUI properly
+    on_lengthsSpin_valueChanged(0);
+}
+
+const Set & EditGap::getModifiedSet() const
+{
+    return modified;
 }
 
 void EditGap::update()

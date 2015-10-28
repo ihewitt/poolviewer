@@ -81,6 +81,9 @@ public:
     void remove(int id);
     void removeSet( int wid, int sid );
 
+    // Replace set in workout
+    void replaceSet( int wid, int sid, const Set & newSet );
+
     // Remove all exercises at date
     void remove( QDateTime dt );
 

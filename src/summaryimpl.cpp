@@ -586,12 +586,20 @@ void SummaryImpl::editButton()
         {
             const Workout & workout = ds->Workouts()[row];
             const std::vector<Set>& sets = workout.sets;
-            const Set& set = sets[setGrid->currentRow()];
+            const Set& set = sets[setrow];
 
             EditGap editGap(this);
             editGap.setOriginalSet(&set);
 
-            editGap.exec();
+            if (editGap.exec() == QDialog::Accepted)
+            {
+                const Set & modified = editGap.getModifiedSet();
+                ds->replaceSet(row, setrow, modified);
+
+                // this is the same as what happens for deleteSet()
+                // but it does not update the workout line
+                workoutSelected();
+            }
         }
     }
 }
