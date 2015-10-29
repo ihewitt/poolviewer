@@ -15,11 +15,13 @@ public:
     const Set & getModifiedSet() const;
 
 private slots:
-    void on_lengthsSpin_valueChanged(int arg1);
+    void on_gapTimeUsedSpin_valueChanged(double arg1);
+
+    void on_newLengthsSpin_valueChanged(int arg1);
 
 private:
 
-    void update();
+    void calculate();
 
     const Set * original;
     Set modified;

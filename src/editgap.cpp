@@ -63,6 +63,9 @@ void EditGap::setOriginalSet(const Set * _set)
     const double recordedTime = original->duration.msecsSinceStartOfDay() / 1000;
     gap = recordedTime - actualTime;
 
+    gapTimeUsedSpin->setMaximum(gap);
+    gapTimeUsedSpin->setValue(gap);
+
     // these never change
     displaySet(setGrid, 0, *original);
     gapTimeEdit->setText(formatSecondsToTimeWithMillis(gap));
@@ -71,7 +74,7 @@ void EditGap::setOriginalSet(const Set * _set)
     lengthsEquivalentEdit->setText(QString("%1").arg(equivalent, 0, 'f', 2));
 
     // simulate the 0 to update GUI properly
-    on_lengthsSpin_valueChanged(0);
+    calculate();
 }
 
 const Set & EditGap::getModifiedSet() const
@@ -79,20 +82,27 @@ const Set & EditGap::getModifiedSet() const
     return modified;
 }
 
-void EditGap::update()
+void EditGap::on_newLengthsSpin_valueChanged(int /* extraLengths */)
 {
-    // only update modified row on grid
-    displaySet(setGrid, 1, modified);
+    calculate();
 }
 
-void EditGap::on_lengthsSpin_valueChanged(int extraLengths)
+void EditGap::on_gapTimeUsedSpin_valueChanged(double /* time */)
+{
+    calculate();
+}
+
+void EditGap::calculate()
 {
     modified = *original;
 
+    const int extraLengths = newLengthsSpin->value();
+
     if (extraLengths > 0)
     {
-        const double average = roundTo8thSecond(gap / extraLengths);
-        averageTimeEdit->setText(formatSecondsToTimeWithMillis(average));
+        const double gapTime = gapTimeUsedSpin->value();
+        const double average = roundTo8thSecond(gapTime / extraLengths);
+        lengthTimeEdit->setText(formatSecondsToTimeWithMillis(average));
 
         for (int i = 0; i < extraLengths; ++i)
         {
@@ -115,7 +125,8 @@ void EditGap::on_lengthsSpin_valueChanged(int extraLengths)
     }
     else
     {
-        averageTimeEdit->clear();
+        lengthTimeEdit->clear();
     }
-    update();
+    // only update modified row on grid
+    displaySet(setGrid, 1, modified);
 }

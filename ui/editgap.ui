@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>649</width>
-    <height>320</height>
+    <width>654</width>
+    <height>363</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -55,8 +55,8 @@
    </item>
    <item row="2" column="0">
     <layout class="QGridLayout" name="gridLayout_2">
-     <item row="2" column="1">
-      <widget class="QSpinBox" name="lengthsSpin">
+     <item row="3" column="1">
+      <widget class="QSpinBox" name="newLengthsSpin">
        <property name="alignment">
         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
        </property>
@@ -69,7 +69,7 @@
        </property>
       </widget>
      </item>
-     <item row="2" column="0">
+     <item row="3" column="0">
       <widget class="QLabel" name="label_2">
        <property name="text">
         <string>New lengths:</string>
@@ -83,15 +83,18 @@
        </property>
       </widget>
      </item>
-     <item row="3" column="0">
+     <item row="5" column="0">
       <widget class="QLabel" name="label_4">
        <property name="text">
-        <string>Average times of new lengths:</string>
+        <string>Time of new lengths:</string>
        </property>
       </widget>
      </item>
      <item row="0" column="1">
       <widget class="QLineEdit" name="gapTimeEdit">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
        <property name="alignment">
         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
        </property>
@@ -102,6 +105,9 @@
      </item>
      <item row="1" column="1">
       <widget class="QLineEdit" name="lengthsEquivalentEdit">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
        <property name="alignment">
         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
        </property>
@@ -110,13 +116,33 @@
        </property>
       </widget>
      </item>
-     <item row="3" column="1">
-      <widget class="QLineEdit" name="averageTimeEdit">
+     <item row="5" column="1">
+      <widget class="QLineEdit" name="lengthTimeEdit">
        <property name="alignment">
         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
        </property>
        <property name="readOnly">
         <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="label_5">
+       <property name="text">
+        <string>Gap time allocated:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QDoubleSpinBox" name="gapTimeUsedSpin">
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+       <property name="decimals">
+        <number>3</number>
+       </property>
+       <property name="singleStep">
+        <double>0.125000000000000</double>
        </property>
       </widget>
      </item>
