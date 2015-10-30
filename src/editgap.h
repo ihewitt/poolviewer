@@ -11,7 +11,11 @@ class EditGap : public QDialog, private Ui::EditGap
 public:
     explicit EditGap(QWidget *parent = 0);
 
-    void setOriginalSet(const Set * _set);
+    // returns true if it is possible to turn a gap into lanes
+    // false in case: negative gap
+    //                or gap < 1 sec
+    // if false, one should NOT call exec!
+    bool setOriginalSet(const Set * _set);
     const Set & getModifiedSet() const;
 
 private slots:

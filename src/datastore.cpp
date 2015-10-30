@@ -533,5 +533,5 @@ void DataStore::replaceSet( int wid, int sid, const Set & newSet )
 
     // should we update max_eff, avg_eff, min_eff and cal as well?
 
-    // and not done yet, mark the ds as modified so it will be saved down
+    changed = true;
 }

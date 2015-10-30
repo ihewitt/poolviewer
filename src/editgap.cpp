@@ -50,7 +50,7 @@ EditGap::EditGap(QWidget *parent) :
     setupUi(this);
 }
 
-void EditGap::setOriginalSet(const Set * _set)
+bool EditGap::setOriginalSet(const Set * _set)
 {
     original = _set;
 
@@ -62,6 +62,12 @@ void EditGap::setOriginalSet(const Set * _set)
     const double actualTime = duration.msecsSinceStartOfDay() / 1000.0;
     const double recordedTime = original->duration.msecsSinceStartOfDay() / 1000;
     gap = recordedTime - actualTime;
+
+    if (gap < 1)
+    {
+        // no point in doing anything
+        return false;
+    }
 
     gapTimeUsedSpin->setMaximum(gap);
     gapTimeUsedSpin->setValue(gap);
@@ -75,6 +81,8 @@ void EditGap::setOriginalSet(const Set * _set)
 
     // simulate the 0 to update GUI properly
     calculate();
+
+    return true;
 }
 
 const Set & EditGap::getModifiedSet() const

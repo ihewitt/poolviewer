@@ -589,16 +589,17 @@ void SummaryImpl::editButton()
             const Set& set = sets[setrow];
 
             EditGap editGap(this);
-            editGap.setOriginalSet(&set);
-
-            if (editGap.exec() == QDialog::Accepted)
+            if (editGap.setOriginalSet(&set))
             {
-                const Set & modified = editGap.getModifiedSet();
-                ds->replaceSet(row, setrow, modified);
+                if (editGap.exec() == QDialog::Accepted)
+                {
+                    const Set & modified = editGap.getModifiedSet();
+                    ds->replaceSet(row, setrow, modified);
 
-                // this is the same as what happens for deleteSet()
-                // but it does not update the workout line
-                workoutSelected();
+                    // this is the same as what happens for deleteSet()
+                    // but it does not update the workout line
+                    workoutSelected();
+                }
             }
         }
     }
