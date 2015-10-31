@@ -589,7 +589,7 @@ void SummaryImpl::editButton()
             const Set& set = sets[setrow];
 
             EditGap editGap(this);
-            if (editGap.setOriginalSet(&set))
+            if (editGap.setOriginalSet(&set, workout.pool))
             {
                 if (editGap.exec() == QDialog::Accepted)
                 {

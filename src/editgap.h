@@ -33,7 +33,7 @@ public:
     // false in case: negative gap
     //                or gap < 1 sec
     // if false, one should NOT call exec!
-    bool setOriginalSet(const Set * _set);
+    bool setOriginalSet(const Set * _set, int _pool);
     const Set & getModifiedSet() const;
 
 private slots:
@@ -46,6 +46,7 @@ private:
     void calculate();
 
     const Set * original;
+    int pool;
     Set modified;
 
     double gap;

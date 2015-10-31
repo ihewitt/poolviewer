@@ -21,9 +21,18 @@
 
 namespace
 {
+    template<typename T>
+    void appendToVectorIsCorrectSize(std::vector<T> & v, size_t size, const T & value)
+    {
+        if (v.size() == size)
+        {
+            v.push_back(value);
+        }
+    }
+
     void extractSetData(const Set & set, int & lengths, QTime & duration, double & average)
     {
-        lengths = set.times.size();
+        lengths = set.lens;
         duration = getActualSwimTime(set);
 
         const double actualTime = duration.msecsSinceStartOfDay() / 1000.0;
@@ -68,9 +77,25 @@ EditGap::EditGap(QWidget *parent) :
     setupUi(this);
 }
 
-bool EditGap::setOriginalSet(const Set * _set)
+bool EditGap::setOriginalSet(const Set * _set, int _pool)
 {
     original = _set;
+    pool = _pool;
+
+    // validation
+    if (original->times.size() != original->lens)
+    {
+        // no times data
+        return false;
+    }
+
+    // validation
+    if (!original->lens)
+    {
+        // this is not strictly required, but it would require entering stroke data
+        // and to recompute the speed and efficiency for the set from the lengths
+        return false;
+    }
 
     int lengths;
     QTime duration;
@@ -133,19 +158,19 @@ void EditGap::calculate()
         for (int i = 0; i < extraLengths; ++i)
         {
             // add a lengths keeping the rest syncronised
+
+            // only append if vector have already correct size
+            appendToVectorIsCorrectSize(modified.times, modified.lens, average);
+            appendToVectorIsCorrectSize(modified.strokes, modified.lens, modified.strk);
+            appendToVectorIsCorrectSize(modified.styles, modified.lens, QString());
+
+            // and finally update distance
             ++modified.lens;
-
-            modified.times.push_back(average);
-            modified.strokes.push_back(modified.strk);
+            modified.dist += pool;
         }
 
-        if (!modified.styles.empty())
-        {
-            // add empty string at the end
-            modified.styles.resize(modified.lens);
-        }
-
-        modified.dist = modified.dist * modified.lens / original->lens; // this should be exact integer arithmetic
+        // this will break down if the original set did not have any lengths
+        // they should be recomputed from the lengths data
         modified.effic = modified.effic * original->lens / modified.lens;
         modified.speed = modified.speed * original->lens / modified.lens;
     }
