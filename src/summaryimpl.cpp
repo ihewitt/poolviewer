@@ -34,6 +34,7 @@
 #include "configimpl.h"
 #include "besttimesimpl.h"
 #include "analysisimpl.h"
+#include "editgap.h"
 #include "utilities.h"
 
 
@@ -577,6 +578,31 @@ void SummaryImpl::deleteClick()
 
 void SummaryImpl::editButton()
 {
+    if (setSel)
+    {
+        int setrow = setGrid->currentRow();
+        int row = workoutGrid->currentRow();
+        if (row >= 0 && setrow >= 0)
+        {
+            const Workout & workout = ds->Workouts()[row];
+            const std::vector<Set>& sets = workout.sets;
+            const Set& set = sets[setrow];
+
+            EditGap editGap(this);
+            if (editGap.setOriginalSet(&set, workout.pool))
+            {
+                if (editGap.exec() == QDialog::Accepted)
+                {
+                    const Set & modified = editGap.getModifiedSet();
+                    ds->replaceSet(row, setrow, modified);
+
+                    // this is the same as what happens for deleteSet()
+                    // but it does not update the workout line
+                    workoutSelected();
+                }
+            }
+        }
+    }
 }
 
 //
