@@ -37,6 +37,8 @@ protected:
 private slots:
     void on_calcButton_clicked();
 
+    void on_allBest_clicked();
+
 private:
     double getBestTime(int distance);
     void fillTable();

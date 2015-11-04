@@ -47,7 +47,7 @@ public:
 
     void fillWorkouts( const std::vector<Workout>& workouts );
     void fillSets( const std::vector<Set>& sets );
-    void fillLengths( const Set& set);
+    void fillLengths( const Workout& wrk);
 
     void colorRow(int r, QColor c);
 
@@ -60,21 +60,17 @@ public:
  private slots:
     virtual void selectedDate(QDate);
     virtual void workoutSelected();
-    virtual void setSelected();
     virtual void syncButton();
     virtual void configButton();
     virtual void editButton();
-    virtual void deleteClick();
     virtual void scaleChanged(int);
     virtual void printButton();
     virtual void onCheckClicked(bool);
-    virtual void bestTimesButton();
     virtual void analysisButton();
 
 private:
     DataStore *ds;
     Scale scale;
-    bool setSel; //this is a bit clunky
 };
 #endif
 

@@ -18,6 +18,7 @@
 #include <math.h>
 
 #include "analysisimpl.h"
+#include "besttimesimpl.h"
 #include "utilities.h"
 #include "datastore.h"
 
@@ -189,4 +190,12 @@ void AnalysisImpl::on_calcButton_clicked()
     }
 
     fillTable();
+}
+
+void AnalysisImpl::on_allBest_clicked()
+{
+    BestTimesImpl win(this);
+
+    win.setDataStore(ds);
+    win.exec();
 }

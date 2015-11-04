@@ -1,5 +1,6 @@
 /*
  * This file is part of PoolViewer
+ * Copyright (c) 2015 Ivor Hewitt
  * Copyright (c) 2015 Andrea Odetti
  *
  * PoolViewer is free software: you can redistribute it and/or modify
@@ -16,39 +17,57 @@
  * along with PoolViewer.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef EDITGAP_H
-#define EDITGAP_H
+#ifndef EDIT_H
+#define EDIT_H
 
-#include "ui_editgap.h"
+#include "ui_edit.h"
 #include "datastore.h"
 
-class EditGap : public QDialog, private Ui::EditGap
+class Edit : public QDialog, private Ui::Edit
 {
     Q_OBJECT
 
 public:
-    explicit EditGap(QWidget *parent = 0);
+    explicit Edit(QWidget *parent, const Workout &workout );
 
-    // returns true if it is possible to turn a gap into lanes
-    // false in case: negative gap
-    //                or gap < 1 sec
-    // if false, one should NOT call exec!
-    bool setOriginalSet(const Set * _set);
-    const Set & getModifiedSet() const;
+//    bool setWorkout(const Workout & _wrk);
+    bool getModifiedWrk(Workout &wrk) const;
+    bool isDeleted() const { return deleted; }
 
 private slots:
     void on_gapTimeUsedSpin_valueChanged(double arg1);
 
     void on_newLengthsSpin_valueChanged(int arg1);
 
+    void on_deleteAllButton_clicked();
+
+    void on_deleteButton_clicked();
+
+    void on_adjustButton_clicked();
+
+    void on_setsGrid_currentCellChanged(int currentRow, int currentColumn, int previousRow, int previousColumn);
+
+    void on_revertButton_clicked();
+
+    void on_strokesEdit_valueChanged(int arg1);
+
 private:
 
     void calculate();
 
-    const Set * original;
-    Set modified;
+    const Workout & original;
+    Workout modified;
+
+    int currentSet;
+    Set setOrig;
+    Set setMod;
 
     double gap;
+
+    bool deleted;
+    bool changed;
+
+    void populate(const Workout& _wrk);
 };
 
-#endif // EDITGAP_H
+#endif // EDIT_H

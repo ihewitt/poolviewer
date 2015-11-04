@@ -44,7 +44,7 @@ FORMS = ui/summary.ui \
     ui/upload.ui \
     ui/besttimesimpl.ui \
     ui/analysis.ui \
-    ui/editgap.ui
+    ui/edit.ui
 HEADERS = src/uploadimpl.h \
     src/syncimpl.h \
     src/configimpl.h \
@@ -65,7 +65,7 @@ HEADERS = src/uploadimpl.h \
     src/exerciseset.h \
     src/poda.h \
     src/analysisimpl.h \
-    src/editgap.h
+    src/edit.h
 SOURCES = src/uploadimpl.cpp \
     src/syncimpl.cpp \
     src/configimpl.cpp \
@@ -83,7 +83,7 @@ SOURCES = src/uploadimpl.cpp \
     src/utilities.cpp \
     src/poda.cpp \
     src/analysisimpl.cpp \
-    src/editgap.cpp
+    src/edit.cpp
 
 DISTFILES +=
 

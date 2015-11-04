@@ -69,7 +69,7 @@
        <enum>QTabWidget::West</enum>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="volume">
        <attribute name="title">
@@ -352,6 +352,11 @@
               </attribute>
               <column>
                <property name="text">
+                <string>Set</string>
+               </property>
+              </column>
+              <column>
+               <property name="text">
                 <string>Length</string>
                </property>
               </column>
@@ -384,17 +389,14 @@
              <bool>true</bool>
             </property>
             <property name="text">
-             <string>Edit</string>
+             <string>Edit...</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="deleteButton">
-            <property name="enabled">
-             <bool>true</bool>
-            </property>
+           <widget class="QPushButton" name="analysisButton">
             <property name="text">
-             <string>Delete</string>
+             <string>Analysis...</string>
             </property>
            </widget>
           </item>
@@ -549,33 +551,6 @@
         <item>
          <layout class="QHBoxLayout" name="control_buttons">
           <item>
-           <widget class="QPushButton" name="bestTimesButton">
-            <property name="text">
-             <string>Best Times</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="analysisButton">
-            <property name="text">
-             <string>Analysis</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <spacer name="horizontalSpacer_3">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-          <item>
            <widget class="QPushButton" name="downloadButton">
             <property name="text">
              <string>Download...</string>
@@ -723,22 +698,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>deleteButton</sender>
-   <signal>clicked()</signal>
-   <receiver>Summary</receiver>
-   <slot>deleteClick()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>181</x>
-     <y>636</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>3</x>
-     <y>418</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>configButton</sender>
    <signal>clicked()</signal>
    <receiver>Summary</receiver>
@@ -859,38 +818,6 @@
     <hint type="sourcelabel">
      <x>248</x>
      <y>458</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>478</x>
-     <y>322</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>setGrid</sender>
-   <signal>itemSelectionChanged()</signal>
-   <receiver>Summary</receiver>
-   <slot>setSelected()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>248</x>
-     <y>458</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>478</x>
-     <y>322</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>bestTimesButton</sender>
-   <signal>clicked()</signal>
-   <receiver>Summary</receiver>
-   <slot>bestTimesButton()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>543</x>
-     <y>619</y>
     </hint>
     <hint type="destinationlabel">
      <x>478</x>

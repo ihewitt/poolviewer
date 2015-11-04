@@ -32,9 +32,8 @@
 #include "syncimpl.h"
 #include "datastore.h"
 #include "configimpl.h"
-#include "besttimesimpl.h"
 #include "analysisimpl.h"
-#include "editgap.h"
+#include "edit.h"
 #include "utilities.h"
 
 
@@ -331,31 +330,45 @@ void SummaryImpl::fillWorkouts( const std::vector<Workout>& workouts)
     calendarWidget->setData(day_totals);
 }
 
-void SummaryImpl::fillLengths( const Set& set)
+void SummaryImpl::fillLengths( const Workout& wrk)
 {
     lengthGrid->clearContents();
-    lengthGrid->setRowCount(set.lens);
+    lengthGrid->setRowCount(wrk.lengths);
 
-    int row;
-    for (row = 0; row < set.lens; ++row)
+    const std::vector<Set>& sets = wrk.sets;
+
+    int set=0;
+    int row=0;
+    std::vector<Set>::const_iterator it;
+    for (it=sets.begin(); it != sets.end(); ++it)
     {
-        uint col=0;
-        QTableWidgetItem *item;
+        int i;
+        for (i = 0; i < it->lens; ++i)
+        {
+            uint col=0;
+            QTableWidgetItem *item;
 
-        item = createTableWidgetItem(QVariant(1 + row));
-        lengthGrid->setItem( row, col++, item );
-
-        item = createTableWidgetItem(QVariant(set.times[row]));
-        lengthGrid->setItem( row, col++, item );
-
-        item = createTableWidgetItem(QVariant(set.strokes[row]));
-        lengthGrid->setItem( row, col++, item );
-
-        if ((int)set.styles.size() > row) {
-            item = createTableWidgetItem(QVariant(set.styles[row]));
+            item = createTableWidgetItem(QVariant(1 + set));
             lengthGrid->setItem( row, col++, item );
+
+            item = createTableWidgetItem(QVariant(1 + i));
+            lengthGrid->setItem( row, col++, item );
+
+            item = createTableWidgetItem(QVariant(QString::number(it->times[i],'f',3)));
+            lengthGrid->setItem( row, col++, item );
+
+            item = createTableWidgetItem(QVariant(it->strokes[i]));
+            lengthGrid->setItem( row, col++, item );
+
+            if ((int)it->styles.size() > i) {
+                item = createTableWidgetItem(QVariant(it->styles[i]));
+                lengthGrid->setItem( row, col++, item );
+            }
+            row++;
         }
+        set++;
     }
+
     lengthGrid->resizeColumnsToContents();
 }
 
@@ -440,41 +453,6 @@ void SummaryImpl::selectedDate( QDate d )
     workoutGrid->selectRow(id);
 }
 
-void SummaryImpl::setSelected()
-{
-    setSel = true;
-    deleteButton->setText("Delete set");
-
-    int setrow = setGrid->currentRow();
-
-    QTableWidgetItem* it = setGrid->item(setrow,0);
-    if (it->isSelected())
-    {
-        int row = workoutGrid->currentRow();
-        if (row >= 0 && setrow >= 0)
-        {
-            const std::vector<Set>& sets = ds->Workouts()[row].sets;
-
-            const Set& set = sets[setGrid->currentRow()];
-
-            //Just check we have some for now.
-            if (set.times.size())
-            {
-                fillLengths(set);
-            }
-            else {
-                lengthGrid->clearContents();
-                lengthGrid->setRowCount(0);
-            }
-        }
-    }
-    else
-    {
-        lengthGrid->clearContents();
-        lengthGrid->setRowCount(0);
-    }
-}
-
 //
 // Workout in top grid selected.
 //   populate set list
@@ -498,6 +476,8 @@ void SummaryImpl::workoutSelected()
         }
         setData(ds->Workouts());
 
+        fillLengths(ds->Workouts()[row]);
+
         graphWidget->update();
         volumeWidget->update();
         lengthWidget->update();
@@ -510,8 +490,6 @@ void SummaryImpl::workoutSelected()
         lengthGrid->clearContents();
         lengthGrid->setRowCount(0);
     }
-    setSel = false;
-    deleteButton->setText("Delete wrk");
 }
 
 void SummaryImpl::syncButton()
@@ -531,79 +509,35 @@ void SummaryImpl::configButton()
     win.exec();
 }
 
-void SummaryImpl::deleteClick()
-{
-    int row = workoutGrid->currentRow();
-
-    if (setSel)
-    {
-        int ret = QMessageBox::question(this, tr("Delete exercise set"),
-                                        tr("Delete the selected exercise set?"),
-                                        QMessageBox::Yes|QMessageBox::No);
-        if (ret == QMessageBox::Yes)
-        {
-            for (int i = setGrid->rowCount()-1; i >= 0; --i)
-            {
-                QTableWidgetItem* it = setGrid->item(i,0);
-                if (it->isSelected())
-                {
-                    ds->removeSet(row, i);
-                }
-            }
-            workoutSelected();
-        }
-    }
-    else
-    {
-        int ret = QMessageBox::question(this, tr("Delete entire exercise"),
-                                        tr("Delete the selected exercises?"),
-                                        QMessageBox::Yes|QMessageBox::No);
-        if (ret == QMessageBox::Yes)
-        {
-            for (int i = workoutGrid->rowCount()-1; i >= 0; --i)
-            {
-                QTableWidgetItem* it = workoutGrid->item(i,0);
-                if (it->isSelected())
-                {
-                    ds->remove(i);
-                }
-            }
-            workoutGrid->clearContents();
-            workoutGrid->setRowCount(0);
-
-            fillWorkouts(ds->Workouts());
-        }
-    }
-}
-
 void SummaryImpl::editButton()
 {
-    if (setSel)
+    int row = workoutGrid->currentRow();
+    if (row >= 0)
     {
-        int setrow = setGrid->currentRow();
-        int row = workoutGrid->currentRow();
-        if (row >= 0 && setrow >= 0)
+        const Workout & workout = ds->Workouts()[row];
+
+        Edit edit(this, workout);
+        if (edit.exec() == QDialog::Accepted)
         {
-            const Workout & workout = ds->Workouts()[row];
-            const std::vector<Set>& sets = workout.sets;
-            const Set& set = sets[setrow];
-
-            EditGap editGap(this);
-            if (editGap.setOriginalSet(&set))
+            Workout wrk;
+            if ( edit.getModifiedWrk(wrk) )
             {
-                if (editGap.exec() == QDialog::Accepted)
-                {
-                    const Set & modified = editGap.getModifiedSet();
-                    ds->replaceSet(row, setrow, modified);
-
-                    // this is the same as what happens for deleteSet()
-                    // but it does not update the workout line
-                    workoutSelected();
-                }
+                ds->replaceWorkout(row, wrk);
+                workoutSelected();
+            }
+        }
+        else
+        {
+            if (edit.isDeleted())
+            {
+                ds->remove(row);
+                //Repopulate controls
+                fillWorkouts(ds->Workouts());
             }
         }
     }
 }
+
 
 //
 // since we are a dialog application, handle escape as a close request
@@ -719,15 +653,6 @@ void SummaryImpl::onCheckClicked(bool)
                             speedCheck->isChecked());
     lengthWidget->update();
 
-}
-
-/* open Best Times window */
-void SummaryImpl::bestTimesButton()
-{
-    BestTimesImpl win(this);
-
-    win.setDataStore(ds);
-    win.exec();
 }
 
 void SummaryImpl::analysisButton()

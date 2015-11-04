@@ -69,7 +69,7 @@ class DataStore
 {
 public:
     DataStore();
-    
+
     // Locate first exercise id with matching datetime.
     int findExercise( QDateTime dt);
     int findExercise( QDate dt);
@@ -83,6 +83,7 @@ public:
 
     // Replace set in workout
     void replaceSet( int wid, int sid, const Set & newSet );
+    void replaceWorkout( int wid, const Workout& workout);
 
     // Remove all exercises at date
     void remove( QDateTime dt );

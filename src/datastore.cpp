@@ -535,3 +535,10 @@ void DataStore::replaceSet( int wid, int sid, const Set & newSet )
 
     changed = true;
 }
+
+void DataStore::replaceWorkout( int wid, const Workout& wrk)
+{
+    workouts[wid] = wrk;
+    Workout &workout = workouts[wid];
+    changed = true;
+}
