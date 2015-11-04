@@ -661,3 +661,35 @@ void SummaryImpl::analysisButton()
     win.setDataStore(ds);
     win.exec();
 }
+
+void SummaryImpl::on_lengthGrid_itemSelectionChanged()
+{
+    int setrow = setGrid->currentRow();
+    int row = workoutGrid->currentRow();
+    if (row >= 0 && setrow >= 0)
+    {
+        const Workout & workout = ds->Workouts()[row];
+        const std::vector<Set>& sets = workout.sets;
+        const Set& set = sets[setrow];
+
+        const QItemSelectionModel *select = lengthGrid->selectionModel();
+
+        if (select->hasSelection())
+        {
+            const QModelIndexList selected = select->selectedRows();
+
+            int lenghts = 0;
+            QTime time(0, 0);
+            for (QModelIndexList::const_iterator it = selected.begin(); it != selected.end(); ++it)
+            {
+                const int row = it->row();
+                time = time.addMSecs(set.times[row] * 1000);
+                ++lenghts;
+            }
+
+            QString str = QString::number(lenghts) + ": "  + time.toString();
+            // where do we show it?
+            return;
+        }
+    }
+}
