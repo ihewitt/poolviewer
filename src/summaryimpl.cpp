@@ -473,10 +473,9 @@ void SummaryImpl::workoutSelected()
 
             //    viewCombo->setCurrentIndex((int)WORKOUTS);
             calendarWidget->setSelectedDate( ds->Workouts()[row].date );
+            fillLengths(ds->Workouts()[row]);
         }
         setData(ds->Workouts());
-
-        fillLengths(ds->Workouts()[row]);
 
         graphWidget->update();
         volumeWidget->update();
