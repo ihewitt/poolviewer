@@ -349,6 +349,8 @@ void SummaryImpl::fillLengths( const Workout& wrk)
             QTableWidgetItem *item;
 
             item = createTableWidgetItem(QVariant(1 + set));
+            item->setData(Qt::UserRole, QVariant(set));
+            item->setData(Qt::UserRole + 1, QVariant(i));
             lengthGrid->setItem( row, col++, item );
 
             item = createTableWidgetItem(QVariant(1 + i));
@@ -664,13 +666,11 @@ void SummaryImpl::analysisButton()
 
 void SummaryImpl::on_lengthGrid_itemSelectionChanged()
 {
-    int setrow = setGrid->currentRow();
     int row = workoutGrid->currentRow();
-    if (row >= 0 && setrow >= 0)
+    if (row >= 0)
     {
         const Workout & workout = ds->Workouts()[row];
         const std::vector<Set>& sets = workout.sets;
-        const Set& set = sets[setrow];
 
         const QItemSelectionModel *select = lengthGrid->selectionModel();
 
@@ -678,18 +678,28 @@ void SummaryImpl::on_lengthGrid_itemSelectionChanged()
         {
             const QModelIndexList selected = select->selectedRows();
 
-            int lenghts = 0;
+            int n = 0;
             QTime time(0, 0);
             for (QModelIndexList::const_iterator it = selected.begin(); it != selected.end(); ++it)
             {
                 const int row = it->row();
-                time = time.addMSecs(set.times[row] * 1000);
-                ++lenghts;
+
+                const int s = lengthGrid->item(row, 0)->data(Qt::UserRole).value<int>();
+                const int a = lengthGrid->item(row, 0)->data(Qt::UserRole + 1).value<int>();
+
+                const Set& set = sets[s];
+                time = time.addMSecs(set.times[a] * 1000);
+                ++n;
             }
 
-            QString str = QString::number(lenghts) + ": "  + time.toString();
+            int speed = time.msecsSinceStartOfDay() / 10.0 / (n * workout.pool);
+
+            QString str = QString::number(n) + " - "  + time.toString() + " - " + QString::number(speed);
+
+            status->setText(str);
             // where do we show it?
             return;
         }
     }
+    status->setText(QString());
 }
