@@ -36,6 +36,11 @@
 #include "edit.h"
 #include "utilities.h"
 
+namespace
+{
+    const int SET_ID     = Qt::UserRole + 1;
+    const int LENGTH_ID  = Qt::UserRole + 2;
+}
 
 SummaryImpl::SummaryImpl( QWidget * parent, Qt::WindowFlags f)
     : QDialog(parent, f)
@@ -350,8 +355,12 @@ void SummaryImpl::fillLengths( const Workout& wrk)
             QTableWidgetItem *item;
 
             item = createTableWidgetItem(QVariant(1 + set));
-            item->setData(Qt::UserRole, QVariant(set));
-            item->setData(Qt::UserRole + 1, QVariant(i));
+
+            // sore set id and length id as UserRoles Data
+            // independent of what we decide to display
+            // the workout ID will have to come from the currently selected workout
+            item->setData(SET_ID,     QVariant(set));
+            item->setData(LENGTH_ID,  QVariant(i));
             lengthGrid->setItem( row, col++, item );
 
             item = createTableWidgetItem(QVariant(1 + i));
@@ -668,40 +677,45 @@ void SummaryImpl::analysisButton()
 
 void SummaryImpl::on_lengthGrid_itemSelectionChanged()
 {
-    int row = workoutGrid->currentRow();
-    if (row >= 0)
+    const QItemSelectionModel *select = lengthGrid->selectionModel();
+
+    if (select->hasSelection())
     {
-        const Workout & workout = ds->Workouts()[row];
+        const QModelIndexList selected = select->selectedRows();
+
+        // we know that if there are lengths on the grid
+        // a workout MUST be selected (see workoutSelected())
+        const int w_id = workoutGrid->currentRow();
+        const Workout & workout = ds->Workouts()[w_id];
         const std::vector<Set>& sets = workout.sets;
 
-        const QItemSelectionModel *select = lengthGrid->selectionModel();
-
-        if (select->hasSelection())
+        QTime duration(0, 0);
+        int n = 0;
+        for (QModelIndexList::const_iterator it = selected.begin(); it != selected.end(); ++it)
         {
-            const QModelIndexList selected = select->selectedRows();
+            const int row = it->row();
 
-            int n = 0;
-            QTime time(0, 0);
-            for (QModelIndexList::const_iterator it = selected.begin(); it != selected.end(); ++it)
-            {
-                const int row = it->row();
+            // ids are on item at column 0
+            const QTableWidgetItem * id_item = lengthGrid->item(row, 0);
 
-                const int s = lengthGrid->item(row, 0)->data(Qt::UserRole).value<int>();
-                const int a = lengthGrid->item(row, 0)->data(Qt::UserRole + 1).value<int>();
+            const int s_id = id_item->data(SET_ID).value<int>();
+            const int l_id = id_item->data(LENGTH_ID).value<int>();
 
-                const Set& set = sets[s];
-                time = time.addMSecs(set.times[a] * 1000);
-                ++n;
-            }
+            const Set& set = sets[s_id];
 
-            int speed = time.msecsSinceStartOfDay() / 10.0 / (n * workout.pool);
-
-            QString str = QString::number(n) + " - "  + time.toString() + " - " + QString::number(speed);
-
-            status->setText(str);
-            // where do we show it?
-            return;
+            duration = duration.addMSecs(set.times[l_id] * 1000);
+            ++n;
         }
+
+        const int distance = n * workout.pool;
+        const int speed = duration.msecsSinceStartOfDay() / distance / 10;
+
+        QString str = QString::number(n) + " - "  + duration.toString() + " - " + QString::number(speed);
+
+        status->setText(str);
     }
-    status->setText(QString());
+    else
+    {
+        status->setText(QString());
+    }
 }
