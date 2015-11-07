@@ -332,6 +332,7 @@ void SummaryImpl::fillWorkouts( const std::vector<Workout>& workouts)
 
 void SummaryImpl::fillLengths( const Workout& wrk)
 {
+    lengthGrid->setSortingEnabled(false);
     lengthGrid->clearContents();
     lengthGrid->setRowCount(wrk.lengths);
 
@@ -372,6 +373,7 @@ void SummaryImpl::fillLengths( const Workout& wrk)
     }
 
     lengthGrid->resizeColumnsToContents();
+    lengthGrid->setSortingEnabled(true);
 }
 
 void SummaryImpl::fillSets( const std::vector<Set>& sets)
