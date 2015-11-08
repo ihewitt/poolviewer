@@ -68,6 +68,8 @@ public:
     virtual void onCheckClicked(bool);
     virtual void analysisButton();
 
+    void on_lengthGrid_itemSelectionChanged();
+
 private:
     DataStore *ds;
     Scale scale;
