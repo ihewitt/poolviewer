@@ -151,6 +151,7 @@ bool Edit::getModifiedWrk(Workout &wrk) const
     else
     {
         wrk = modified;
+        synchroniseWorkout(wrk);
         return true;
     }
 }

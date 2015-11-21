@@ -52,3 +52,47 @@ double roundTo8thSecond(double value)
     const double result = round(value * 8.0) / 8.0;
     return result;
 }
+
+// synchronise workout
+void synchroniseWorkout(Workout & workout)
+{
+    const size_t numberOfSets = workout.sets.size();
+
+    int lengths = 0;
+    QTime rest;
+    QTime totalDuration(0, 0);
+    for (size_t i = 0; i < numberOfSets; ++i)
+    {
+        const Set & set = workout.sets[i];
+        lengths += set.lens;
+        if (rest.isValid())
+        {
+            rest = rest.addMSecs(set.rest.msecsSinceStartOfDay());
+        }
+        else
+        {
+            // if the sets do not have rest
+            // we keep the existing rest on the workout
+            // (see end of setsToWorkouts() in datastore.cpp)
+            if (set.rest.isValid())
+            {
+                rest = set.rest;
+            }
+        }
+        totalDuration = totalDuration.addMSecs(set.duration.msecsSinceStartOfDay());
+    }
+
+    // always update lenghts and total
+    workout.lengths = lengths;
+    workout.totaldistance = lengths * workout.pool;
+
+    if (rest.isValid())
+    {
+        workout.rest = rest;
+        // otherwise leave it unchanged
+    }
+
+    // use the actual rest to compute total duration
+    totalDuration = totalDuration.addMSecs(workout.rest.msecsSinceStartOfDay());
+    workout.totalduration = totalDuration;
+}

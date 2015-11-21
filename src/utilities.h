@@ -24,6 +24,7 @@
 class QTableWidgetItem;
 class QVariant;
 class Set;
+class Workout;
 
 // ReadOnly, horizontal Right aligned, non editable
 QTableWidgetItem * createTableWidgetItem(const QVariant & content);
@@ -33,5 +34,8 @@ QTime getActualSwimTime(const Set & set);
 
 // mimic watch that rounds to 8th of a second
 double roundTo8thSecond(double value);
+
+// synchronise workout
+void synchroniseWorkout(Workout & workout);
 
 #endif // UTILITIES_H
