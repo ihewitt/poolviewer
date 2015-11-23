@@ -698,24 +698,29 @@ void SummaryImpl::on_lengthGrid_itemSelectionChanged()
             // ids are on item at column 0
             const QTableWidgetItem * id_item = lengthGrid->item(row, 0);
 
-            const int s_id = id_item->data(SET_ID).value<int>();
-            const int l_id = id_item->data(LENGTH_ID).value<int>();
+            if (id_item)
+            {
+                const int s_id = id_item->data(SET_ID).value<int>();
+                const int l_id = id_item->data(LENGTH_ID).value<int>();
 
-            const Set& set = sets[s_id];
+                const Set& set = sets[s_id];
 
-            duration = duration.addMSecs(set.times[l_id] * 1000);
-            ++n;
+                duration = duration.addMSecs(set.times[l_id] * 1000);
+                ++n;
+            }
         }
 
-        const int distance = n * workout.pool;
-        const int speed = duration.msecsSinceStartOfDay() / distance / 10;
+        if (n)
+        {
+            const int distance = n * workout.pool;
+            const int speed = duration.msecsSinceStartOfDay() / distance / 10;
 
-        QString str = QString::number(n) + " - "  + duration.toString() + " - " + QString::number(speed);
+            QString str = QString::number(n) + " - "  + duration.toString() + " - " + QString::number(speed);
 
-        status->setText(str);
+            status->setText(str);
+            return;
+        }
     }
-    else
-    {
-        status->setText(QString());
-    }
+
+    status->setText(QString());
 }
