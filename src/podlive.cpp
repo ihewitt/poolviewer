@@ -16,7 +16,6 @@
  * along with PoolViewer.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include <inttypes.h>
 #include "logging.h"
 #include "podlive.h"
@@ -197,8 +196,8 @@ void PodLive::getData( std::vector<ExerciseSet>& exdata )
                     }
                     else if (type == 0x200) // set end
                     {
-                        int lens = ptr[2] + ((ptr[3]&0x7f)<<8);
-                        int h = ptr[4];
+                        int lens = ptr[2]; // + ((ptr[3]&0x7f)<<8); this isn't high bit
+                        int h = ptr[3]&0x7f;
                         int m = ptr[5]&0x7f;
                         int s = ptr[6];
                         QTime dur(h, m, s);
