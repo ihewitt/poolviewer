@@ -186,6 +186,7 @@ void PodLive::getData( std::vector<ExerciseSet>& exdata )
                         }
                         else // sometimes time field not complete, attempt to detect and skip.
                         {
+                            DEBUG("Incomplete length packet");
                             duration = (((ptr[2] & 0x7f) <<8))/8.0;
                             strks = ptr[3];
                             ptr += 5;
@@ -388,7 +389,7 @@ void sendandwait(QSerialPort *serialPort, unsigned char* data, int len)
 }
 
 }; //namespace
-void PodLive::download(QSerialPort *serialPort, QByteArray& readData)
+bool PodLive::download(QSerialPort *serialPort, QByteArray& readData)
 {
     uint32_t req;
     req = *(uint32_t*)data.data();
@@ -402,34 +403,102 @@ void PodLive::download(QSerialPort *serialPort, QByteArray& readData)
                          0x00,0x00, 0x00,0x00, 0x00,0x00 };
     memcpy(buf, msg, 16);
 
-    int i;
-    for (i=0; i<=0x1f; ++i)
+    int sets = 0;   // currently reading sets counter
+    int offset = 0; // runon skip amount
+
+    int i, last;
+    for (i=0, last = 0x1f; i <= last; ++i)
     {
-        if (req & 1)
+        if (req & 1) // start of dataset marker
         {
-            buf[9]=i;
-            uint32_t crc = crc32a(&buf[6], 10);
-            memcpy(&buf[16], &crc, sizeof(uint32_t));
+            uint32_t crc, crcin;
+            int retry = 4;
+            do
+            {
+                buf[9]=(i & 0x1f);
+                crc = crc32a(&buf[6], 10);
+                memcpy(&buf[16], &crc, sizeof(uint32_t));
 
-            DEBUG("Request set %02x ", i);
-            write(serialPort, buf, 20);
-            read(serialPort, 20);
-            DEBUG("Read %d\n", data.length());
+                DEBUG("Request set %02x ", i);
+                write(serialPort, buf, 20);
+                read(serialPort, 20);
+                DEBUG("Read %d\n", data.length());
 
-            //check crc.
+                crc = crc32a((unsigned char*)data.data(), data.length()-4);
+                crcin = *(uint32_t*)(data.data() + data.length()-4);
+            } while (crc != crcin && --retry > 0);
+
+            if (retry == 0)
+            {
+                return false; //give up
+            }
+
             readData.append(data.data(), data.length()-4);
 
             req = req >> 1;
 
-            // Bitfield doesnt seems to match populated datasets so
-            // Try to spot packet run ons.
-            if (data.length()>5 && data[data.length()-5] != (char)255) // TODO: Improve this logic!
+            //walk received packet to see if it's complete
+            char *ptr = data.data() + offset;
+            char *end = data.data() + data.length()-4;
+
+            uint16_t hdr = *(uint16_t*)ptr;
+            bool complete=false;
+
+            if (sets == 0)
             {
-                if ((req & 1) == 0)
+                if (hdr == 0) //
                 {
-                    DEBUG("More data, overriding bitmask.\n");
-                    req |= 1;
+                    if (ptr[2]>=1) //workout header
+                    {
+                        sets = ptr[16];
+                        ptr += 20;
+                    }
+                    else
+                    {
+                        return false; //abandon download
+                    }
                 }
+                else if (hdr == 0xffff) //Ok we got everything.
+                {
+                    complete = true; // data end
+                }
+                else //something went wrong try to skip
+                {
+                    return false; //abandon download
+                }
+            }
+
+            offset = 0;
+
+            if (!complete)
+            {
+                do
+                {
+                    uint16_t type =  *(uint16_t*)ptr;
+                    if (type == 0x100) //length
+                    {
+                        ptr += 6;
+                    }
+                    else if (type == 0x200)
+                    {
+                        ptr += 16;
+                        sets--;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+
+                    if (ptr >= end) //run on data
+                    {
+                        offset = ptr - end; // skip next start
+                        if (i >= 0x1f)
+                            last ++;        // loop back to start
+
+                        if ((req & 1) == 0) // override bitmask if necessary
+                            req |= 1;
+                    }
+                } while (sets > 0 && ptr < end);
             }
         }
         else
@@ -441,6 +510,7 @@ void PodLive::download(QSerialPort *serialPort, QByteArray& readData)
         yieldCurrentThread();
     }
     DEBUG("done\n");
+    return true;
 }
 
 //
@@ -457,8 +527,10 @@ void PodLive::run()
             usleep(50);
             sendandwait(serialPort, d5, sizeof(d5)); //get data to decode.
             usleep(50);
+
             if (data.length()==0)
                 sleep(1);
+
         } while (state != ERROR && data.length() == 0);
 
         if (state != ERROR)
@@ -466,10 +538,17 @@ void PodLive::run()
             emit info("Transferring.");
 
             state = TRANSFER;
-            download(serialPort, readData);
-            state = DONE;
+            if (download(serialPort, readData))
+            {
+                state = DONE;
+                emit info("Complete.");
+            }
+            else
+            {
+                state = ERROR;
+                emit info("Download error.");
+            }
             emit progress( 100 );
         }
-        state = DONE;
     }
 }

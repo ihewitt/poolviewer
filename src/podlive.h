@@ -48,7 +48,7 @@ private:
     QSerialPort *serialPort;
     QString      serialPortName;
     QByteArray   readData;
-    void         download(QSerialPort *serialPort, QByteArray& readData);
+    bool         download(QSerialPort *serialPort, QByteArray& readData);
 
 };
 
