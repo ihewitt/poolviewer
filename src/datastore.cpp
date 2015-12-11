@@ -331,7 +331,7 @@ void setsToWorkouts( const std::vector<ExerciseSet>& sets,
             set.strokes = j->len_strokes;
             set.styles = j->len_style;
 
-            if (set.effic < min_effic) min_effic = set.effic;
+            if (set.effic > 0 && set.effic < min_effic) min_effic = set.effic;
             if (set.effic > max_effic) max_effic = set.effic;
 
             avg_effic += set.effic;

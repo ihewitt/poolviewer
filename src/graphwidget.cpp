@@ -314,31 +314,53 @@ void GraphWidget::drawSeries( QPainter &painter,
 
         QPoint pt1(x,y);
 
-        painter.setPen(Qt::gray);
-        if (!pt.isNull())
+        bool dotted=false;
+        if (l == 0)
         {
-            painter.drawLine(pt.x()+1,pt.y()+1,pt1.x()+1,pt1.y()+1);
+            pt1.setY(pt.y());              // just continue line along
+            dotted = true;
         }
-        painter.drawEllipse(pt1.x()+1,pt1.y()+1, 3,3);
 
-        painter.setPen(pen);
+        QPen dot(Qt::DotLine);
+
         if (!pt.isNull())
         {
+            dot.setColor(Qt::darkGray);
+            if (dotted)
+                painter.setPen(dot);
+            else
+                painter.setPen(Qt::darkGray);
+
+            painter.drawLine(pt.x()+1,pt.y()+1,pt1.x()+1,pt1.y()+1);
+
+            if (dotted)
+            {
+                dot.setColor(pen);
+                painter.setPen(dot);
+            }
+            else
+                painter.setPen(pen);
             painter.drawLine(pt,pt1);
         }
-        painter.drawEllipse(pt1, 3,3);
 
+        if (!dotted)
+        {
+            painter.drawEllipse(pt1.x()+1,pt1.y()+1, 3,3);
+            painter.drawEllipse(pt1, 3,3);
+        }
         painter.save();
         painter.translate(pt1);
 
         QString text = tags[i];
 
-        painter.setPen(Qt::white);
-        painter.drawText(6,-9,text);
+        if (!dotted)
+        {
+            painter.setPen(Qt::lightGray);
+            painter.drawText(6,-9,text);
 
-        painter.setPen(pen);
-        painter.drawText(5,-10,text);
-
+            painter.setPen(pen);
+            painter.drawText(5,-10,text);
+        }
         painter.restore();
 
         pt = pt1;
