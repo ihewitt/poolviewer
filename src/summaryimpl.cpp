@@ -349,7 +349,10 @@ void SummaryImpl::fillLengths( const Workout& wrk)
     for (it=sets.begin(); it != sets.end(); ++it)
     {
         if (it->times.size() == 0)
+        {
+            set++;
             continue;
+        }
 
         int i;
         for (i = 0; i < it->lens; ++i)
