@@ -24,6 +24,9 @@
 #include <inttypes.h>
 #include "exerciseset.h"
 
+#include <QMetaType>
+Q_DECLARE_METATYPE(QSerialPort::SerialPortError)
+
 uint32_t crc32a(unsigned char *message, int len);
 void dataToWorkouts( unsigned char *buf, std::vector<ExerciseSet>& data );
 

@@ -23,6 +23,7 @@
 
 PodA::PodA() : serialPort(NULL)
 {
+    qRegisterMetaType<QSerialPort::SerialPortError>();
 }
 
 bool PodA::init()

@@ -47,6 +47,7 @@ uint32_t crc32a(unsigned char *message, int len)
 ///
 PodLive::PodLive() : serialPort(NULL)
 {
+    qRegisterMetaType<QSerialPort::SerialPortError>();
 }
 
 PodLive::~PodLive()
