@@ -26,6 +26,11 @@ class QVariant;
 class Set;
 class Workout;
 
+// IDs used in the Qt::UserRole
+extern const int SET_ID;
+extern const int LENGTH_ID;
+extern const int NEW_BEST_TIME;
+
 // ReadOnly, horizontal Right aligned, non editable
 QTableWidgetItem * createTableWidgetItem(const QVariant & content);
 

@@ -22,7 +22,7 @@
 
 namespace
 {
-    void addSet(const Set & set, const Workout & workout, const int numberOfLanes, QTableWidget * table)
+    void addSet(const Set & set, const Workout & workout, const int numberOfLanes, double & bestSpeed, QTableWidget * table)
     {
         const int distance = workout.pool * numberOfLanes;
         QTime duration(0, 0);
@@ -77,6 +77,16 @@ namespace
 
         QTableWidgetItem * totalItem = createTableWidgetItem(QVariant(total));
         table->setItem(row, 6, totalItem);
+
+        // Store in column 0 whether this has been a new best time
+        // use speed as the time could be for a longer distance if lane does not divide exactly the distance
+        const bool record = speed <= bestSpeed;
+        if (record)
+        {
+            bestSpeed = speed;
+        }
+
+        dateItem->setData(NEW_BEST_TIME, QVariant(record));
     }
 }
 
@@ -124,6 +134,8 @@ void BestTimesImpl::on_calculateButton_clicked()
     {
         return;
     }
+
+    double bestSpeed = std::numeric_limits<double>::max();
 
     const std::vector<Workout>& workouts = ds->Workouts();
 
@@ -195,10 +207,34 @@ void BestTimesImpl::on_calculateButton_clicked()
                 continue;
             }
 
-            addSet(set, w, numberOfLanes, timesTable);
+            addSet(set, w, numberOfLanes, bestSpeed, timesTable);
         }
     }
 
+    // ensure the state of the "record progression" is correct
+    on_progressionBox_clicked();
     timesTable->resizeColumnsToContents();
     timesTable->setSortingEnabled(true);
+}
+
+void BestTimesImpl::on_progressionBox_clicked()
+{
+    const bool checked = progressionBox->checkState() == Qt::Checked;
+    const size_t numberOfTimes = timesTable->rowCount();
+    if (checked)
+    {
+        for (size_t i = 0; i < numberOfTimes; ++i)
+        {
+            const QTableWidgetItem * record_item = timesTable->item(i, 0);
+            const bool record = record_item->data(NEW_BEST_TIME).value<bool>();
+            timesTable->setRowHidden(i, !record);
+        }
+    }
+    else
+    {
+        for (size_t i = 0; i < numberOfTimes; ++i)
+        {
+            timesTable->setRowHidden(i, false);
+        }
+    }
 }

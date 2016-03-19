@@ -36,11 +36,6 @@
 #include "edit.h"
 #include "utilities.h"
 
-namespace
-{
-    const int SET_ID     = Qt::UserRole + 1;
-    const int LENGTH_ID  = Qt::UserRole + 2;
-}
 
 SummaryImpl::SummaryImpl( QWidget * parent, Qt::WindowFlags f)
     : QDialog(parent, f)
