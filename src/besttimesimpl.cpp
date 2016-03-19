@@ -26,6 +26,7 @@ namespace
     {
         const int distance = workout.pool * numberOfLanes;
         QTime duration(0, 0);
+        double range = 0.0; // time range per length: slowest - fastest
 
         if ((int)set.times.size() != set.lens)
         {
@@ -41,12 +42,20 @@ namespace
             for (int j = 0; j <= (int)set.times.size()-numberOfLanes; ++j)
             {
                 double cur = 0.0;
+                double fastest = std::numeric_limits<double>::max();
+                double slowest = -fastest;
                 for (int i = j; i < j + numberOfLanes; ++i)
                 {
-                    cur += set.times[i];
+                    const double time = set.times[i];
+                    fastest = std::min(fastest, time);
+                    slowest = std::max(slowest, time);
+                    cur += time;
                 }
                 if (cur < min || min == 0.0)
+                {
                     min = cur;
+                    range = slowest - fastest;
+                }
             }
             duration = duration.addMSecs(min * 1000.0);
         }
@@ -77,6 +86,9 @@ namespace
 
         QTableWidgetItem * totalItem = createTableWidgetItem(QVariant(total));
         table->setItem(row, 6, totalItem);
+
+        QTableWidgetItem * rangeItem = createTableWidgetItem(QVariant(range));
+        table->setItem(row, 7, rangeItem);
 
         // Store in column 0 whether this has been a new best time
         // use speed as the time could be for a longer distance if lane does not divide exactly the distance

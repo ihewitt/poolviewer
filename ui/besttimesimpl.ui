@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>694</width>
+    <width>952</width>
     <height>504</height>
    </rect>
   </property>
@@ -111,6 +111,11 @@
      <column>
       <property name="text">
        <string>Total</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Length range</string>
       </property>
      </column>
     </widget>
