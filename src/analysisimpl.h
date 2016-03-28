@@ -31,9 +31,6 @@ public:
     explicit AnalysisImpl(QWidget *parent = 0);
     void setDataStore(const DataStore *_ds);
 
-protected:
-    void showEvent(QShowEvent *ev);
-
 private slots:
     void on_calcButton_clicked();
 
@@ -41,10 +38,13 @@ private slots:
 
 private:
     double getBestTime(int distance);
+    void createTable();
     void fillTable();
+    void precalculate();
+
     const DataStore *ds;
 
-    double times[8][3];
+    std::vector<std::vector<double> > times;
 };
 
 #endif // ANALYSISIMPL_H

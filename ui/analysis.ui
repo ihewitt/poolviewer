@@ -27,46 +27,6 @@
        <property name="cornerButtonEnabled">
         <bool>false</bool>
        </property>
-       <row>
-        <property name="text">
-         <string>25m</string>
-        </property>
-       </row>
-       <row>
-        <property name="text">
-         <string>100m</string>
-        </property>
-       </row>
-       <row>
-        <property name="text">
-         <string>400m</string>
-        </property>
-       </row>
-       <row>
-        <property name="text">
-         <string>750m</string>
-        </property>
-       </row>
-       <row>
-        <property name="text">
-         <string>1500m</string>
-        </property>
-       </row>
-       <row>
-        <property name="text">
-         <string>1931m (1.2ml)</string>
-        </property>
-       </row>
-       <row>
-        <property name="text">
-         <string>3862m (2.4ml)</string>
-        </property>
-       </row>
-       <row>
-        <property name="text">
-         <string>5000m</string>
-        </property>
-       </row>
        <column>
         <property name="text">
          <string>Best</string>
