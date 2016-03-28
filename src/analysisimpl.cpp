@@ -22,8 +22,25 @@
 #include "utilities.h"
 #include "datastore.h"
 
+namespace
+{
+    const double distances[] = {25, 100, 400, 750, 1500, 1931, 3862, 5000};
+    const char * labels[] = {"25m", "100m", "400m", "750m", "1500m", "1931m (1.2ml)", "3862m (2.4ml)", "5000m"};
+    const size_t numberOfRows = sizeof(distances) / sizeof(distances[0]);
+}
 
-const double distance[]={25,100,400,750,1500,1931,3862,5000};
+
+void AnalysisImpl::createTable()
+{
+    times.resize(numberOfRows, std::vector<double>(3));
+    analysisTable->setRowCount(numberOfRows);
+
+    for (size_t i = 0; i < numberOfRows; ++i)
+    {
+        QTableWidgetItem * item = new QTableWidgetItem(labels[i]);
+        analysisTable->setVerticalHeaderItem(i, item);
+    }
+}
 
 // Add 'when' column
 double AnalysisImpl::getBestTime(int distance)
@@ -94,12 +111,12 @@ AnalysisImpl::AnalysisImpl(QWidget *parent) :
     QDialog(parent),ds(NULL)
 {
     setupUi(this);
+    createTable();
 }
 
 void AnalysisImpl::fillTable()
 {
-    int i;
-    for (i=0;i<8;++i)
+    for (int i = 0; i < numberOfRows; ++i)
     {
         if (times[i][0]>0)
         {
@@ -129,36 +146,34 @@ void AnalysisImpl::showEvent(QShowEvent *ev)
     QDialog::showEvent(ev);
 
     //Populate times
-    int i;
-    for (i=0;i<8;++i)
+    for (int i = 0; i < numberOfRows; ++i)
     {
-        double best = getBestTime(distance[i]);
+        double best = getBestTime(distances[i]);
         times[i][0] = best;
         times[i][1] = -1;
     }
 
     // For each time/distance predict best time
-    for (i=1; i<8; ++i) //start at 100m for intial calc
+    for (int i = 1; i < numberOfRows; ++i) //start at 100m for intial calc
     {
         if (times[i][0] > 0)
         {
-            int j;
-            for (j=0;j<8;++j)
+            for (int j = 0; j < numberOfRows; ++j)
             {
                 if (i == j && times[j][1] > times[i][0])
                 {
                     times[j][1] = times[i][0];
-                    times[j][2] = distance[i];
+                    times[j][2] = distances[i];
                 }
                 else
                 {
                     //Use Peter Riegel's formula: t2 = t1 * (d2 / d1)^1.06.
-                    double calc = times[i][0] * pow(distance[j]/distance[i],1.06);
+                    double calc = times[i][0] * pow(distances[j]/distances[i],1.06);
 
                     if (times[j][1] < 0 || times[j][1] > calc)
                     {
                         times[j][1] = calc;
-                        times[j][2] = distance[i];
+                        times[j][2] = distances[i];
                     }
                 }
             }
@@ -176,14 +191,13 @@ void AnalysisImpl::setDataStore(const DataStore *_ds)
 void AnalysisImpl::on_calcButton_clicked()
 {
     int row = analysisTable->currentRow();
-    double dist = distance[row];
+    double dist = distances[row];
 
     double best = times[row][0];
-    int i;
-    for (i=0; i<8; ++i)
+    for (int i = 0; i < numberOfRows; ++i)
     {
         //Use Peter Riegel's formula: t2 = t1 * (d2 / d1)^1.06.
-        double calc = best * pow(distance[i]/distance[row],1.06);
+        double calc = best * pow(distances[i]/distances[row],1.06);
 
         times[i][1]=calc;
         times[i][2]=dist;

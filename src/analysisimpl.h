@@ -41,10 +41,11 @@ private slots:
 
 private:
     double getBestTime(int distance);
+    void createTable();
     void fillTable();
     const DataStore *ds;
 
-    double times[8][3];
+    std::vector<std::vector<double> > times;
 };
 
 #endif // ANALYSISIMPL_H
