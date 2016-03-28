@@ -35,6 +35,8 @@ public:
 private slots:
     void on_calculateButton_clicked();
 
+    void on_progressionBox_clicked();
+
 private:
     const DataStore *ds;
 };

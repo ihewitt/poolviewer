@@ -24,6 +24,10 @@
 
 #include "datastore.h"
 
+const int SET_ID            = Qt::UserRole + 1;
+const int LENGTH_ID         = Qt::UserRole + 2;
+const int NEW_BEST_TIME     = Qt::UserRole + 3;
+
 QTableWidgetItem * createTableWidgetItem(const QVariant & content)
 {
     QTableWidgetItem * item = new QTableWidgetItem();
