@@ -141,10 +141,8 @@ void AnalysisImpl::fillTable()
     }
 }
 
-void AnalysisImpl::showEvent(QShowEvent *ev)
+void AnalysisImpl::precalculate()
 {
-    QDialog::showEvent(ev);
-
     //Populate times
     for (int i = 0; i < numberOfRows; ++i)
     {
@@ -186,6 +184,7 @@ void AnalysisImpl::showEvent(QShowEvent *ev)
 void AnalysisImpl::setDataStore(const DataStore *_ds)
 {
     ds = _ds;
+    precalculate();
 }
 
 void AnalysisImpl::on_calcButton_clicked()
