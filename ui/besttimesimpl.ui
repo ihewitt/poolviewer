@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>617</width>
+    <width>952</width>
     <height>504</height>
    </rect>
   </property>
@@ -14,13 +14,6 @@
    <string>Best Times</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="2" column="3">
-    <widget class="QLabel" name="label_2">
-     <property name="text">
-      <string>Period:</string>
-     </property>
-    </widget>
-   </item>
    <item row="2" column="0">
     <widget class="QLabel" name="label">
      <property name="text">
@@ -60,7 +53,30 @@
      </item>
     </widget>
    </item>
-   <item row="0" column="0" colspan="6">
+   <item row="2" column="6">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="2">
+    <widget class="QPushButton" name="calculateButton">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text">
+      <string>Calculate</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="0" colspan="7">
     <widget class="QTableWidget" name="timesTable">
      <column>
       <property name="text">
@@ -97,28 +113,17 @@
        <string>Total</string>
       </property>
      </column>
+     <column>
+      <property name="text">
+       <string>Length range</string>
+      </property>
+     </column>
     </widget>
    </item>
-   <item row="2" column="2">
-    <widget class="QPushButton" name="calculateButton">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
+   <item row="2" column="3">
+    <widget class="QLabel" name="label_2">
      <property name="text">
-      <string>Calculate</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="5">
-    <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Ok</set>
+      <string>Period:</string>
      </property>
     </widget>
    </item>
@@ -149,6 +154,13 @@
        <string>Last Year</string>
       </property>
      </item>
+    </widget>
+   </item>
+   <item row="2" column="5">
+    <widget class="QCheckBox" name="progressionBox">
+     <property name="text">
+      <string>Record progression</string>
+     </property>
     </widget>
    </item>
   </layout>
