@@ -124,7 +124,7 @@ QString PodLive::find()
 void PodLive::getData( std::vector<ExerciseSet>& exdata )
 {
 
-    if (readData.isEmpty())
+    if (readData.isEmpty() || state != DONE)
         return;
 
     uint16_t type;
