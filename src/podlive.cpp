@@ -124,7 +124,7 @@ QString PodLive::find()
 void PodLive::getData( std::vector<ExerciseSet>& exdata )
 {
 
-    if (readData.isEmpty())
+    if (readData.isEmpty() || state != DONE)
         return;
 
     uint16_t type;
@@ -404,112 +404,74 @@ bool PodLive::download(QSerialPort *serialPort, QByteArray& readData)
                          0x00,0x00, 0x00,0x00, 0x00,0x00 };
     memcpy(buf, msg, 16);
 
-    int sets = 0;   // currently reading sets counter
-    int offset = 0; // runon skip amount
-
-    int i, last;
-    for (i=0, last = 0x1f; i <= last; ++i)
+    for (int i = 0; i < 0x20; ++i)
     {
-        if (req & 1) // start of dataset marker
+        if (req & (1 << i)) // start of dataset marker
         {
-            uint32_t crc, crcin;
-            int retry = 4;
+            QByteArray workout;
+            int missing = -1; // marks uninitialised
+            int blockToRequest = i;
             do
             {
-                buf[9]=(i & 0x1f);
-                crc = crc32a(&buf[6], 10);
-                memcpy(&buf[16], &crc, sizeof(uint32_t));
-
-                DEBUG("Request set %02x ", i);
-                write(serialPort, buf, 20);
-                read(serialPort, 20);
-                DEBUG("Read %d\n", data.length());
-
-                crc = crc32a((unsigned char*)data.data(), data.length()-4);
-                crcin = *(uint32_t*)(data.data() + data.length()-4);
-            } while (crc != crcin && --retry > 0);
-
-            if (retry == 0)
-            {
-                return false; //give up
-            }
-
-            readData.append(data.data(), data.length()-4);
-
-            req = req >> 1;
-
-            //walk received packet to see if it's complete
-            char *ptr = data.data() + offset;
-            char *end = data.data() + data.length()-4;
-
-            uint16_t hdr = *(uint16_t*)ptr;
-            bool complete=false;
-
-            if (sets == 0)
-            {
-                if (hdr == 0) //
+                if (blockToRequest != i)
                 {
-                    if (ptr[2]>=1) //workout header
+                    if (req & (1 << blockToRequest))
                     {
-                        sets = ptr[16];
-                        ptr += 20;
-                    }
-                    else
-                    {
-                        return false; //abandon download
+                        DEBUG("Bad workout %02x, overlapping at %02x", i, blockToRequest);
+                        // block already used
+                        // ignore
+                        // and leave
+                        workout.clear();
+                        goto done;
                     }
                 }
-                else if (hdr == 0xffff) //Ok we got everything.
-                {
-                    complete = true; // data end
-                }
-                else //something went wrong try to skip
-                {
-                    return false; //abandon download
-                }
-            }
 
-            offset = 0;
-
-            if (!complete)
-            {
+                uint32_t crc, crcin;
+                int retry = 4;
                 do
                 {
-                    uint16_t type =  *(uint16_t*)ptr;
-                    if (type == 0x100) //length
-                    {
-                        ptr += 6;
-                    }
-                    else if (type == 0x200)
-                    {
-                        ptr += 16;
-                        sets--;
-                    }
-                    else
+                    buf[9]=(blockToRequest & 0x1f);
+                    crc = crc32a(&buf[6], 10);
+                    memcpy(&buf[16], &crc, sizeof(uint32_t));
+
+                    DEBUG("Request set %02x ", blockToRequest);
+                    write(serialPort, buf, 20);
+                    read(serialPort, 20);
+                    DEBUG("Read %d\n", data.length());
+
+                    crc = crc32a((unsigned char*)data.data(), data.length()-4);
+                    crcin = *(uint32_t*)(data.data() + data.length()-4);
+                } while (crc != crcin && --retry > 0);
+
+                if (retry == 0)
+                {
+                    return false; //give up
+                }
+
+                workout.append(data.data(), data.length()-4);
+
+                if (missing < 0)
+                {
+                    const int totalBlocks = data[2];
+                    if (totalBlocks == 0)
                     {
                         return false;
                     }
+                    missing = totalBlocks;
+                }
 
-                    if (ptr >= end) //run on data
-                    {
-                        offset = ptr - end; // skip next start
-                        if (i >= 0x1f)
-                            last ++;        // loop back to start
-
-                        if ((req & 1) == 0) // override bitmask if necessary
-                            req |= 1;
-                    }
-                } while (sets > 0 && ptr < end);
+                --missing;
+                blockToRequest = (blockToRequest + 1) & 0x1f;
             }
-        }
-        else
-        {
-            req = req >> 1;
-        }
+            while (missing > 0);
 
+            readData.append(workout.data(), workout.length());
+        }
         emit progress( i*100/0x20 );
         yieldCurrentThread();
     }
+
+done:
     DEBUG("done\n");
     return true;
 }
