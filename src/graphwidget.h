@@ -21,7 +21,8 @@
 #include <QWidget>
 #include <QDateTime>
 
-#include <stdio.h>
+#include <cstdio>
+#include <cmath>
 
 //store axis and data points.
 
@@ -67,7 +68,7 @@ public:
                 double s=(maxDbl-minDbl);
                 if (s==0) return 0;
                 double result = ((data - minDbl) * h) / s;
-                return abs(result);
+                return std::abs(result);
             }
             else if (hasInts())
             {
@@ -146,8 +147,8 @@ public:
                         minDbl = doubles[i];
                 }
 
-                maxDbl = abs(maxDbl)+1;
-                minDbl = abs(minDbl)-1;
+                maxDbl = std::abs(maxDbl)+1;
+                minDbl = std::abs(minDbl)-1;
                 if (minDbl < 0) minDbl = 0;
             }
             else if (hasInts())
