@@ -151,6 +151,9 @@ void UploadImpl::selectNone()
 
 void UploadImpl::syncButton()
 {
+    listWidget->clear();
+    exdata.clear();
+
     SyncImpl win(this);
     win.exec();
 
