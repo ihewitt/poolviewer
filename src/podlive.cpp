@@ -481,6 +481,9 @@ done:
 //
 void PodLive::run()
 {
+    if (!init())
+        return;
+
     if (serialPort && state == INITIALISED )
     {
         emit info("Connect watch.");

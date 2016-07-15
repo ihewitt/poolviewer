@@ -232,6 +232,9 @@ void PodOrig::stop()
 
 void PodOrig::run()
 {
+    if (!init())
+        return;
+
     int count;
     while ( state != ERROR &&
             state != DONE )

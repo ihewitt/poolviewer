@@ -49,7 +49,6 @@ public:
     };
     State state;
 
-    virtual bool init() = 0;
     virtual void stop() = 0;
     virtual void getData(std::vector<ExerciseSet>& data) = 0;
 };

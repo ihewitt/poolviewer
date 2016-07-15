@@ -34,7 +34,6 @@ public:
 
     void run();
 
-    virtual bool init();
     virtual void stop();
     virtual void getData(std::vector<ExerciseSet>& data);
 
@@ -48,6 +47,8 @@ private slots:
     void handleError(QSerialPort::SerialPortError error);
 
 private:
+    bool         init();
+
     int          len();
     QString      find();
     QSerialPort *serialPort;

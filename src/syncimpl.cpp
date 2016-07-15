@@ -97,7 +97,6 @@ void SyncImpl::start()
     connect(pod, SIGNAL(error(QString)), SLOT(podMsg(QString)));
     connect(pod, SIGNAL(progress(int)), SLOT(podProgress(int)));
 
-    if (pod->init())
-        pod->start();
+    pod->start();
 }
 

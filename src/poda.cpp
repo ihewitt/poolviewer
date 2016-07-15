@@ -96,6 +96,9 @@ void PodA::stop()
 
 void PodA::run()
 {
+    if (!init())
+        return;
+
     int count;
 
     while (state != ERROR &&
