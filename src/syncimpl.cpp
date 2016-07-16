@@ -19,6 +19,7 @@
 #include <stdio.h>
 
 #include <QTimer>
+#include <QPushButton>
 
 #include "syncimpl.h"
 #include "podorig.h"
@@ -30,9 +31,12 @@
 // tidy messages
 // remove logging from poolmate.c
 
-SyncImpl::SyncImpl( QWidget * parent, Qt::WindowFlags f)
-    : QDialog(parent, f), pod(0)
+SyncImpl::SyncImpl( QWidget * parent)
+    : QDialog(parent, Qt::CustomizeWindowHint | Qt::WindowTitleHint), pod(0)
 {
+    // make sure Qt::WindowCloseButtonHint is NOT specified
+    // as it would closr this dialog before the thread is finisehd
+
     setupUi(this);
 
     progressBar->setRange(0,100);
@@ -44,7 +48,6 @@ SyncImpl::~SyncImpl()
 {
     if (pod)
     {
-        pod->stop();
         delete pod;
     }
 }
@@ -58,6 +61,16 @@ void SyncImpl::podProgress(int progress)
 {
     progressBar->setValue(progress);
     update();
+}
+
+void SyncImpl::podFinished()
+{
+    // we know the thread has sent a finished signal
+    // is it worth waiting as well? to ensure it is really done
+    pod->wait();
+
+    // ok, the thread is really done now, allow the dialog to be closed
+    buttonBox->button(QDialogButtonBox::Ok)->setEnabled(true);
 }
 
 void SyncImpl::getData(std::vector<ExerciseSet>& data)
@@ -89,14 +102,24 @@ void SyncImpl::start()
         break;
     }
 
-    void info(QString msg);
-    void error(QString msg);
-    void progress(int progress);
-
     connect(pod, SIGNAL(info(QString)), SLOT(podMsg(QString)));
     connect(pod, SIGNAL(error(QString)), SLOT(podMsg(QString)));
     connect(pod, SIGNAL(progress(int)), SLOT(podProgress(int)));
+    connect(pod, SIGNAL(finished()), SLOT(podFinished()));
+
+    buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
+    buttonBox->button(QDialogButtonBox::Abort)->setEnabled(true);
 
     pod->start();
 }
 
+
+void SyncImpl::on_buttonBox_rejected()
+{
+    // this is just a request
+    // we will wait for a finished signal
+    pod->stop();
+
+    // no point in stopping more than once
+    buttonBox->button(QDialogButtonBox::Abort)->setEnabled(false);
+}

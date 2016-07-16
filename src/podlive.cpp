@@ -61,7 +61,7 @@ PodLive::~PodLive()
 void PodLive::stop()
 {
     state = ERROR;
-    sleep(1);
+    emit info("Stopped.");
 }
 
 bool PodLive::init()

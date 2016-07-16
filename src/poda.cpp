@@ -91,7 +91,7 @@ PodA::~PodA()
 void PodA::stop()
 {
     state = DONE;
-    sleep(1);
+    emit info("Stopped.");
 }
 
 void PodA::run()

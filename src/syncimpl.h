@@ -35,7 +35,7 @@ public:
         POD,
         PODLIVE } PODTYPE;
 
-    SyncImpl( QWidget * parent = 0, Qt::WindowFlags f = 0 );
+    SyncImpl( QWidget * parent = 0 );
     ~SyncImpl();
 
     void getData(std::vector<ExerciseSet>& data);
@@ -43,6 +43,9 @@ public:
 private slots:
     void podMsg(QString);
     void podProgress(int);
+    void podFinished();
+
+    void on_buttonBox_rejected();
 
 private:
     void start();

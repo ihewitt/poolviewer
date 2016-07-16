@@ -228,6 +228,7 @@ void PodOrig::stop()
             sleep(1);
         }
     }
+    emit info("Stopped.");
 }
 
 void PodOrig::run()
