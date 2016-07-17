@@ -31,7 +31,6 @@ class PodA : public PodBase
 Q_OBJECT
 public:
     PodA();
-    ~PodA();
 
     void run();
 

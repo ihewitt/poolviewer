@@ -28,7 +28,6 @@ class PodLive : public PodBase
     Q_OBJECT
 public:
     PodLive();
-    ~PodLive();
 
     void run();
 

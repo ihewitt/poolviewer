@@ -80,12 +80,6 @@ QString PodA::find()
     return QString("");
 }
 
-PodA::~PodA()
-{
-    if (serialPort && serialPort->isOpen())
-        serialPort->close();
-}
-
 void PodA::stop()
 {
     state = DONE;

@@ -50,12 +50,6 @@ PodLive::PodLive() : serialPort(NULL)
     qRegisterMetaType<QSerialPort::SerialPortError>();
 }
 
-PodLive::~PodLive()
-{
-    if (serialPort && serialPort->isOpen())
-        serialPort->close();
-}
-
 void PodLive::stop()
 {
     state = ERROR;
