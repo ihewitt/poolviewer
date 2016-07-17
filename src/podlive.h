@@ -21,6 +21,7 @@
 
 // New UsbLive interface
 #include "podbase.h"
+#include <QScopedPointer>
 
 class PodLive : public PodBase
 {
@@ -46,10 +47,10 @@ private:
     bool         init();
 
     QString      find();
-    QSerialPort *serialPort;
+    QScopedPointer<QSerialPort> serialPort;
     QString      serialPortName;
     QByteArray   readData;
-    bool         download(QSerialPort *serialPort, QByteArray& readData);
+    bool         download(const QScopedPointer<QSerialPort> & serialPort, QByteArray& readData);
 
 };
 

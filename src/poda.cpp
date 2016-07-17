@@ -37,7 +37,7 @@ bool PodA::init()
         return false;
     }
 
-    serialPort= new QSerialPort();
+    serialPort.reset(new QSerialPort());
     serialPort->setPortName(serialPortName);
 
     //m_standardOutput= &out;
@@ -60,8 +60,8 @@ bool PodA::init()
     }
 
     readData.clear();
-    connect(serialPort, SIGNAL(readyRead()), SLOT(handleReadyRead()));
-    connect(serialPort, SIGNAL(error(QSerialPort::SerialPortError)), SLOT(handleError(QSerialPort::SerialPortError)));
+    connect(serialPort.data(), SIGNAL(readyRead()), SLOT(handleReadyRead()));
+    connect(serialPort.data(), SIGNAL(error(QSerialPort::SerialPortError)), SLOT(handleError(QSerialPort::SerialPortError)));
 
     return true;
 }
@@ -82,10 +82,8 @@ QString PodA::find()
 
 PodA::~PodA()
 {
-    if(serialPort != NULL && serialPort->isOpen())
+    if (serialPort && serialPort->isOpen())
         serialPort->close();
-
-    delete serialPort;
 }
 
 void PodA::stop()

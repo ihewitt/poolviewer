@@ -52,10 +52,8 @@ PodLive::PodLive() : serialPort(NULL)
 
 PodLive::~PodLive()
 {
-    if(serialPort != NULL && serialPort->isOpen())
+    if (serialPort && serialPort->isOpen())
         serialPort->close();
-
-    delete serialPort;
 }
 
 void PodLive::stop()
@@ -75,7 +73,7 @@ bool PodLive::init()
         return false;
     }
 
-    serialPort= new QSerialPort();
+    serialPort.reset(new QSerialPort());
     serialPort->setPortName(serialPortName);
 
     //m_standardOutput= &out;
@@ -100,7 +98,7 @@ bool PodLive::init()
 
     readData.clear();
     //    connect(serialPort, SIGNAL(readyRead()), SLOT(handleReadyRead()));
-    connect(serialPort, SIGNAL(error(QSerialPort::SerialPortError)), SLOT(handleError(QSerialPort::SerialPortError)));
+    connect(serialPort.data(), SIGNAL(error(QSerialPort::SerialPortError)), SLOT(handleError(QSerialPort::SerialPortError)));
 
     return true;
 }
@@ -334,7 +332,7 @@ void display(QByteArray& data)
 namespace
 {
 QByteArray data;
-void read(QSerialPort *serialPort, unsigned long len)
+void read(const QScopedPointer<QSerialPort> & serialPort, unsigned long len)
 {
 
     data.clear();
@@ -352,7 +350,7 @@ void read(QSerialPort *serialPort, unsigned long len)
     display(data);
 }
 
-void write(QSerialPort *serialPort, unsigned char* data, unsigned long len)
+void write(const QScopedPointer<QSerialPort> & serialPort, unsigned char* data, unsigned long len)
 {
     QByteArray out((char*)data,len);
     serialPort->write(out);
@@ -360,7 +358,7 @@ void write(QSerialPort *serialPort, unsigned char* data, unsigned long len)
 }
 
 // prefix 0x55 packet
-void sendandstart(QSerialPort *serialPort, unsigned char* data, int len)
+void sendandstart(const QScopedPointer<QSerialPort> & serialPort, unsigned char* data, int len)
 {
     uint32_t crc = crc32a(data,len);
 
@@ -375,7 +373,7 @@ void sendandstart(QSerialPort *serialPort, unsigned char* data, int len)
 }
 
 // prefix 0xff packet
-void sendandwait(QSerialPort *serialPort, unsigned char* data, int len)
+void sendandwait(const QScopedPointer<QSerialPort> & serialPort, unsigned char* data, int len)
 {
     uint32_t crc = crc32a(data,len);
 
@@ -390,7 +388,7 @@ void sendandwait(QSerialPort *serialPort, unsigned char* data, int len)
 }
 
 }; //namespace
-bool PodLive::download(QSerialPort *serialPort, QByteArray& readData)
+bool PodLive::download(const QScopedPointer<QSerialPort> & serialPort, QByteArray& readData)
 {
     uint32_t req;
     req = *(uint32_t*)data.data();

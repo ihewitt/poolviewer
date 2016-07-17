@@ -23,8 +23,7 @@
 
 #include "ui_sync.h"
 #include "exerciseset.h"
-
-class PodBase;
+#include "podbase.h"
 
 class SyncImpl : public QDialog, public Ui::syncDlg
 {
@@ -36,7 +35,6 @@ public:
         PODLIVE } PODTYPE;
 
     SyncImpl( QWidget * parent = 0 );
-    ~SyncImpl();
 
     void getData(std::vector<ExerciseSet>& data);
 
@@ -50,7 +48,7 @@ private slots:
 private:
     void start();
     
-    PodBase *pod;
+    QScopedPointer<PodBase> pod;
     PODTYPE mDevice;  
 };
 

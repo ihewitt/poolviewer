@@ -44,14 +44,6 @@ SyncImpl::SyncImpl( QWidget * parent)
     start();
 }
 
-SyncImpl::~SyncImpl()
-{
-    if (pod)
-    {
-        delete pod;
-    }
-}
-
 void SyncImpl::podMsg(QString msg)
 {
     label->setText(msg);
@@ -92,20 +84,20 @@ void SyncImpl::start()
     switch (podType)
     {
     case 0:
-        pod = new PodOrig();
+        pod.reset(new PodOrig());
         break;
     case 1:
-        pod = new PodA();
+        pod.reset(new PodA());
         break;
     case 2:
-        pod = new PodLive();
+        pod.reset(new PodLive());
         break;
     }
 
-    connect(pod, SIGNAL(info(QString)), SLOT(podMsg(QString)));
-    connect(pod, SIGNAL(error(QString)), SLOT(podMsg(QString)));
-    connect(pod, SIGNAL(progress(int)), SLOT(podProgress(int)));
-    connect(pod, SIGNAL(finished()), SLOT(podFinished()));
+    connect(pod.data(), SIGNAL(info(QString)), SLOT(podMsg(QString)));
+    connect(pod.data(), SIGNAL(error(QString)), SLOT(podMsg(QString)));
+    connect(pod.data(), SIGNAL(progress(int)), SLOT(podProgress(int)));
+    connect(pod.data(), SIGNAL(finished()), SLOT(podFinished()));
 
     buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
     buttonBox->button(QDialogButtonBox::Abort)->setEnabled(true);
