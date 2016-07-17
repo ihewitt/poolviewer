@@ -407,15 +407,22 @@ bool PodLive::download(const QScopedPointer<QSerialPort> & serialPort, QByteArra
         if (req & (1 << i)) // start of dataset marker
         {
             QByteArray workout;
-            int missing = -1; // marks uninitialised
-            int blockToRequest = i;
+            int stillToRequest = -1; // marks uninitialised
+            int nextBlockToRequest = i;
             do
             {
-                if (blockToRequest != i)
+                if (stillToRequest != -1)
                 {
-                    if (req & (1 << blockToRequest))
+                    // the first bock is always safe to download
+                    // the other ones could go over the next set
+                    //
+                    // we are not checking (nextBlockToRequest == i)
+                    // as if we attempt to download 100 blocks
+                    // when we wrap around, we will know that the first is already used
+                    //
+                    if (req & (1 << nextBlockToRequest))
                     {
-                        DEBUG("Bad workout %02x, overlapping at %02x", i, blockToRequest);
+                        DEBUG("Bad workout %02x, overlapping at %02x\n", i, nextBlockToRequest);
                         // block already used
                         // ignore
                         // and leave
@@ -428,11 +435,11 @@ bool PodLive::download(const QScopedPointer<QSerialPort> & serialPort, QByteArra
                 int retry = 4;
                 do
                 {
-                    buf[9]=(blockToRequest & 0x1f);
+                    buf[9]=(nextBlockToRequest & 0x1f);
                     crc = crc32a(&buf[6], 10);
                     memcpy(&buf[16], &crc, sizeof(uint32_t));
 
-                    DEBUG("Request set %02x ", blockToRequest);
+                    DEBUG("Request set %02x ", nextBlockToRequest);
                     write(serialPort, buf, 20);
                     read(serialPort, 20);
                     DEBUG("Read %d\n", data.length());
@@ -448,20 +455,20 @@ bool PodLive::download(const QScopedPointer<QSerialPort> & serialPort, QByteArra
 
                 workout.append(data.data(), data.length()-4);
 
-                if (missing < 0)
+                if (stillToRequest < 0)
                 {
                     const int totalBlocks = data[2];
                     if (totalBlocks == 0)
                     {
                         return false;
                     }
-                    missing = totalBlocks;
+                    stillToRequest = totalBlocks;
                 }
 
-                --missing;
-                blockToRequest = (blockToRequest + 1) & 0x1f;
+                --stillToRequest;
+                nextBlockToRequest = (nextBlockToRequest + 1) & 0x1f;
             }
-            while (missing > 0);
+            while (stillToRequest > 0);
 
             readData.append(workout.data(), workout.length());
         }
