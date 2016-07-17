@@ -62,6 +62,7 @@ void SyncImpl::podFinished()
     pod->wait();
 
     // ok, the thread is really done now, allow the dialog to be closed
+    buttonBox->button(QDialogButtonBox::Abort)->setEnabled(false);
     buttonBox->button(QDialogButtonBox::Ok)->setEnabled(true);
 }
 
