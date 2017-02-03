@@ -244,10 +244,10 @@ void SummaryImpl::setData( const std::vector<Workout>& workouts)
     }
 }
 
-
 void SummaryImpl::fillWorkouts( const std::vector<Workout>& workouts)
 {
     workoutGrid->clearContents();
+    workoutGrid->setIconSize(QSize(48,16));
 
     std::vector<Workout>::const_iterator i;
 
@@ -255,6 +255,11 @@ void SummaryImpl::fillWorkouts( const std::vector<Workout>& workouts)
 
     std::map<QDate, CalendarWidget::Totals> day_totals;
     std::map<QDate, int> day_nums;
+
+    QPixmap garmin(":/images/garmin.png");
+    QPixmap strava(":/images/strava.png");
+    QPixmap tick(":/images/tick.png");
+    QPixmap icons(48,16);
 
     int row=0;
     for ( i = workouts.begin(); i != workouts.end(); ++i)
@@ -300,6 +305,34 @@ void SummaryImpl::fillWorkouts( const std::vector<Workout>& workouts)
             workoutGrid->setItem( row, col++, item );
 
             item = createTableWidgetItem(QVariant(i->rest.toString()));
+            workoutGrid->setItem( row, col++, item );
+
+            icons.fill(Qt::transparent);
+
+            QPainter painter(&icons);
+            int pos=0;
+
+            if (i->sync & SYNC_FIT)
+            {
+                painter.drawPixmap(pos,0,16,16,tick);
+                pos+=16;
+            }
+            if (i->sync & SYNC_GARMIN)
+            {
+                painter.drawPixmap(pos,0,16,16,garmin);
+                pos+=16;
+            }
+            if (i->sync & SYNC_STRAVA)
+            {
+                painter.drawPixmap(pos,0,16,16,strava);
+                pos+=16;
+            }
+
+            QIcon cell(icons);
+
+            item = new QTableWidgetItem();
+            item->setFlags(item->flags() ^ Qt::ItemIsEditable);
+            item->setIcon(cell);
             workoutGrid->setItem( row, col++, item );
         }
         row++;
@@ -650,6 +683,24 @@ void SummaryImpl::printButton()
 
     painter.end();
 
+}
+
+void SummaryImpl::fitButton()
+{
+    QSettings settings("Swim","Poolmate");
+    QString dirname=settings.value("fitDir").toString();
+
+    dirname = QFileDialog::getExistingDirectory(this,
+                                                tr("Select .FIT export directory."),
+                                                dirname);
+    if (!dirname.isEmpty())
+    {
+        settings.setValue("fitDir", dirname);
+
+        ds->exportWorkouts(dirname);
+    }
+// Overkill repopulate
+    fillWorkouts(ds->Workouts()); //TODO change to gui update
 }
 
 void SummaryImpl::onCheckClicked(bool)

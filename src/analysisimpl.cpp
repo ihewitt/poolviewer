@@ -72,7 +72,7 @@ double AnalysisImpl::getBestTime(int distance)
                 continue;
 
             //
-            const int distance = w.pool * numberOfLanes;
+            //const int distance = w.pool * numberOfLanes;
             double duration;
 
             if ((int)set.times.size() != set.lens)
@@ -116,7 +116,7 @@ AnalysisImpl::AnalysisImpl(QWidget *parent) :
 
 void AnalysisImpl::fillTable()
 {
-    for (int i = 0; i < numberOfRows; ++i)
+    for (size_t i = 0; i < numberOfRows; ++i)
     {
         if (times[i][0]>0)
         {
@@ -144,7 +144,7 @@ void AnalysisImpl::fillTable()
 void AnalysisImpl::precalculate()
 {
     //Populate times
-    for (int i = 0; i < numberOfRows; ++i)
+    for (size_t i = 0; i < numberOfRows; ++i)
     {
         double best = getBestTime(distances[i]);
         times[i][0] = best;
@@ -152,11 +152,11 @@ void AnalysisImpl::precalculate()
     }
 
     // For each time/distance predict best time
-    for (int i = 1; i < numberOfRows; ++i) //start at 100m for intial calc
+    for (size_t i = 1; i < numberOfRows; ++i) //start at 100m for intial calc
     {
         if (times[i][0] > 0)
         {
-            for (int j = 0; j < numberOfRows; ++j)
+            for (size_t j = 0; j < numberOfRows; ++j)
             {
                 if (i == j && times[j][1] > times[i][0])
                 {
@@ -193,7 +193,7 @@ void AnalysisImpl::on_calcButton_clicked()
     double dist = distances[row];
 
     double best = times[row][0];
-    for (int i = 0; i < numberOfRows; ++i)
+    for (size_t i = 0; i < numberOfRows; ++i)
     {
         //Use Peter Riegel's formula: t2 = t1 * (d2 / d1)^1.06.
         double calc = best * pow(distances[i]/distances[row],1.06);

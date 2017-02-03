@@ -45,6 +45,8 @@ struct ExerciseSet
     QTime rest;                 /**< rest time for this set/lap */
     double num;                 /**< dummy value to keep file import/output compatible */
 
+    uint8_t sync;               /**< sync status */
+
     std::vector<double> len_time; /**< duration of each length in this set/lap in seconds */
     std::vector<int> len_strokes; /**< number of strokes for each length for this set/lap */
     std::vector<QString> len_style;   /**< stroke style for each length for this set/lap */

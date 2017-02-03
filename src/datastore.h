@@ -40,10 +40,18 @@ struct Set
     std::vector<QString> styles;
 };
 
+enum syncstatus
+{
+    SYNC_FIT=1,
+    SYNC_GARMIN=2,
+    SYNC_STRAVA=4
+};
+
 struct Workout
 {
     int id;
 
+    uint8_t sync; //syncstatus bitfield
     int user;
     QDate date;
     QTime time;
@@ -92,6 +100,8 @@ public:
     void setFile(const QString &_filename) { filename=_filename;}
     void setBackup(bool _backup) { backup = _backup; }
     const QString& getFile() { return filename;}
+
+    void exportWorkouts(const QString &directory);
 
     //once loaded flag any manipulation.
     bool hasChanged() { return changed;}

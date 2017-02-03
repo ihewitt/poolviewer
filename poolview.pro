@@ -83,7 +83,8 @@ SOURCES = src/uploadimpl.cpp \
     src/utilities.cpp \
     src/poda.cpp \
     src/analysisimpl.cpp \
-    src/edit.cpp
+    src/edit.cpp \
+    src/fitwriter.cpp
 
 DISTFILES +=
 

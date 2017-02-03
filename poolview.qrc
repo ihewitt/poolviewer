@@ -1,7 +1,10 @@
 <RCC>
-    <qresource>
+    <qresource prefix="/">
         <file>images/pod.png</file>
         <file>images/poda.png</file>
         <file>images/podlive.png</file>
+        <file>images/strava.png</file>
+        <file>images/garmin.png</file>
+        <file>images/tick.png</file>
     </qresource>
 </RCC>

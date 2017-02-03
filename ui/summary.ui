@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>957</width>
-    <height>645</height>
+    <width>1059</width>
+    <height>709</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -142,7 +142,7 @@
                <number>1</number>
               </property>
               <property name="columnCount">
-               <number>8</number>
+               <number>9</number>
               </property>
               <attribute name="horizontalHeaderDefaultSectionSize">
                <number>60</number>
@@ -197,12 +197,12 @@
                 <string>Rest</string>
                </property>
               </column>
-              <item row="0" column="0">
+              <column>
                <property name="text">
-                <string/>
+                <string>Sync</string>
                </property>
-              </item>
-              <item row="0" column="1">
+              </column>
+              <item row="0" column="0">
                <property name="text">
                 <string/>
                </property>
@@ -233,6 +233,11 @@
                </property>
               </item>
               <item row="0" column="7">
+               <property name="text">
+                <string/>
+               </property>
+              </item>
+              <item row="0" column="8">
                <property name="text">
                 <string/>
                </property>
@@ -411,6 +416,13 @@
            </widget>
           </item>
           <item>
+           <widget class="QPushButton" name="fitButton">
+            <property name="text">
+             <string>Export .FIT</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <spacer name="horizontalSpacer_2">
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
@@ -562,6 +574,12 @@
          <layout class="QHBoxLayout" name="control_buttons">
           <item>
            <widget class="QPushButton" name="downloadButton">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="text">
              <string>Download...</string>
             </property>
@@ -571,6 +589,12 @@
            <widget class="QPushButton" name="configButton">
             <property name="enabled">
              <bool>true</bool>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
             </property>
             <property name="text">
              <string>Config...</string>
@@ -583,7 +607,7 @@
              <enum>Qt::Horizontal</enum>
             </property>
             <property name="sizeType">
-             <enum>QSizePolicy::Minimum</enum>
+             <enum>QSizePolicy::Expanding</enum>
             </property>
             <property name="sizeHint" stdset="0">
              <size>
@@ -851,6 +875,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>fitButton</sender>
+   <signal>clicked()</signal>
+   <receiver>Summary</receiver>
+   <slot>fitButton()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>222</x>
+     <y>622</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>478</x>
+     <y>322</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>selectedDate(QDate)</slot>
@@ -865,6 +905,7 @@
   <slot>workoutSelected()</slot>
   <slot>scaleChanged(int)</slot>
   <slot>printButton()</slot>
+  <slot>fitButton()</slot>
   <slot>setSelected()</slot>
   <slot>onCheckClicked(bool)</slot>
   <slot>bestTimesButton()</slot>

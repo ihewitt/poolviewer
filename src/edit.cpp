@@ -125,7 +125,7 @@ void Edit::populate(const Workout& _wrk)
     setsGrid->setRowCount(_wrk.sets.size());
     setsGrid->setSelectionBehavior(QAbstractItemView::SelectRows);
 
-    int i=0;
+    size_t i=0;
     for (i=0; i<_wrk.sets.size(); ++i)
     {
         fillSet(setsGrid, i, _wrk.sets[i], _wrk); //Fill sets
@@ -290,7 +290,7 @@ void Edit::on_adjustButton_clicked()
 //
 // Populate edit fields on set selection
 //
-void Edit::on_setsGrid_currentCellChanged(int currentRow, int currentColumn, int previousRow, int previousColumn)
+void Edit::on_setsGrid_currentCellChanged(int currentRow, int /*currentColumn*/, int /*previousRow*/, int /*previousColumn*/)
 {
     // Fill edit fields with current set.
     currentSet = currentRow;

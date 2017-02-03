@@ -20,7 +20,7 @@
  ***************************************************************************/
 // ***** BEGIN LICENSE BLOCK *****
 //////////////////////////////////////////////////////////////////////////
-// Copyright (c) 2011-2014 RALOVICH, Kristóf                            //
+// Copyright (c) 2011-2014 RALOVICH, Kristï¿½f                            //
 //                                                                      //
 // This program is free software; you can redistribute it and/or modify //
 // it under the terms of the GNU General Public License as published by //
@@ -870,8 +870,7 @@ bool FIT::parse(vector<uint8_t> &fitData, std::vector<ExerciseSet> &dst)
     e.type = "SwimHR";
     int total_lengths = 0;
     int total_cals = 0;
-    int timestampOffset = GARMIN_EPOCH;
-    
+    int timestampOffset = QDateTime(QDate(1989, 12, 31), QTime(0, 0, 0), Qt::UTC).toTime_t();
 
     FITHeader fitHeader;
     if (fitData.size() < sizeof(fitHeader))
@@ -992,7 +991,8 @@ bool FIT::parse(vector<uint8_t> &fitData, std::vector<ExerciseSet> &dst)
                             case 5 : { // "Local Timestamp"
                                 // in this case timestamps are not
                                 // from GARMIN_EPOCH but also form this value
-                                timestampOffset += *(uint32_t*)ptr;
+//TODO Check this, is this what the watch thinks it actually is?
+//                                timestampOffset += *(uint32_t*)ptr;
                                 break;
                             }
                             break;

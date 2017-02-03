@@ -28,6 +28,7 @@
 
 #include "exerciseset.h"
 
+//TODO use database file and change CSV logic for just import/export
 
 // Stick to same file format as poolmate app for now so we can share files
 bool SaveCSV( const std::string & name, std::vector<ExerciseSet>& exercises )
@@ -84,8 +85,20 @@ bool SaveCSV( const std::string & name, std::vector<ExerciseSet>& exercises )
                 //28,12,31,13,31.125,13,31.625,13,31.25,13,31.125,13,29.5,11,33.375,13,30.375,13,31.75,12,33.125,13,33,13
                 if (i->type == "SwimHR")
                 {
+                    QString sync;
+                    if (i->sync & SYNC_GARMIN)
+                        sync += "G";
+                    if (i->sync & SYNC_STRAVA)
+                        sync += "S";
+                    if (i->sync & SYNC_FIT)
+                        sync += "F";
+
                     out << ",,,,0,New," //Can mark edited values
                         << i->totalduration.toString("hh:mm:ss") << ","
+
+                        //Only interested in syncing SwimHR data so insert sync status flags here
+                        << sync
+
                         << ",STARTOFLAPDATA,0,0,0,"
                            //<< i->num << ","
                         << QString::number(i->num,'f',3)  << ","
@@ -206,6 +219,14 @@ bool ReadCSV( const std::string & name, std::vector<ExerciseSet>& dst )
                         continue; //just drop deleted rows.
                     }
 
+                    e.sync=0;
+                    if (strings.value(25).contains('F'))
+                        e.sync |= SYNC_FIT;
+                    if (strings.value(25).contains('G'))
+                        e.sync |= SYNC_GARMIN;
+                    if (strings.value(25).contains('S'))
+                        e.sync |= SYNC_STRAVA;
+
                     double num = strings.value(30).toDouble(); //no idea what this is
                     e.num = num;
                     e.rest = QTime::fromString( strings.value(31),"mm:ss");
@@ -290,6 +311,7 @@ void setsToWorkouts( const std::vector<ExerciseSet>& sets,
         wrk.cal = i->cal;
         wrk.lengths = i->lengths;
         wrk.totaldistance = i->totaldistance;
+        wrk.sync = i->sync;
 
         QDateTime td(i->date, i->time);
         std::vector<ExerciseSet>::const_iterator j;
@@ -379,6 +401,7 @@ void workoutsToSets( const std::vector<Workout>& workouts,
             s.cal = i->cal;
             s.lengths = i->lengths;
             s.totaldistance = i->totaldistance;
+            s.sync = i->sync;
 
             //Recalc setids in case of deletions for compatibility with Poolmate software
             s.set = setcount++; //j->set;
@@ -539,6 +562,33 @@ void DataStore::replaceSet( int wid, int sid, const Set & newSet )
 void DataStore::replaceWorkout( int wid, const Workout& wrk)
 {
     workouts[wid] = wrk;
-    Workout &workout = workouts[wid];
+    //Workout &workout = workouts[wid];
     changed = true;
+}
+
+bool fit_write(const QString& file, const Workout& workout);
+
+void DataStore::exportWorkouts(const QString &dirname)
+{
+    std::vector<Workout>::iterator i;
+    for ( i = workouts.begin(); i != workouts.end(); ++i)
+    {
+        if ( i->type=="SwimHR" ) //Only interested in exporting data with lengths
+        {
+            if (!(i->sync & SYNC_FIT))
+            {
+                QString name = QDateTime(i->date,i->time).toString("yyyyMMddHHmmss");
+                QString filename = QString("%1/%2.fit")
+                        .arg(dirname)
+                        .arg(name);
+
+                if (fit_write(filename, *i))
+                {
+                    i->sync |= SYNC_FIT;
+                        changed=true;
+                }
+            }
+        }
+    }
+
 }
