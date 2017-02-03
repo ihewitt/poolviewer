@@ -284,9 +284,9 @@ int poolmate_find()
 int poolmate_attach()
 {
     int r;
-    int config;
 
 #ifndef _WIN32
+    int config;
     libusb_get_configuration(g_c->devh, &config);
 
     /* Actually after reading about the serial interface

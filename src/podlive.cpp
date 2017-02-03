@@ -217,6 +217,7 @@ void PodLive::getData( std::vector<ExerciseSet>& exdata )
                         sets--;
 
                         ExerciseSet set;
+                        set.sync = 0;
                         set.user = 1;    // retrieve
                         set.date = date;
                         set.time = time;

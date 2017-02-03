@@ -19,6 +19,7 @@
 #define EXERCISESET_H
 
 #include <QDate>
+#include <stdint.h>
 
 // File format for CSV storage
 struct ExerciseSet

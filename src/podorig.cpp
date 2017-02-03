@@ -125,6 +125,7 @@ void dataToWorkouts( unsigned char *buf, std::vector<ExerciseSet>& data )
                         buf[c + 4];
 
                     ExerciseSet set;
+                    set.sync = 0;
                     set.user = user;
                     set.date = date;
                     set.time = time;
@@ -182,6 +183,7 @@ void dataToWorkouts( unsigned char *buf, std::vector<ExerciseSet>& data )
                     QTime dur(hour, min, sec);
 
                     ExerciseSet set;
+                    set.sync = 0;
                     set.user = user;
                     set.date = date;
                     set.time = time;

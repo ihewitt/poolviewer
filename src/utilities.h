@@ -23,8 +23,8 @@
 
 class QTableWidgetItem;
 class QVariant;
-class Set;
-class Workout;
+struct Set;
+struct Workout;
 
 // IDs used in the Qt::UserRole
 extern const int SET_ID;
