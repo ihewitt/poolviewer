@@ -1,7 +1,7 @@
 TEMPLATE = app
 QT = gui core widgets printsupport serialport
 
-VERSION = 0.5
+VERSION = 0.6
 
 CONFIG += qt warn_on debug_and_release
 

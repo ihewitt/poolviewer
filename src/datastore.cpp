@@ -162,6 +162,7 @@ bool ReadCSV( const std::string & name, std::vector<ExerciseSet>& dst )
             {
                 ExerciseSet e;
 
+                e.sync=0;
                 e.user = strings.value(0).toInt();
                 e.date = QDate::fromString( strings.value(1), QString("d/M/yyyy"));
                 e.time = QTime::fromString( strings.value(2));

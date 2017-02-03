@@ -103,6 +103,7 @@ void GraphWidget::drawBars( QPainter &painter,
     int h = height();
 
     Series& graph = series[set];
+    graph.maxGraph = -1;
 
     graph.calcScales();
 
@@ -130,9 +131,20 @@ void GraphWidget::drawBars( QPainter &painter,
             i++;
         }
         labels.push_back(label);
-        vals.push_back(val / num);
+        vals.push_back(val);
     }
 
+    //now rescale
+    int max=0;
+    for (i=0; i < vals.size(); i++)
+    {
+        if (vals[i]>max)
+        {
+            max = vals[i];
+        }
+    }
+
+    graph.maxGraph = max;
 
     int thick = w/(vals.size()*3.25);
     if (thick<0) thick=2;
@@ -141,7 +153,7 @@ void GraphWidget::drawBars( QPainter &painter,
     {
         int x = (set*thick) + w * i / (vals.size());
 
-        int l = vals[i];
+        int l = h * vals[i] / max;
         int y = h - l;
 
         drawBar(painter, QRect(x,y,thick-4,l), pen);
@@ -159,6 +171,8 @@ void GraphWidget::drawBars( QPainter &painter,
 
     Series& graph1 = series[set1];
     Series& graph2 = series[set2];
+    graph1.maxGraph = -1;
+    graph2.maxGraph = -1;
 
     graph1.calcScales();
     graph2.calcScales();
@@ -191,10 +205,22 @@ void GraphWidget::drawBars( QPainter &painter,
             i++;
         }
         labels.push_back(label);
-        vals1.push_back(val1 / num);
-        vals2.push_back(val2 / num);
+        vals1.push_back(val1);
+        vals2.push_back(val2);
     }
 
+    //now rescale
+    int max=0;
+    for (i=0; i < vals1.size(); i++)
+    {
+        if (vals1[i] + vals2[i] > max)
+        {
+            max = vals1[i] + vals2[i];
+        }
+    }
+
+    graph1.maxGraph = max;
+    graph2.maxGraph = max;
 
     int thick = w/(labels.size()*3.25);
     if (thick<0) thick=2;
@@ -204,8 +230,8 @@ void GraphWidget::drawBars( QPainter &painter,
     {
         int x = (set2 * thick) + w * i / j;
 
-        int l1 = vals1[i];
-        int l2 = vals2[i];
+        int l1 = h * vals1[i] / max;
+        int l2 = h * vals2[i] / max;
 
         int y = h - l1;
 
@@ -224,6 +250,7 @@ void GraphWidget::drawSeries( QPainter &painter,
     int h = height();
 
     Series& graph = series[set];
+    graph.maxGraph = -1;
 
     int i;
     int j=graph.size();
@@ -292,6 +319,17 @@ void GraphWidget::drawSeries( QPainter &painter,
         }
         tags.push_back(text);
     }
+
+    //now rescale
+    int max=0;
+    for (i=0; i < vals.size(); i++)
+    {
+        if (vals[i]>max)
+        {
+            max = vals[i];
+        }
+    }
+    graph.maxGraph = max;
 
     j=labels.size();
     int space = w / j;
@@ -450,7 +488,7 @@ void GraphWidget::drawVAxis( QPainter &painter,
     {
         int y = (tick)*(h/10);
 
-        QString s = series[set].getV( tick, 10 ); //y,h);
+        QString s = series[set].getV( tick, 10 );
 
         if (right)
         {
@@ -484,16 +522,7 @@ void GraphWidget::paintEvent(QPaintEvent *)
     painter.save();
     painter.fillRect(0,0,w,h,Qt::white);
 
-    drawVAxis(painter, Qt::red, 0);
-    drawVAxis(painter, Qt::darkGreen, 1);
-    if (style == Line)
-    {
-        drawVAxis(painter, Qt::blue, 2);
-    }
-    drawVAxis(painter, Qt::magenta, 3);
-
     painter.setViewport(QRect(60,0,w-140,h));
-
 
     drawXAxis(painter, Qt::black);
 
@@ -527,6 +556,16 @@ void GraphWidget::paintEvent(QPaintEvent *)
     }
 
     painter.restore();
+
+    drawVAxis(painter, Qt::red, 0);
+    drawVAxis(painter, Qt::darkGreen, 1);
+    if (style == Line)
+    {
+        drawVAxis(painter, Qt::blue, 2);
+    }
+    drawVAxis(painter, Qt::magenta, 3);
+
+
 }
 
 void GraphWidget::clear()

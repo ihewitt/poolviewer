@@ -40,7 +40,7 @@ public:
     class Series
     {
     public:
-        Series() { scaled=false;}
+        Series() { scaled=false; maxGraph = -1; }
 
         bool hasDoubles() { return !doubles.empty();}
         bool hasInts() { return !integers.empty();}
@@ -55,13 +55,13 @@ public:
         void getDouble( double &ret, int i, int j=-1);
         void getInt( int &ret, int i, int j=-1);
         void getTime( int &ret, int i, int j=-1);
-        
+
         // scale point at i between min and max
         int getY( int i, int h)
         {
             if (!scaled)
                 calcScales();
-            
+
             if (hasDoubles())
             {
                 double data = doubles[i];
@@ -86,28 +86,32 @@ public:
                 int result = ((data - minTime) *h) / s;
                 return result;
             }
-            return 0;           
+            return 0;
         }
 
+        //Get vertical label.
+        //Rescale if necessary to max.
         QString getV(int y, int h)
         {
+            double f = 1; //(double)h/maxGraph;
+
             if (!scaled)
                 calcScales();
-            
+
             if (hasDoubles())
             {
-                double n = minDbl + y * (maxDbl-minDbl) / h;
+                double n = minDbl*f + y * (maxDbl*f-minDbl*f) / h;
                 return QString::number(n,'g',2);
             }
             else if (hasInts())
             {
-                int n = minInt + y * (maxInt-minInt) / h;
+                int n = minInt*f + y * (maxInt*f-minInt*f) / h;
                 return QString::number(n);
             }
             else if (hasTimes())
             {
                 QString text;
-                int timeVal = minTime + y *(maxTime-minTime)/h;
+                int timeVal = minTime*f + y *(maxTime*f-minTime*f)/h;
                 //convert secs to h:m:s
 
                 int s = timeVal % 60;
@@ -130,7 +134,7 @@ public:
                 }
                 return text;
             }
-            return QString(); 
+            return QString();
         }
 
         void calcScales()
@@ -193,6 +197,8 @@ public:
         std::vector<int> seconds;
         int minTime, maxTime;
 
+        int maxGraph;
+
         QString label;
 
     private:
@@ -210,7 +216,7 @@ public:
 
     void clear();
 
-	void drawSeries( QPainter &painter,
+    void drawSeries( QPainter &painter,
                      QColor pen,
                      int set);
 
@@ -223,20 +229,20 @@ public:
                    int set,
                    int set2);
 
-	void drawVAxis( QPainter &painter,
-				    QColor pen,
+    void drawVAxis( QPainter &painter,
+                    QColor pen,
                     int set );
 
-	void drawXAxis(QPainter &painter,
-				   QColor pen );
-	
+    void drawXAxis(QPainter &painter,
+                   QColor pen );
+
     //All series on same axis
     std::vector<QString> xaxis;
     std::vector<Series> series;
 
     Style style;
 
- private:    
+ private:
     //Enabled graphs
     bool effic;
     bool rate;
