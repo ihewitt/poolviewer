@@ -690,13 +690,14 @@ void SummaryImpl::fitButton()
     QSettings settings("Swim","Poolmate");
     QString dirname=settings.value("fitDir").toString();
 
+    //Bug, doesn't open location with default flags.
     dirname = QFileDialog::getExistingDirectory(this,
                                                 tr("Select .FIT export directory."),
-                                                dirname);
+                                                dirname,
+                                                0 /*QFileDialog::DontUseNativeDialog*/);
     if (!dirname.isEmpty())
     {
         settings.setValue("fitDir", dirname);
-
         ds->exportWorkouts(dirname);
     }
 // Overkill repopulate

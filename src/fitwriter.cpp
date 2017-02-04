@@ -47,22 +47,22 @@ static const QDateTime qbase_time(QDate(1989, 12, 31), QTime(0, 0, 0), Qt::UTC);
 
 uint16_t crc16(char *buf, int len)
 {
-  uint16_t crc = 0x0000;
+    uint16_t crc = 0x0000;
 
-  for (int pos = 0; pos < len; pos++) {
-    crc ^= (uint16_t)buf[pos] & 0xff;
+    for (int pos = 0; pos < len; pos++) {
+        crc ^= (uint16_t)buf[pos] & 0xff;
 
-    for (int i = 8; i != 0; i--) {      // Each bit
-        if ((crc & 0x0001) != 0) {      // LSB set
-          crc >>= 1;                    // Shift right
-          crc ^= 0xA001;                // XOR 0xA001
+        for (int i = 8; i != 0; i--) {      // Each bit
+            if ((crc & 0x0001) != 0) {      // LSB set
+                crc >>= 1;                    // Shift right
+                crc ^= 0xA001;                // XOR 0xA001
+            }
+            else
+                crc >>= 1;                    // Shift right
         }
-        else
-          crc >>= 1;                    // Shift right
-     }
-  }
+    }
 
-  return crc;
+    return crc;
 }
 
 typedef qint64 fit_value_t;
@@ -70,28 +70,48 @@ void write_int8(QByteArray *array, fit_value_t value) {
     array->append(value);
 }
 
+void write_int16(QByteArray *array, fit_value_t value,  bool is_big_endian=true);
 void write_int16(QByteArray *array, fit_value_t value,  bool is_big_endian) {
     value = is_big_endian
-        ? qFromBigEndian<qint16>( value )
-        : qFromLittleEndian<qint16>( value );
+            ? qFromBigEndian<qint16>( value )
+            : qFromLittleEndian<qint16>( value );
 
     for (int i=0; i<16; i=i+8) {
         array->append(value >> i);
     }
 }
 
+void write_int32(QByteArray *array, fit_value_t value,  bool is_big_endian=true);
 void write_int32(QByteArray *array, fit_value_t value,  bool is_big_endian) {
     value = is_big_endian
-        ? qFromBigEndian<qint32>( value )
-        : qFromLittleEndian<qint32>( value );
+            ? qFromBigEndian<qint32>( value )
+            : qFromLittleEndian<qint32>( value );
 
     for (int i=0; i<32; i=i+8) {
         array->append(value >> i);
     }
 }
 
-void write_field(QByteArray *array, int field_num, int field_size, ant_basetype base_type)
+void write_field(QByteArray *array, int field_num, ant_basetype base_type, int field_size=-1);
+void write_field(QByteArray *array, int field_num, ant_basetype base_type, int field_size)
 {
+    if (field_size==-1)
+    {
+        switch (base_type){
+        case ant_string:
+        case ant_enum:
+        case ant_uint8:
+            field_size=1;
+            break;
+        case ant_uint16:
+            field_size=2;
+            break;
+        case ant_uint32:
+        case ant_uint32z:
+            field_size=4;
+            break;
+        }
+    }
     write_int8(array, field_num);
     write_int8(array, field_size);
     write_int8(array, base_type);
@@ -110,26 +130,26 @@ void write_record(QByteArray *array, const Workout& wrk, const Set& set, int dis
     write_int8(array, definition_header);
     write_int8(array, reserved);
     write_int8(array, is_big_endian);
-    write_int16(array, global_msg_num, true);
+    write_int16(array, global_msg_num);
     write_int8(array, num_fields);
 
     //Fields
-    write_field(array, 253, 4, ant_uint32); // timestamp
-    write_field(array, 5,   4, ant_uint32); // distance
-    write_field(array, 6,   2, ant_uint16); // speed
+    write_field(array, 253, ant_uint32); // timestamp
+    write_field(array, 5,   ant_uint32); // distance
+    write_field(array, 6,   ant_uint16); // speed
 
     // Record ------
     int record_header = 0;
     write_int8(array, record_header);
 
     //timestamp (end of length)
-    write_int32(array, lenstart.toTime_t()-qbase_time.toTime_t() + set.times[l], true);
+    write_int32(array, lenstart.toTime_t()-qbase_time.toTime_t() + set.times[l]);
 
     //cumulative distance
-    write_int32(array, dist*100, true);
+    write_int32(array, dist*100);
 
     //speed
-    write_int16(array, wrk.pool *1000 / set.times[l], true); //speed kp/h
+    write_int16(array, wrk.pool *1000 / set.times[l]); //speed kp/h
 
 }
 
@@ -147,40 +167,40 @@ void write_length(QByteArray *array, const Workout& wrk, const Set& set, int fir
     write_int8(array, definition_header);
     write_int8(array, reserved);
     write_int8(array, is_big_endian);
-    write_int16(array, global_msg_num, true);
+    write_int16(array, global_msg_num);
     write_int8(array, num_fields);
 
     //Fields
-    write_field(array, 253, 4, ant_uint32); //timestamp
-    write_field(array, 254, 2, ant_uint16); //index
+    write_field(array, 253, ant_uint32); //timestamp
+    write_field(array, 254, ant_uint16); //index
 
-    write_field(array, 2,   4, ant_uint32); // start_time
-    write_field(array, 3,   4, ant_uint32); // elapsed
-    write_field(array, 4,   4, ant_uint32); // timer
+    write_field(array, 2,   ant_uint32); // start_time
+    write_field(array, 3,   ant_uint32); // elapsed
+    write_field(array, 4,   ant_uint32); // timer
     //timertime
-    write_field(array, 5,   2, ant_uint16); // strokes
+    write_field(array, 5,   ant_uint16); // strokes
 
-    write_field(array, 0,   1, ant_enum);   // event
-    write_field(array, 1,   1, ant_enum);   // eventtype
-    write_field(array, 12,  1, ant_enum);   // length_type
-    write_field(array, 7,   1, ant_enum);   // stroke
+    write_field(array, 0,   ant_enum);   // event
+    write_field(array, 1,   ant_enum);   // eventtype
+    write_field(array, 12,  ant_enum);   // length_type
+    write_field(array, 7,   ant_enum);   // stroke
 
-    write_field(array, 6,   2, ant_uint16); // speed
-    write_field(array, 9,   1, ant_uint8);  // cadence
+    write_field(array, 6,   ant_uint16); // speed
+    write_field(array, 9,   ant_uint8);  // cadence
 
 
     // Record ------
     int record_header = 0;
     write_int8(array, record_header);
 
-    write_int32(array, timestamp.toTime_t()-qbase_time.toTime_t(), true); //timestamp
-    write_int16(array, first + l, true);
+    write_int32(array, timestamp.toTime_t()-qbase_time.toTime_t()); //timestamp
+    write_int16(array, first + l);
 
-    write_int32(array, lenstart.toTime_t()-qbase_time.toTime_t(), true);
+    write_int32(array, lenstart.toTime_t()-qbase_time.toTime_t());
 
-    write_int32(array, set.times[l] * 1000, true); //elapsed
-    write_int32(array, set.times[l] * 1000, true); //timer
-    write_int16(array, set.strokes[l], true);
+    write_int32(array, set.times[l] * 1000); //elapsed
+    write_int32(array, set.times[l] * 1000); //timer
+    write_int16(array, set.strokes[l]);
 
     write_int8(array, 28); //length
     write_int8(array, 3); //marker
@@ -189,7 +209,7 @@ void write_length(QByteArray *array, const Workout& wrk, const Set& set, int fir
     //TODO   QString styl = set.styles[i];
     write_int8(array, 0); //fc
 
-    write_int16(array, wrk.pool *1000 / set.times[l], true); //speed kp/h
+    write_int16(array, wrk.pool *1000 / set.times[l]); //speed kp/h
     write_int8(array, 60 * set.strokes[l] /set.times[l]);    //cadence
 }
 
@@ -206,29 +226,29 @@ void write_rest(QByteArray *array, const Workout& /*wrk*/, const Set& set,int fi
     write_int8(array, definition_header);
     write_int8(array, reserved);
     write_int8(array, is_big_endian);
-    write_int16(array, global_msg_num, true);
+    write_int16(array, global_msg_num);
     write_int8(array, num_fields);
 
     //Fields
-    write_field(array, 253, 4, ant_uint32);  //timestamp
-    write_field(array, 254, 2, ant_uint16);  //index
-    write_field(array, 2,   4, ant_uint32);  // start_time
-    write_field(array, 3,   4, ant_uint32);  // elapsed
-    write_field(array, 4,   4, ant_uint32);  // timer
-    write_field(array, 0,   1, ant_enum);    // event
-    write_field(array, 1,   1, ant_enum);    // eventtype
-    write_field(array, 12,   1, ant_enum);   // length_type
+    write_field(array, 253, ant_uint32);  //timestamp
+    write_field(array, 254, ant_uint16);  //index
+    write_field(array, 2,   ant_uint32);  // start_time
+    write_field(array, 3,   ant_uint32);  // elapsed
+    write_field(array, 4,   ant_uint32);  // timer
+    write_field(array, 0,   ant_enum);    // event
+    write_field(array, 1,   ant_enum);    // eventtype
+    write_field(array, 12,  ant_enum);   // length_type
 
     // Record ------
     int record_header = 0;
     write_int8(array, record_header);
 
-    write_int32(array, timestamp.toTime_t()-qbase_time.toTime_t(), true); //timestamp
-    write_int16(array, first, true); //index
-    write_int32(array, lenstart.toTime_t()-qbase_time.toTime_t(), true);
+    write_int32(array, timestamp.toTime_t()-qbase_time.toTime_t()); //timestamp
+    write_int16(array, first); //index
+    write_int32(array, lenstart.toTime_t()-qbase_time.toTime_t());
 
-    write_int32(array, set.rest.msecsSinceStartOfDay(), true); //elapsed
-    write_int32(array, set.rest.msecsSinceStartOfDay(), true); //timer
+    write_int32(array, set.rest.msecsSinceStartOfDay()); //elapsed
+    write_int32(array, set.rest.msecsSinceStartOfDay()); //timer
 
     write_int8(array, 28); //length
     write_int8(array, 1);  //stop
@@ -245,33 +265,33 @@ void write_rest(QByteArray *array, const Workout& /*wrk*/, const Set& set,int fi
     write_int8(array, definition_header);
     write_int8(array, reserved);
     write_int8(array, is_big_endian);
-    write_int16(array, global_msg_num, true);
+    write_int16(array, global_msg_num);
     write_int8(array, num_fields);
 
-    write_field(array, 253, 4, ant_uint32); // timestamp
-    write_field(array, 2,   4, ant_uint32); // start_time
-    write_field(array, 7,   4, ant_uint32); // elapsed
-    write_field(array, 8,   4, ant_uint32); // timer
-    write_field(array, 9,   4, ant_uint32); // distance
-    write_field(array, 32,  2, ant_uint16); // lengths
-    write_field(array, 40,  2, ant_uint16); // activelengths
-    write_field(array, 0,   1, ant_enum);   // event
-    write_field(array, 1,   1, ant_enum);   // eventtype
-    write_field(array, 25,  1, ant_enum);   // sport
+    write_field(array, 253, ant_uint32); // timestamp
+    write_field(array, 2,   ant_uint32); // start_time
+    write_field(array, 7,   ant_uint32); // elapsed
+    write_field(array, 8,   ant_uint32); // timer
+    write_field(array, 9,   ant_uint32); // distance
+    write_field(array, 32,  ant_uint16); // lengths
+    write_field(array, 40,  ant_uint16); // activelengths
+    write_field(array, 0,   ant_enum);   // event
+    write_field(array, 1,   ant_enum);   // eventtype
+    write_field(array, 25,  ant_enum);   // sport
 
     // Record ------
     record_header = 0;
     write_int8(array, record_header);
 
-    write_int32(array, timestamp.toTime_t()-qbase_time.toTime_t(), true); //timestamp
-    write_int32(array, lenstart.toTime_t()-qbase_time.toTime_t(), true);
+    write_int32(array, timestamp.toTime_t()-qbase_time.toTime_t()); //timestamp
+    write_int32(array, lenstart.toTime_t()-qbase_time.toTime_t());
 
-    write_int32(array, set.rest.msecsSinceStartOfDay(), true); //elapsed
-    write_int32(array, set.rest.msecsSinceStartOfDay(), true); //timer
+    write_int32(array, set.rest.msecsSinceStartOfDay()); //elapsed
+    write_int32(array, set.rest.msecsSinceStartOfDay()); //timer
 
-    write_int32(array, 0, true);
-    write_int16(array, 0, true); //lengths
-    write_int16(array, 0, true);
+    write_int32(array, 0);
+    write_int16(array, 0); //lengths
+    write_int16(array, 0);
     write_int8(array, 9); //lap
     write_int8(array, 1); //stop
     write_int8(array, 5); //swimming
@@ -317,19 +337,19 @@ void write_start(QByteArray *array, const Workout &/*workout*/, const QDateTime&
     write_int8(array, definition_header);
     write_int8(array, reserved);
     write_int8(array, is_big_endian);
-    write_int16(array, global_msg_num, true);
+    write_int16(array, global_msg_num);
     write_int8(array, num_fields);
 
-    write_field(array, 253, 4, ant_uint32);  // timestamp
-    write_field(array, 0,   1, ant_enum);    // event
-    write_field(array, 1,   1, ant_enum);    // eventtype
-    write_field(array, 4,   1, ant_uint8);   // eventgroup
+    write_field(array, 253, ant_uint32);  // timestamp
+    write_field(array, 0,   ant_enum);    // event
+    write_field(array, 1,   ant_enum);    // eventtype
+    write_field(array, 4,   ant_uint8);   // eventgroup
 
     // Record ------
     int record_header = 0;
     write_int8(array, record_header);
 
-    write_int32(array, start.toTime_t()-qbase_time.toTime_t(), true); //timestamp
+    write_int32(array, start.toTime_t()-qbase_time.toTime_t()); //timestamp
     write_int8(array, 0); //timer
     write_int8(array, 0); //start
     write_int8(array, 0); //group
@@ -347,19 +367,19 @@ void write_stop(QByteArray *array, const Workout &/*workout*/, const QDateTime& 
     write_int8(array, definition_header);
     write_int8(array, reserved);
     write_int8(array, is_big_endian);
-    write_int16(array, global_msg_num, true);
+    write_int16(array, global_msg_num);
     write_int8(array, num_fields);
 
-    write_field(array, 253, 4, ant_uint32); // timestamp
-    write_field(array, 0,   1, ant_enum);   // event
-    write_field(array, 1,   1, ant_enum);   // eventtype
-    write_field(array, 4,   1, ant_uint8);   // eventgroup
+    write_field(array, 253, ant_uint32); // timestamp
+    write_field(array, 0,   ant_enum);   // event
+    write_field(array, 1,   ant_enum);   // eventtype
+    write_field(array, 4,   ant_uint8);   // eventgroup
 
     // Record ------
     int record_header = 0;
     write_int8(array, record_header);
 
-    write_int32(array, stop.toTime_t()-qbase_time.toTime_t(), true); //timestamp
+    write_int32(array, stop.toTime_t()-qbase_time.toTime_t()); //timestamp
     write_int8(array, 0); //timer
     write_int8(array, 4); //stop
     write_int8(array, 0); //group
@@ -392,43 +412,43 @@ void write_laps(QByteArray *array, const Workout &workout ) {
         write_int8(array, definition_header);
         write_int8(array, reserved);
         write_int8(array, is_big_endian);
-        write_int16(array, global_msg_num, true);
+        write_int16(array, global_msg_num);
         write_int8(array, num_fields);
 
-        write_field(array, 253, 4, ant_uint32); // timestamp
-        write_field(array, 2,   4, ant_uint32); // start_time
-        write_field(array, 7,   4, ant_uint32); // elapsed
-        write_field(array, 8,   4, ant_uint32); // timer
-        write_field(array, 9,   4, ant_uint32); // distance
-        write_field(array, 32,  2, ant_uint16); // lengths
-        write_field(array, 40,  2, ant_uint16); // active lengths
-        write_field(array, 0,   1, ant_enum);   // event
-        write_field(array, 1,   1, ant_enum);   // eventtype
-        write_field(array, 25,  1, ant_enum);   // sport
-        write_field(array, 39,  1, ant_enum);   // subsport
-        write_field(array, 35,  2, ant_uint16); // first length index
+        write_field(array, 253, ant_uint32); // timestamp
+        write_field(array, 2,   ant_uint32); // start_time
+        write_field(array, 7,   ant_uint32); // elapsed
+        write_field(array, 8,   ant_uint32); // timer
+        write_field(array, 9,   ant_uint32); // distance
+        write_field(array, 32,  ant_uint16); // lengths
+        write_field(array, 40,  ant_uint16); // active lengths
+        write_field(array, 0,   ant_enum);   // event
+        write_field(array, 1,   ant_enum);   // eventtype
+        write_field(array, 25,  ant_enum);   // sport
+        write_field(array, 39,  ant_enum);   // subsport
+        write_field(array, 35,  ant_uint16); // first length index
 
         // Record ------
         int record_header = 0;
         write_int8(array, record_header);
 
-        write_int32(array, lap_end.toTime_t()-qbase_time.toTime_t(), true); //timestamp
-        write_int32(array, lap_start.toTime_t()-qbase_time.toTime_t(), true); //lap start
-        write_int32(array, s.duration.msecsSinceStartOfDay(), true); //elapsed
-        write_int32(array, s.duration.msecsSinceStartOfDay(), true); //timer //
-        write_int32(array, s.dist*100, true);
-        write_int16(array, s.lens, true);
-        write_int16(array, s.lens, true);
+        write_int32(array, lap_end.toTime_t()-qbase_time.toTime_t()); //timestamp
+        write_int32(array, lap_start.toTime_t()-qbase_time.toTime_t()); //lap start
+        write_int32(array, s.duration.msecsSinceStartOfDay()); //elapsed
+        write_int32(array, s.duration.msecsSinceStartOfDay()); //timer //
+        write_int32(array, s.dist*100);
+        write_int16(array, s.lens);
+        write_int16(array, s.lens);
         write_int8(array, 9); //lap
         write_int8(array, 1); //stop
         write_int8(array, 5); //swimming
         write_int8(array,17); //lap swim
-        write_int16(array, lnum, true);
+        write_int16(array, lnum);
 
         lap_start = lap_end;
         lnum += s.lens;
 
-// Add rest as a set
+        // Add rest as a set
         //start event, stop length, stop lap, stop event.
         lap_end = lap_start.addMSecs(s.rest.msecsSinceStartOfDay()); //for timestamp
 
@@ -452,26 +472,26 @@ void write_session(QByteArray *array, const Workout &workout )
     write_int8(array, definition_header);
     write_int8(array, reserved);
     write_int8(array, is_big_endian);
-    write_int16(array, global_msg_num, true);
+    write_int16(array, global_msg_num);
     write_int8(array, num_fields);
 
-    write_field(array, 253, 4, ant_uint32); // timestamp
-    write_field(array, 2, 4, ant_uint32);   // start_time
-    write_field(array, 7, 4, ant_uint32);   // elapsed_time
-    write_field(array, 8, 4, ant_uint32);   // timer_time
-    write_field(array, 5, 1, ant_enum);     // sport
-    write_field(array, 6, 1, ant_enum);     // subsport
-    write_field(array, 26,2, ant_uint16);   // laps sets
-    write_field(array, 33,2, ant_uint16);   // lengths
-    write_field(array, 9, 4, ant_uint32);   // distance
-    write_field(array, 46,1, ant_enum);     // unit
-    write_field(array, 44,2, ant_uint16);   // pool len
-    write_field(array, 10, 4, ant_uint32);  // strokes
-    write_field(array, 11,2, ant_uint16);   // calories
-    write_field(array, 14,2, ant_uint16);   // avgspeed
-    write_field(array, 18,1, ant_uint8);    // avgcad
+    write_field(array, 253, ant_uint32); // timestamp
+    write_field(array, 2,   ant_uint32);   // start_time
+    write_field(array, 7,   ant_uint32);   // elapsed_time
+    write_field(array, 8,   ant_uint32);   // timer_time
+    write_field(array, 5,   ant_enum);     // sport
+    write_field(array, 6,   ant_enum);     // subsport
+    write_field(array, 26,  ant_uint16);   // laps sets
+    write_field(array, 33,  ant_uint16);   // lengths
+    write_field(array, 9,   ant_uint32);   // distance
+    write_field(array, 46,  ant_enum);     // unit
+    write_field(array, 44,  ant_uint16);   // pool len
+    write_field(array, 10,  ant_uint32);  // strokes
+    write_field(array, 11,  ant_uint16);   // calories
+    write_field(array, 14,  ant_uint16);   // avgspeed
+    write_field(array, 18,  ant_uint8);    // avgcad
 
-//    unknown110 (110-16-STRING): "Pool Swim"
+    //    unknown110 (110-16-STRING): "Pool Swim"
 
     // Record ------
     int record_header = 0;
@@ -480,26 +500,26 @@ void write_session(QByteArray *array, const Workout &workout )
     //stop time
     QDateTime end=QDateTime(workout.date, workout.time).addMSecs(workout.totalduration.msecsSinceStartOfDay());
     fit_value_t value = end.toTime_t();
-    write_int32(array, value - qbase_time.toTime_t(), true); //timestamp
+    write_int32(array, value - qbase_time.toTime_t()); //timestamp
 
     value = QDateTime(workout.date, workout.time).toTime_t();
-    write_int32(array, value - qbase_time.toTime_t(), true); //.starttime
+    write_int32(array, value - qbase_time.toTime_t()); //.starttime
 
-    write_int32(array, workout.totalduration.msecsSinceStartOfDay() + workout.rest.msecsSinceStartOfDay() , true); //.elapsed time
-    write_int32(array, workout.totalduration.msecsSinceStartOfDay(), true);  //.timer time
+    write_int32(array, workout.totalduration.msecsSinceStartOfDay() + workout.rest.msecsSinceStartOfDay() ); //.elapsed time
+    write_int32(array, workout.totalduration.msecsSinceStartOfDay());  //.timer time
 
     write_int8(array, 5);                                  //.sport - swim
     write_int8(array, 17);                                 //. subsport - lap swim
-    write_int16(array, workout.sets.size(), true);         //. laps
-    write_int16(array, workout.lengths, true);             //. lengths
-    write_int32(array, workout.totaldistance * 100, true); //. distance
+    write_int16(array, workout.sets.size());         //. laps
+    write_int16(array, workout.lengths);             //. lengths
+    write_int32(array, workout.totaldistance * 100); //. distance
 
-// 9. units //TODO
-//  if (workout.unit == "m")
-       write_int8(array, 0 ); //Metric
+    // 9. units //TODO
+    //  if (workout.unit == "m")
+    write_int8(array, 0 ); //Metric
 
     //10. pool len
-    write_int16(array, workout.pool * 100, true);
+    write_int16(array, workout.pool * 100);
 
     int strokes=0;
     double time=0;
@@ -518,9 +538,9 @@ void write_session(QByteArray *array, const Workout &workout )
             strokes += *k;
         }
     }
-    write_int32(array, strokes, true); //. strokes
-    write_int16(array, workout.cal, true); //. calories
-    write_int16(array, workout.totaldistance * 1000 / time, true);
+    write_int32(array, strokes); //. strokes
+    write_int16(array, workout.cal); //. calories
+    write_int16(array, workout.totaldistance * 1000 / time);
 
     write_int8(array, strokes*60 / time );
 
@@ -539,12 +559,12 @@ void write_activity(QByteArray *array, const Workout& wrk) {
     write_int8(array, definition_header);
     write_int8(array, reserved);
     write_int8(array, is_big_endian);
-    write_int16(array, global_msg_num, true);
+    write_int16(array, global_msg_num);
     write_int8(array, num_fields);
 
-    write_field(array, 253, 4, ant_uint32); //timestamp
-    write_field(array, 3, 1, ant_enum); //event
-    write_field(array, 4, 1, ant_enum); //event_type
+    write_field(array, 253, ant_uint32); //timestamp
+    write_field(array, 3,   ant_enum); //event
+    write_field(array, 4,   ant_enum); //event_type
 
     // Record ------
     int record_header = 0;
@@ -553,7 +573,7 @@ void write_activity(QByteArray *array, const Workout& wrk) {
     //stop time
     QDateTime end=QDateTime(wrk.date, wrk.time).addMSecs(wrk.totalduration.msecsSinceStartOfDay());
     fit_value_t value = end.toTime_t();
-    write_int32(array, value-qbase_time.toTime_t(), true);
+    write_int32(array, value-qbase_time.toTime_t());
 
     write_int8(array, 26); //activity
     write_int8(array, 1); //stop
@@ -592,27 +612,26 @@ void write_device(QByteArray *array, const Workout &workout )
     write_int8(array, definition_header);
     write_int8(array, reserved);
     write_int8(array, is_big_endian);
-    write_int16(array, global_msg_num, true);
+    write_int16(array, global_msg_num);
     write_int8(array, num_fields);
 
-    write_field(array, 253, 4, ant_uint32); // timestamp
-//    write_field(array, 2,2, ant_uint16);
-//    write_field(array, 4,2, ant_uint16);
-//    write_field(array, 3,4, ant_uint32z);
-//    write_field(array, 0,1, ant_uint8);
-//    write_field(array, 1,1, ant_uint8);
+    write_field(array, 253, ant_uint32); // timestamp
+    //write_field(array, 0, ant_uint8);
+    //write_field(array, 2, ant_uint16);
+    //write_field(array, 4, ant_uint16);
+    //    write_field(array, 3, ant_uint32z);
 
     int record_header = 0;
     write_int8(array, record_header);
 
     QDateTime end=QDateTime(workout.date, workout.time).addMSecs(workout.totalduration.msecsSinceStartOfDay());
     fit_value_t value = end.toTime_t();
-    write_int32(array, value - qbase_time.toTime_t(), true);
+    write_int32(array, value - qbase_time.toTime_t());
 
-//    write_int16(array, 1, true);       //Garmin
-//    write_int16(array, 1499, true);    //Swim
-//    write_int32(array, 12345678,true); //Serial
-
+    //write_int8(array, 0);
+    //write_int16(array, 1);       //Garmin
+    //write_int16(array, 1499);    //Swim
+    //    write_int32(array, 12345678,true); //Serial
 }
 
 void write_file_id(QByteArray *array, const Workout &workout)
@@ -627,15 +646,15 @@ void write_file_id(QByteArray *array, const Workout &workout)
     write_int8(array, definition_header);
     write_int8(array, reserved);
     write_int8(array, is_big_endian);
-    write_int16(array, global_msg_num, true);
+    write_int16(array, global_msg_num);
     write_int8(array, num_fields);
 
-    write_field(array, 0, 1, ant_enum);     // field 1: type
-    write_field(array, 4, 4, ant_uint32);   // field 2: time_created
+    write_field(array, 0, ant_enum);     // field 1: type
+    write_field(array, 4, ant_uint32);   // field 2: time_created
 
-//    write_field(array, 1, 2, ant_uint16);
-//    write_field(array, 2, 2, ant_uint16);
-//    write_field(array, 5, 2, ant_uint16);
+    //    write_field(array, 1, ant_uint16);
+    //    write_field(array, 2, ant_uint16);
+    //    write_field(array, 5, ant_uint16);
 
     // Record ------
     int record_header = 0;
@@ -644,40 +663,40 @@ void write_file_id(QByteArray *array, const Workout &workout)
 
     QDateTime t(workout.date, workout.time);
     int value = t.toTime_t();  // time_created
-    write_int32(array, value - qbase_time.toTime_t(), true);
+    write_int32(array, value - qbase_time.toTime_t());
 
-//    write_int16(array, 1, true);      //Garmin
-//    write_int16(array, 1499, true);   //Swim
-//    write_int16(array, 123456, true); //Serial
+    //    write_int16(array, 1);      //Garmin
+    //    write_int16(array, 1499);   //Swim
+    //    write_int16(array, 123456); //Serial
 }
 
 
 bool fit_write(const QString& filename, const Workout& workout)
 {
-  QByteArray content;
-  QByteArray data;
+    QByteArray content;
+    QByteArray data;
 
-  write_file_id(&data, workout);
-  write_activity(&data, workout);
-  write_device(&data,workout);
+    write_file_id(&data, workout);
+    write_activity(&data, workout);
+    write_device(&data,workout);
 
-  write_header(&content, data.size());
-  content += data;
+    write_header(&content, data.size());
+    content += data;
 
-  uint16_t crc = crc16(content.data(), content.length());
-  write_int16(&content, crc, false);
+    uint16_t crc = crc16(content.data(), content.length());
+    write_int16(&content, crc, false);
 
-//array is FIT file
-  QFile file(filename);
+    //array is FIT file
+    QFile file(filename);
 
-  if (!file.open(QIODevice::WriteOnly))
-      return false;
-  file.resize(0);
+    if (!file.open(QIODevice::WriteOnly))
+        return false;
+    file.resize(0);
 
-  QDataStream out(&file);
-  out.setByteOrder(QDataStream::LittleEndian);
-  file.write(content);
-  file.close();
+    QDataStream out(&file);
+    out.setByteOrder(QDataStream::LittleEndian);
+    file.write(content);
+    file.close();
 
-  return true;
+    return true;
 }

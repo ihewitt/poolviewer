@@ -96,7 +96,7 @@ bool SaveCSV( const std::string & name, std::vector<ExerciseSet>& exercises )
                     out << ",,,,0,New," //Can mark edited values
                         << i->totalduration.toString("hh:mm:ss") << ","
 
-                        //Only interested in syncing SwimHR data so insert sync status flags here
+                           //Only interested in syncing SwimHR data so insert sync status flags here
                         << sync
 
                         << ",STARTOFLAPDATA,0,0,0,"
@@ -586,7 +586,7 @@ void DataStore::exportWorkouts(const QString &dirname)
                 if (fit_write(filename, *i))
                 {
                     i->sync |= SYNC_FIT;
-                        changed=true;
+                    changed=true;
                 }
             }
         }
