@@ -694,7 +694,8 @@ void SummaryImpl::fitButton()
     dirname = QFileDialog::getExistingDirectory(this,
                                                 tr("Select .FIT export directory."),
                                                 dirname,
-                                                0 /*QFileDialog::DontUseNativeDialog*/);
+                                                QFileDialog::ShowDirsOnly
+                                                /*QFileDialog::DontUseNativeDialog*/);
     if (!dirname.isEmpty())
     {
         settings.setValue("fitDir", dirname);
