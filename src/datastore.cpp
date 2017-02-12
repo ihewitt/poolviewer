@@ -567,29 +567,14 @@ void DataStore::replaceWorkout( int wid, const Workout& wrk)
     changed = true;
 }
 
-bool fit_write(const QString& file, const Workout& workout);
+bool fit_write(const QString& file, const Workout& workout, bool overwrite=false);
 
-void DataStore::exportWorkouts(const QString &dirname)
+bool DataStore::exportWorkout(const QString &dirname, QString &filename, const Workout& workout) const
 {
-    std::vector<Workout>::iterator i;
-    for ( i = workouts.begin(); i != workouts.end(); ++i)
-    {
-        if ( i->type=="SwimHR" ) //Only interested in exporting data with lengths
-        {
-            if (!(i->sync & SYNC_FIT))
-            {
-                QString name = QDateTime(i->date,i->time).toString("yyyyMMddHHmmss");
-                QString filename = QString("%1/%2.fit")
-                        .arg(dirname)
-                        .arg(name);
-
-                if (fit_write(filename, *i))
-                {
-                    i->sync |= SYNC_FIT;
-                    changed=true;
-                }
-            }
-        }
-    }
-
+    QString name = QDateTime(workout.date,workout.time).toString("yyyyMMddHHmmss");
+    QString file = QString("%1/%2.fit")
+            .arg(dirname)
+            .arg(name);
+    filename = file;
+    return fit_write(file, workout);
 }

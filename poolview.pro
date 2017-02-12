@@ -1,5 +1,5 @@
 TEMPLATE = app
-QT = gui core widgets printsupport serialport
+QT = gui core widgets printsupport serialport webengine webenginecore webenginewidgets
 
 VERSION = 0.6
 
@@ -44,7 +44,8 @@ FORMS = ui/summary.ui \
     ui/upload.ui \
     ui/besttimesimpl.ui \
     ui/analysis.ui \
-    ui/edit.ui
+    ui/edit.ui \
+    ui/export.ui
 HEADERS = src/uploadimpl.h \
     src/syncimpl.h \
     src/configimpl.h \
@@ -65,7 +66,10 @@ HEADERS = src/uploadimpl.h \
     src/exerciseset.h \
     src/poda.h \
     src/analysisimpl.h \
-    src/edit.h
+    src/edit.h \
+    src/export.h \
+    src/authdialog.h \
+    src/authprivate.h
 SOURCES = src/uploadimpl.cpp \
     src/syncimpl.cpp \
     src/configimpl.cpp \
@@ -84,7 +88,9 @@ SOURCES = src/uploadimpl.cpp \
     src/poda.cpp \
     src/analysisimpl.cpp \
     src/edit.cpp \
-    src/fitwriter.cpp
+    src/fitwriter.cpp \
+    src/export.cpp \
+    src/authdialog.cpp
 
 DISTFILES +=
 

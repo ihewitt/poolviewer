@@ -18,6 +18,7 @@
 
 #include <QSettings>
 
+#include "authdialog.h"
 #include "configimpl.h"
 
 ConfigImpl::ConfigImpl( QWidget * parent, Qt::WindowFlags f)
@@ -33,28 +34,38 @@ ConfigImpl::ConfigImpl( QWidget * parent, Qt::WindowFlags f)
     {
         podOriginal->setChecked(true);
         podorig->setEnabled(true);
-        orighelp->setVisible(true);
-        livehelp->setVisible(false);
+        //orighelp->setVisible(true);
+        //livehelp->setVisible(false);
     }
     else if (pod == 1)
     {
         podTypeA->setChecked(true);
         poda->setEnabled(true);
 
-        orighelp->setVisible(false);
-        livehelp->setVisible(true);
+        //orighelp->setVisible(false);
+        //livehelp->setVisible(true);
     }
     else
     {
         podLive->setChecked(true);
         podlive->setEnabled(true);
 
-        orighelp->setVisible(false);
-        livehelp->setVisible(true);
+        //orighelp->setVisible(false);
+        //livehelp->setVisible(true);
     }
+
+    QString stravaToken = settings.value("stravaToken").toString();
+    if (stravaToken.isEmpty())
+        stravaAuth->setIcon(QIcon());// clear icon
+    else
+        stravaAuth->setIcon(QIcon(":/images/tick.png"));
 
     dataFile->setText(path);
     backup->setChecked(settings.value("backup").toBool());
+
+    garminUser->setText(settings.value("garminUser").toString());
+    garminPassword->setText(settings.value("garminPass").toString());
+
 }
 
 
@@ -89,6 +100,9 @@ void ConfigImpl::on_buttonBox_accepted()
     }
 
     settings.setValue("backup", backup->isChecked());
+
+    settings.setValue("garminUser", garminUser->text());
+    settings.setValue("garminPass", garminPassword->text());
 }
 
 void ConfigImpl::on_podLive_clicked(bool /*checked*/)
@@ -97,8 +111,8 @@ void ConfigImpl::on_podLive_clicked(bool /*checked*/)
     poda->setEnabled(false);
     podlive->setEnabled(true);
 
-    orighelp->setVisible(false);
-    livehelp->setVisible(true);
+    //orighelp->setVisible(false);
+    //livehelp->setVisible(true);
 }
 
 void ConfigImpl::on_podOriginal_clicked(bool /*checked*/)
@@ -107,8 +121,8 @@ void ConfigImpl::on_podOriginal_clicked(bool /*checked*/)
     poda->setEnabled(false);
     podlive->setEnabled(false);
 
-    orighelp->setVisible(true);
-    livehelp->setVisible(false);
+    //orighelp->setVisible(true);
+    //livehelp->setVisible(false);
 }
 
 void ConfigImpl::on_podTypeA_clicked(bool /*checked*/)
@@ -117,6 +131,17 @@ void ConfigImpl::on_podTypeA_clicked(bool /*checked*/)
     poda->setEnabled(true);
     podlive->setEnabled(false);
 
-    orighelp->setVisible(false);
-    livehelp->setVisible(true);
+    //orighelp->setVisible(false);
+    //livehelp->setVisible(true);
+}
+
+void ConfigImpl::on_stravaAuth_clicked()
+{
+    AuthDialog win(this);
+    int ret = win.exec();
+
+    QSettings settings("Swim","Poolmate");
+    QString stravaToken = settings.value("stravaToken").toString();
+    if (!stravaToken.isEmpty())
+        stravaAuth->setIcon(QIcon(":/images/tick.png"));
 }

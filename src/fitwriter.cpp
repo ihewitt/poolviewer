@@ -687,8 +687,17 @@ void write_file_id(QByteArray *array, const Workout &workout)
 }
 
 
-bool fit_write(const QString& filename, const Workout& workout)
+bool fit_write(const QString& filename, const Workout& workout, bool overwrite=false)
 {
+    QFile file(filename);
+
+    if (file.exists() && overwrite == false)
+        return true;
+
+    if (!file.open(QIODevice::WriteOnly))
+        return false;
+    file.resize(0);
+
     QByteArray content;
     QByteArray data;
 
@@ -703,11 +712,6 @@ bool fit_write(const QString& filename, const Workout& workout)
     write_int16(&content, crc, false);
 
     //array is FIT file
-    QFile file(filename);
-
-    if (!file.open(QIODevice::WriteOnly))
-        return false;
-    file.resize(0);
 
     QDataStream out(&file);
     out.setByteOrder(QDataStream::LittleEndian);
