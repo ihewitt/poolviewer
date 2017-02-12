@@ -42,6 +42,8 @@ private slots:
 
     void on_podTypeA_clicked(bool checked);
 
+    void on_stravaAuth_clicked();
+
 private:
 };
 

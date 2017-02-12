@@ -51,7 +51,7 @@ struct Workout
 {
     int id;
 
-    uint8_t sync; //syncstatus bitfield
+    mutable uint8_t sync; //syncstatus bitfield
     int user;
     QDate date;
     QTime time;
@@ -101,7 +101,7 @@ public:
     void setBackup(bool _backup) { backup = _backup; }
     const QString& getFile() { return filename;}
 
-    void exportWorkouts(const QString &directory);
+    bool exportWorkout(const QString &directory, QString &filename, const Workout &workout) const;
 
     //once loaded flag any manipulation.
     bool hasChanged() { return changed;}
@@ -109,7 +109,7 @@ public:
     //
     bool load();
     bool save();
-
+    void setChanged() { changed=true;}
     const std::vector<Workout>& Workouts() const;
 
 private:

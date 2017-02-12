@@ -35,7 +35,7 @@
 #include "analysisimpl.h"
 #include "edit.h"
 #include "utilities.h"
-
+#include "ui/export.h"
 
 SummaryImpl::SummaryImpl( QWidget * parent, Qt::WindowFlags f)
     : QDialog(parent, f)
@@ -685,26 +685,6 @@ void SummaryImpl::printButton()
 
 }
 
-void SummaryImpl::fitButton()
-{
-    QSettings settings("Swim","Poolmate");
-    QString dirname=settings.value("fitDir").toString();
-
-    //Bug, doesn't open location with default flags.
-    dirname = QFileDialog::getExistingDirectory(this,
-                                                tr("Select .FIT export directory."),
-                                                dirname,
-                                                QFileDialog::ShowDirsOnly
-                                                /*QFileDialog::DontUseNativeDialog*/);
-    if (!dirname.isEmpty())
-    {
-        settings.setValue("fitDir", dirname);
-        ds->exportWorkouts(dirname);
-    }
-// Overkill repopulate
-    fillWorkouts(ds->Workouts()); //TODO change to gui update
-}
-
 void SummaryImpl::onCheckClicked(bool)
 {
     graphWidget->setGraphs(efficCheck->isChecked(),
@@ -777,4 +757,14 @@ void SummaryImpl::on_lengthGrid_itemSelectionChanged()
     }
 
     status->setText(QString());
+}
+
+void SummaryImpl::on_shareButton_clicked()
+{
+    Export share(this);
+    share.setDataStore(ds); // will populate our datastore
+    share.exec();
+
+// Overkill repopulate
+    fillWorkouts(ds->Workouts()); //TODO change to gui update
 }

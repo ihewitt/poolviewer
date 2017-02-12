@@ -67,9 +67,9 @@ public:
     virtual void printButton();
     virtual void onCheckClicked(bool);
     virtual void analysisButton();
-    virtual void fitButton();
 
     void on_lengthGrid_itemSelectionChanged();
+    void on_shareButton_clicked();
 
 private:
     DataStore *ds;

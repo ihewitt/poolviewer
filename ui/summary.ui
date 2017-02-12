@@ -416,9 +416,9 @@
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="fitButton">
+           <widget class="QPushButton" name="shareButton">
             <property name="text">
-             <string>Export .FIT</string>
+             <string>Share</string>
             </property>
            </widget>
           </item>
@@ -876,7 +876,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>fitButton</sender>
+   <sender>shareButton</sender>
    <signal>clicked()</signal>
    <receiver>Summary</receiver>
    <slot>fitButton()</slot>
