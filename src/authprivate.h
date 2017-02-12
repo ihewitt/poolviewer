@@ -1,0 +1,4 @@
+#ifndef AUTHPRIVATE_H
+#define AUTHPRIVATE_H
+
+#endif // AUTHPRIVATE_H
