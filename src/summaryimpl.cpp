@@ -35,7 +35,7 @@
 #include "analysisimpl.h"
 #include "edit.h"
 #include "utilities.h"
-#include "ui/export.h"
+#include "export.h"
 
 SummaryImpl::SummaryImpl( QWidget * parent, Qt::WindowFlags f)
     : QDialog(parent, f)
