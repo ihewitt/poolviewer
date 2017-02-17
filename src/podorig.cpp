@@ -27,7 +27,7 @@ extern "C"
 #include "logging.h"
 #include "podorig.h"
 
-void dataToWorkouts( unsigned char *buf, std::vector<ExerciseSet>& data )
+void dataToWorkouts(const unsigned char *buf, std::vector<ExerciseSet>& data )
 {
     // some sort of checksum exists in 0x1000,1001,1002,1003
 //    int version = buf[0x1004];

@@ -24,7 +24,7 @@
 //CRC32 helper function for PoolmateLive protocol
 // Non-optimised crc32 calc.
 // Doesn't need to be fast so leave readable.
-uint32_t crc32a(unsigned char *message, int len)
+uint32_t crc32a(const unsigned char *message, int len)
 {
     int i, j;
     uint32_t crc;
@@ -120,12 +120,12 @@ void PodLive::getData( std::vector<ExerciseSet>& exdata )
         return;
 
     uint16_t type;
-    char *buffer = (char*) readData.data();
+    const char *buffer = (const char*) readData.data();
 
     do
     {
-        unsigned char *ptr = (unsigned char*)buffer;
-        type = *(uint16_t*)ptr;
+        const unsigned char *ptr = (unsigned char*)buffer;
+        type = *(const uint16_t*)ptr;
 
         if (type == 0) // workout header
         {
@@ -162,7 +162,7 @@ void PodLive::getData( std::vector<ExerciseSet>& exdata )
                 DEBUG("%02d/%02d/%04d %02d:%02d:%02d %d\n", D,M,Y,h,m,s,sets);
                 do
                 {
-                    uint16_t type =  *(uint16_t*)ptr;
+                    uint16_t type =  *(const uint16_t*)ptr;
 
                     DEBUG("Type %04x: ", type);
 
@@ -308,7 +308,7 @@ void PodLive::handleError(QSerialPort::SerialPortError serialPortError)
 unsigned char d1[] = {0x00, 0x63, 0x63, 0x00, 0x00, 0x00}; //5555 prefixed
 unsigned char d5[] = {0x00,0x06,0x80,0x00,0x00,0x00}; //Download start
 
-void display(QByteArray& data)
+void display(const QByteArray& data)
 {
     int i;
     DEBUG("%d :", data.length());
@@ -345,7 +345,7 @@ void read(const QScopedPointer<QSerialPort> & serialPort, unsigned long len)
     display(data);
 }
 
-void write(const QScopedPointer<QSerialPort> & serialPort, unsigned char* data, unsigned long len)
+void write(const QScopedPointer<QSerialPort> & serialPort, const unsigned char* data, unsigned long len)
 {
     QByteArray out((char*)data,len);
     serialPort->write(out);
@@ -353,7 +353,7 @@ void write(const QScopedPointer<QSerialPort> & serialPort, unsigned char* data, 
 }
 
 // prefix 0x55 packet
-void sendandstart(const QScopedPointer<QSerialPort> & serialPort, unsigned char* data, int len)
+void sendandstart(const QScopedPointer<QSerialPort> & serialPort, const unsigned char* data, int len)
 {
     uint32_t crc = crc32a(data,len);
 
@@ -368,7 +368,7 @@ void sendandstart(const QScopedPointer<QSerialPort> & serialPort, unsigned char*
 }
 
 // prefix 0xff packet
-void sendandwait(const QScopedPointer<QSerialPort> & serialPort, unsigned char* data, int len)
+void sendandwait(const QScopedPointer<QSerialPort> & serialPort, const unsigned char* data, int len)
 {
     uint32_t crc = crc32a(data,len);
 
@@ -386,7 +386,7 @@ void sendandwait(const QScopedPointer<QSerialPort> & serialPort, unsigned char* 
 bool PodLive::download(const QScopedPointer<QSerialPort> & serialPort, QByteArray& readData)
 {
     uint32_t req;
-    req = *(uint32_t*)data.data();
+    req = *(const uint32_t*)data.data();
 
     DEBUG("Bitflags: %04x\n", req); //bitflags
 
