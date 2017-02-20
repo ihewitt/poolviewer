@@ -12,6 +12,8 @@
 #include "ui_export.h"
 #include "datastore.h"
 
+#include <unistd.h>
+
 Export::Export(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::Export)
@@ -39,10 +41,19 @@ Export::Export(QWidget *parent) :
     ui->progressBar->setMaximum(0);
 
     ui->allButton->setChecked(true);
+
+    manager=0;
+    eventLoop=0;
 }
 
 Export::~Export()
 {
+    if (manager)
+        delete manager;
+
+    if (eventLoop)
+        delete eventLoop;
+
     delete ui;
 }
 
@@ -233,6 +244,7 @@ bool Export::uploadToStrava(const QString& filename)
     QNetworkReply *reply = networkManager.post(request, multiPart);
 
     eventLoop.exec(); //Wait here until post complete
+    sleep(1);
 
     //now check response
 
@@ -256,6 +268,15 @@ bool Export::uploadToStrava(const QString& filename)
 
 bool Export::uploadToGarmin(const QString &filename )
 {
+    if (!manager)
+        manager = new QNetworkAccessManager(this);
+
+    if (!eventLoop)
+    {
+        eventLoop = new QEventLoop(this);
+        connect(manager, SIGNAL(finished(QNetworkReply *)), eventLoop, SLOT(quit()));
+    }
+
     if (!garminCookies)
     {
         if (!initializeGarminCookies())
@@ -265,15 +286,11 @@ bool Export::uploadToGarmin(const QString &filename )
         }
     }
 
-    // now upload to garmin with the initialised manager
+    QUrl url = QUrl( "https://connect.garmin.com/modern/proxy/upload-service/upload/.fit" );
 
-    QEventLoop eventLoop(this);
-
-    disconnect(&manager, SIGNAL(finished(QNetworkReply *)), 0, 0);
-    connect(&manager, SIGNAL(finished(QNetworkReply *)), &eventLoop, SLOT(quit()));
-
-    QUrl url = QUrl( "https://connect.garmin.com/proxy/upload-service-1.1/json/upload/.fit" );
     QNetworkRequest request = QNetworkRequest(url);
+    request.setRawHeader("Referer", "https://connect.garmin.com/modern/import-data");
+    request.setRawHeader("NK","NT"); //Mandatory header
 
     QString boundary = QVariant(qrand()).toString() + QVariant(qrand()).toString() + QVariant(qrand()).toString();
 
@@ -290,71 +307,69 @@ bool Export::uploadToGarmin(const QString &filename )
     filePart.setBody(file);
 
     multiPart->append(filePart);
-    QNetworkReply *reply = manager.post(request, multiPart);
+    QNetworkReply *reply = manager->post(request, multiPart);
 
-    eventLoop.exec(); //Wait here until post complete
+    eventLoop->exec(); //Wait here until post complete
 
     QString response = reply->readAll();
     int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-    qDebug() << "response" << response <<  " " <<  statusCode;
 
     delete reply;
 
-    if (statusCode != 200)
-        return false;
+    qDebug() << "response" << response <<  " " <<  statusCode;
 
-    //just do basic string search for results
-    if (response.contains("Duplicate Activity"))
+    if (statusCode == 200 || statusCode == 409)
     {
-        return true; //Return ok so flagged as uploaded.
-    } else if (response.contains("\"failures\":[]")){
-        return true;
+        //just do basic string search for results
+        if (response.contains("Duplicate Activity"))
+        {
+            return true; //Return ok so flagged as already uploaded.
+        } else if (response.contains("\"failures\":[]"))
+        {
+            return true;
+        }
     }
 
+    garminCookies=false; //Force relogin
     return false;
 }
 
 bool Export::initializeGarminCookies()
 {
-    // login and create a session for uploading
-    QEventLoop eventLoop(this);  // block on io since we can't proceed without each step
+    QUrl serverUrl;
+    QNetworkRequest request;
+    QNetworkReply *reply;
+    QString response;
+    int i,j;
 
-    //    QNetworkAccessManager mgr(this);
-    connect(&manager, SIGNAL(finished(QNetworkReply *)), &eventLoop, SLOT(quit()));
-    manager.setCookieJar( new QNetworkCookieJar());
+    //Switched to garmin modern calls.
+
+    //Get login
+    serverUrl = QUrl("https://sso.garmin.com/sso/login");
 
     QUrlQuery logpar;
-    logpar.addQueryItem("service","http%3A%2F%2Fconnect.garmin.com%2Fpost-auth%2Flogin");
+    logpar.addQueryItem("service","https://connect.garmin.com/modern/");
     logpar.addQueryItem("clientId","GarminConnect");
-    logpar.addQueryItem("gauthHost", "https%3A%2F%2Fsso.garmin.com%2Fsso" );
+    logpar.addQueryItem("gauthHost", "https://sso.garmin.com/sso" );
     logpar.addQueryItem("consumeServiceTicket","false");
-
-    QUrl serverUrl = QUrl("https://sso.garmin.com/sso/login");
     serverUrl.setQuery(logpar);
 
-    QNetworkRequest request = QNetworkRequest(serverUrl);
-    QNetworkReply *reply =  manager.get(request);
+    request = QNetworkRequest(serverUrl);
+    reply =  manager->get(request);
+    eventLoop->exec();    // holding pattern
 
-    eventLoop.exec();    // holding pattern
+    int code = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+    QString loc = reply->attribute(QNetworkRequest::RedirectionTargetAttribute).toString();
+    response = reply->readAll();
+    delete reply;
 
-    QString response = reply->readAll();
-    qDebug() << "response" << response;
-
-    int i = response.indexOf("[", response.indexOf("flowExecutionKey"))+1;
-    int j = response.indexOf("]", i);
+    i = response.indexOf("[", response.indexOf("flowExecutionKey"))+1;
+    j = response.indexOf("]", i);
     flowExecutionKey = response.mid(i, j-i);
     qDebug() << "flowExecutionKey" << flowExecutionKey;
 
-    QVariant v = reply->header(QNetworkRequest::SetCookieHeader);
-    qDebug() << "serverUrl" << serverUrl;
-
-    delete reply;
-
-    request = QNetworkRequest(serverUrl);
-
-    //Now login
+    //Now post login
     request.setHeader(QNetworkRequest::ContentTypeHeader,QVariant("application/x-www-form-urlencoded"));
-
     QByteArray data;
     QUrlQuery params;
 
@@ -367,93 +382,71 @@ bool Export::initializeGarminCookies()
     params.addQueryItem("lt",flowExecutionKey);
     params.addQueryItem("username",username);
     params.addQueryItem("password",password);
+    //    params.addQueryItem("redirectAfterAccountLoginUrl","https://connect.garmin.com/modern/");
 
-    //data.append(params.query(QUrl::FullyEncoded));
     data=params.query(QUrl::FullyEncoded).toUtf8();
 
-    QEventLoop postLoop(this);
-    disconnect(&manager, SIGNAL(finished(QNetworkReply *)),0,0);
-    connect(&manager, SIGNAL(finished(QNetworkReply *)), &postLoop, SLOT(quit()));
+    reply =  manager->post(request, data);
+    eventLoop->exec();
 
-    reply =  manager.post(request, data);
-    postLoop.exec();     // holding pattern
+    code = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+    loc = reply->attribute(QNetworkRequest::RedirectionTargetAttribute).toString();
 
     qDebug() << "requestLoginGarminFinished()";
 
     response = reply->readAll();
-    qDebug() << "response2" << response;
+
+    int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+    qDebug() << "statusCode " << statusCode;
 
     if (reply->error() != QNetworkReply::NoError)
     {
         qDebug() << "Error " << reply->error() ;
-        delete reply;
+        return false;
     }
-    else
+    else if (statusCode == 200)
     {
-        int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-        qDebug() << "statusCode " << statusCode;
-        delete reply;
-
-        if(statusCode == 200) {
-
-            int i = response.indexOf("?ticket=");
-            if (i<=0){
-                return false;
-            }
-            else
-                i+=8;
-            int j = response.indexOf("'", i);
-            ticket = response.mid(i, j-i);
-            qDebug() << "ticket" << ticket;
-
-            //Now redeem ticket for cookies
-            serverUrl = QUrl( "https://connect.garmin.com/post-auth/login" );
-            QUrlQuery params;
-            params.addQueryItem("ticket",ticket);
-            serverUrl.setQuery(params);
-
-            QVariant cookieVar;
-            for (int i = 1; i < 6; i++) //Redirect over and over until we have the cookies
-            {
-                QEventLoop authLoop(this);
-
-                QNetworkRequest request = QNetworkRequest(serverUrl);
-                disconnect(&manager, SIGNAL(finished(QNetworkReply *)),0,0);
-                connect(&manager, SIGNAL(finished(QNetworkReply *)), &authLoop, SLOT(quit()));
-
-                QNetworkReply* resp = manager.get(request);
-                authLoop.exec();
-
-                int code = resp->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-                if (code == 302)
-                {
-                    QString loc = resp->attribute(QNetworkRequest::RedirectionTargetAttribute).toString();
-                    if (loc.startsWith("http"))
-                        serverUrl = loc;
-                    else
-                    {
-                        serverUrl = serverUrl.scheme()+"://"+serverUrl.host() + loc;
-                    }
-
-                    if (resp->header(QNetworkRequest::SetCookieHeader).isValid())
-                    {
-                        cookieVar = resp->header(QNetworkRequest::SetCookieHeader);
-                        QList<QNetworkCookie> cookies = cookieVar.value<QList<QNetworkCookie> >();
-                        foreach (QNetworkCookie cookie, cookies) {
-                            qDebug() << "New cookie:" << cookie.name() << " : " <<cookie.value();
-                        }
-                    }
-                }
-                delete resp;
-            }
-            //now we have cookies
-            garminCookies=true;
-            return true;
+        int i = response.indexOf("?ticket=");
+        if (i<=0){
+            return false;
         }
+        else
+            i+=8;
+        int j = response.indexOf("'", i);
+        ticket = response.mid(i, j-i);
+        qDebug() << "ticket" << ticket;
+
+        QUrlQuery params;
+        params.addQueryItem("ticket",ticket);
+
+        serverUrl = QUrl("https://connect.garmin.com/modern/");
+        serverUrl.setQuery(params);
+
+        int maxloop=3;
+        do {
+            qDebug() << "Request: " <<serverUrl;
+            request = QNetworkRequest(serverUrl);
+
+            reply = manager->get(request);
+            eventLoop->exec();
+
+            int code = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+
+            if (code == 200)
+            {
+                garminCookies=true;
+                return true;
+            }
+
+            if (code == 302)
+            {
+                QString loc = reply->attribute(QNetworkRequest::RedirectionTargetAttribute).toString();
+                serverUrl = serverUrl.resolved(loc);
+            }
+        } while (maxloop--);
     }
     return false;
 }
-
 
 void Export::on_closeButton_clicked()
 {

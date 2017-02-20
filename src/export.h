@@ -4,7 +4,7 @@
 #include <QDialog>
 #include <QNetworkReply>
 #include <QNetworkAccessManager>
-#include <QNetworkCookieJar>
+#include <QEventLoop>
 #include <QUrl>
 
 class DataStore;
@@ -41,7 +41,8 @@ private:
 
     QString stravaToken;
 
-    QNetworkAccessManager manager;
+    QNetworkAccessManager *manager;
+    QEventLoop *eventLoop;
 
     bool garminCookies;
     QString garminUser;
