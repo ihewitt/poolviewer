@@ -265,7 +265,7 @@ bool Export::uploadToStrava(const QString& filename)
     return false;
 }
 
-
+// How is it possible to make such a mess of an http protocol
 bool Export::uploadToGarmin(const QString &filename )
 {
     if (!manager)
@@ -307,6 +307,7 @@ bool Export::uploadToGarmin(const QString &filename )
     filePart.setBody(file);
 
     multiPart->append(filePart);
+    sleep(1);
     QNetworkReply *reply = manager->post(request, multiPart);
 
     eventLoop->exec(); //Wait here until post complete
@@ -318,7 +319,7 @@ bool Export::uploadToGarmin(const QString &filename )
 
     qDebug() << "response" << response <<  " " <<  statusCode;
 
-    if (statusCode == 200 || statusCode == 409)
+    if (statusCode == 200 || statusCode == 201 || statusCode == 409)
     {
         //just do basic string search for results
         if (response.contains("Duplicate Activity"))
@@ -355,6 +356,7 @@ bool Export::initializeGarminCookies()
     serverUrl.setQuery(logpar);
 
     request = QNetworkRequest(serverUrl);
+    sleep(1);
     reply =  manager->get(request);
     eventLoop->exec();    // holding pattern
 
@@ -386,6 +388,7 @@ bool Export::initializeGarminCookies()
 
     data=params.query(QUrl::FullyEncoded).toUtf8();
 
+    sleep(1);
     reply =  manager->post(request, data);
     eventLoop->exec();
 
@@ -427,6 +430,8 @@ bool Export::initializeGarminCookies()
             qDebug() << "Request: " <<serverUrl;
             request = QNetworkRequest(serverUrl);
 
+            sleep(1);   // need to work out which delays are needed and how long.
+                        // but connection fails without any sleep.
             reply = manager->get(request);
             eventLoop->exec();
 
