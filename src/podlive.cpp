@@ -50,18 +50,10 @@ PodLive::PodLive() : serialPort(NULL)
     qRegisterMetaType<QSerialPort::SerialPortError>();
 }
 
-PodLive::~PodLive()
-{
-    if(serialPort != NULL && serialPort->isOpen())
-        serialPort->close();
-
-    delete serialPort;
-}
-
 void PodLive::stop()
 {
     state = ERROR;
-    sleep(1);
+    emit info("Stopped.");
 }
 
 bool PodLive::init()
@@ -75,7 +67,7 @@ bool PodLive::init()
         return false;
     }
 
-    serialPort= new QSerialPort();
+    serialPort.reset(new QSerialPort());
     serialPort->setPortName(serialPortName);
 
     //m_standardOutput= &out;
@@ -100,7 +92,7 @@ bool PodLive::init()
 
     readData.clear();
     //    connect(serialPort, SIGNAL(readyRead()), SLOT(handleReadyRead()));
-    connect(serialPort, SIGNAL(error(QSerialPort::SerialPortError)), SLOT(handleError(QSerialPort::SerialPortError)));
+    connect(serialPort.data(), SIGNAL(error(QSerialPort::SerialPortError)), SLOT(handleError(QSerialPort::SerialPortError)));
 
     return true;
 }
@@ -335,7 +327,7 @@ void display(QByteArray& data)
 namespace
 {
 QByteArray data;
-void read(QSerialPort *serialPort, unsigned long len)
+void read(const QScopedPointer<QSerialPort> & serialPort, unsigned long len)
 {
 
     data.clear();
@@ -353,7 +345,7 @@ void read(QSerialPort *serialPort, unsigned long len)
     display(data);
 }
 
-void write(QSerialPort *serialPort, unsigned char* data, unsigned long len)
+void write(const QScopedPointer<QSerialPort> & serialPort, unsigned char* data, unsigned long len)
 {
     QByteArray out((char*)data,len);
     serialPort->write(out);
@@ -361,7 +353,7 @@ void write(QSerialPort *serialPort, unsigned char* data, unsigned long len)
 }
 
 // prefix 0x55 packet
-void sendandstart(QSerialPort *serialPort, unsigned char* data, int len)
+void sendandstart(const QScopedPointer<QSerialPort> & serialPort, unsigned char* data, int len)
 {
     uint32_t crc = crc32a(data,len);
 
@@ -376,7 +368,7 @@ void sendandstart(QSerialPort *serialPort, unsigned char* data, int len)
 }
 
 // prefix 0xff packet
-void sendandwait(QSerialPort *serialPort, unsigned char* data, int len)
+void sendandwait(const QScopedPointer<QSerialPort> & serialPort, unsigned char* data, int len)
 {
     uint32_t crc = crc32a(data,len);
 
@@ -391,7 +383,7 @@ void sendandwait(QSerialPort *serialPort, unsigned char* data, int len)
 }
 
 }; //namespace
-bool PodLive::download(QSerialPort *serialPort, QByteArray& readData)
+bool PodLive::download(const QScopedPointer<QSerialPort> & serialPort, QByteArray& readData)
 {
     uint32_t req;
     req = *(uint32_t*)data.data();
@@ -410,15 +402,22 @@ bool PodLive::download(QSerialPort *serialPort, QByteArray& readData)
         if (req & (1 << i)) // start of dataset marker
         {
             QByteArray workout;
-            int missing = -1; // marks uninitialised
-            int blockToRequest = i;
+            int stillToRequest = -1; // marks uninitialised
+            int nextBlockToRequest = i;
             do
             {
-                if (blockToRequest != i)
+                if (stillToRequest != -1)
                 {
-                    if (req & (1 << blockToRequest))
+                    // the first bock is always safe to download
+                    // the other ones could go over the next set
+                    //
+                    // we are not checking (nextBlockToRequest == i)
+                    // as if we attempt to download 100 blocks
+                    // when we wrap around, we will know that the first is already used
+                    //
+                    if (req & (1 << nextBlockToRequest))
                     {
-                        DEBUG("Bad workout %02x, overlapping at %02x", i, blockToRequest);
+                        DEBUG("Bad workout %02x, overlapping at %02x\n", i, nextBlockToRequest);
                         // block already used
                         // ignore
                         // and leave
@@ -431,11 +430,11 @@ bool PodLive::download(QSerialPort *serialPort, QByteArray& readData)
                 int retry = 4;
                 do
                 {
-                    buf[9]=(blockToRequest & 0x1f);
+                    buf[9]=(nextBlockToRequest & 0x1f);
                     crc = crc32a(&buf[6], 10);
                     memcpy(&buf[16], &crc, sizeof(uint32_t));
 
-                    DEBUG("Request set %02x ", blockToRequest);
+                    DEBUG("Request set %02x ", nextBlockToRequest);
                     write(serialPort, buf, 20);
                     read(serialPort, 20);
                     DEBUG("Read %d\n", data.length());
@@ -451,20 +450,20 @@ bool PodLive::download(QSerialPort *serialPort, QByteArray& readData)
 
                 workout.append(data.data(), data.length()-4);
 
-                if (missing < 0)
+                if (stillToRequest < 0)
                 {
                     const int totalBlocks = data[2];
                     if (totalBlocks == 0)
                     {
                         return false;
                     }
-                    missing = totalBlocks;
+                    stillToRequest = totalBlocks;
                 }
 
-                --missing;
-                blockToRequest = (blockToRequest + 1) & 0x1f;
+                --stillToRequest;
+                nextBlockToRequest = (nextBlockToRequest + 1) & 0x1f;
             }
-            while (missing > 0);
+            while (stillToRequest > 0);
 
             readData.append(workout.data(), workout.length());
         }
@@ -482,6 +481,9 @@ done:
 //
 void PodLive::run()
 {
+    if (!init())
+        return;
+
     if (serialPort && state == INITIALISED )
     {
         emit info("Connect watch.");

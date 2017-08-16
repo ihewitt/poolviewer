@@ -31,11 +31,14 @@ public:
 
     void run();
 
-    virtual bool init();
     virtual void stop();
     virtual void getData(std::vector<ExerciseSet>& data);
 
+private:
+    bool init();
+
 signals:
+
     void info(QString msg);
     void error(QString msg);
     void progress(int progress);

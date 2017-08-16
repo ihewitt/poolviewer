@@ -20,6 +20,7 @@
 #define PODA_H
 
 #include "podbase.h"
+#include <QScopedPointer>
 
 // Implementation for the poolmate "Pod-A"
 // this is supported by the native linux serial interface so use
@@ -30,11 +31,9 @@ class PodA : public PodBase
 Q_OBJECT
 public:
     PodA();
-    ~PodA();
 
     void run();
 
-    virtual bool init();
     virtual void stop();
     virtual void getData(std::vector<ExerciseSet>& data);
 
@@ -48,9 +47,11 @@ private slots:
     void handleError(QSerialPort::SerialPortError error);
 
 private:
+    bool         init();
+
     int          len();
     QString      find();
-    QSerialPort *serialPort;
+    QScopedPointer<QSerialPort> serialPort;
     QString      serialPortName;
     QByteArray   readData;
 };

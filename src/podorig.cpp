@@ -230,10 +230,14 @@ void PodOrig::stop()
             sleep(1);
         }
     }
+    emit info("Stopped.");
 }
 
 void PodOrig::run()
 {
+    if (!init())
+        return;
+
     int count;
     while ( state != ERROR &&
             state != DONE )

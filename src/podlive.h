@@ -21,17 +21,16 @@
 
 // New UsbLive interface
 #include "podbase.h"
+#include <QScopedPointer>
 
 class PodLive : public PodBase
 {
     Q_OBJECT
 public:
     PodLive();
-    ~PodLive();
 
     void run();
 
-    virtual bool init();
     virtual void stop();
     virtual void getData(std::vector<ExerciseSet>& data);
 
@@ -44,11 +43,13 @@ private slots:
     void handleError(QSerialPort::SerialPortError error);
 
 private:
+    bool         init();
+
     QString      find();
-    QSerialPort *serialPort;
+    QScopedPointer<QSerialPort> serialPort;
     QString      serialPortName;
     QByteArray   readData;
-    bool         download(QSerialPort *serialPort, QByteArray& readData);
+    bool         download(const QScopedPointer<QSerialPort> & serialPort, QByteArray& readData);
 
 };
 
