@@ -21,27 +21,105 @@
 #include "podlive.h"
 #include <numeric>
 
-//CRC32 helper function for PoolmateLive protocol
-// Non-optimised crc32 calc.
-// Doesn't need to be fast so leave readable.
-uint32_t crc32a(const unsigned char *message, int len)
+namespace
 {
-    int i, j;
-    uint32_t crc;
-    char byte;
-    for (crc=~0,i=0; i<len; ++i)
+    //CRC32 helper function for PoolmateLive protocol
+    // Non-optimised crc32 calc.
+    // Doesn't need to be fast so leave readable.
+    uint32_t crc32a(const unsigned char *message, int len)
     {
-        byte = message[i];
-        for (j = 0; j <= 7; j++)
+        int i, j;
+        uint32_t crc;
+        char byte;
+        for (crc=~0,i=0; i<len; ++i)
         {
-            if ((crc>>24 ^ byte) & 0x80)
-                crc = (crc << 1) ^ 0x04C11DB7;
-            else
-                crc = crc << 1;
-            byte = byte << 1;
+            byte = message[i];
+            for (j = 0; j <= 7; j++)
+            {
+                if ((crc>>24 ^ byte) & 0x80)
+                    crc = (crc << 1) ^ 0x04C11DB7;
+                else
+                    crc = crc << 1;
+                byte = byte << 1;
+            }
         }
+        return ~crc;
     }
-    return ~crc;
+
+    // Captured data packets:
+    unsigned char d1[] = {0x00, 0x63, 0x63, 0x00, 0x00, 0x00}; //5555 prefixed
+    unsigned char d5[] = {0x00, 0x06, 0x80, 0x00, 0x00, 0x00}; //Download start
+
+    void display(const QByteArray& data)
+    {
+        int i;
+        DEBUG("%d :", data.length());
+        for (i=0; i < data.length(); ++i)
+        {
+            DEBUG("%02x ", (unsigned char)data[i]);
+            if ((i & 0xff) == 0xff)
+            {
+                DEBUG("\n");
+            }
+        }
+        DEBUG("\n");
+    }
+
+    QByteArray data;
+
+    void read(const QScopedPointer<QSerialPort> & serialPort, unsigned long len)
+    {
+        data.clear();
+        //wait for buffer to fill
+        while (serialPort->waitForReadyRead(100) != false);
+
+        char tmp[266];
+        serialPort->read(tmp, len);  //read echo back
+
+        if (serialPort->bytesAvailable())
+        {
+            serialPort->read(tmp,1); //Skip initial zero byte
+            data = serialPort->readAll();
+        }
+        display(data);
+    }
+
+    void write(const QScopedPointer<QSerialPort> & serialPort, const unsigned char* output, unsigned long len)
+    {
+        QByteArray out((char *)output, len);
+        serialPort->write(out);
+        serialPort->waitForBytesWritten(100);
+    }
+
+    // prefix 0x55 packet
+    void sendandstart(const QScopedPointer<QSerialPort> & serialPort, const unsigned char* output, int len)
+    {
+        uint32_t crc = crc32a(output, len);
+
+        unsigned char buf[256];
+        unsigned char head[]={0x00,0x00,0x55,0x55,0x55,0x55};
+        memcpy(buf, head, 6);
+        memcpy(buf+6, output, len);
+        memcpy(buf+6+len, &crc, sizeof(uint32_t));
+
+        write(serialPort, buf, 6+len+sizeof(uint32_t));
+        read(serialPort, 6+len+sizeof(uint32_t));
+    }
+
+    // prefix 0xff packet
+    void sendandwait(const QScopedPointer<QSerialPort> & serialPort, const unsigned char* output, int len)
+    {
+        uint32_t crc = crc32a(output, len);
+
+        unsigned char buf[256];
+        unsigned char head[]={0x00,0x00,0xff,0xff,0xff,0xff};
+        memcpy(buf, head, 6);
+        memcpy(buf+6, output, len);
+        memcpy(buf+6+len, &crc, sizeof(uint32_t));
+
+        write(serialPort, buf, 6+len+sizeof(uint32_t));
+        read(serialPort,6+len+sizeof(uint32_t));
+    }
 }
 
 ///
@@ -304,85 +382,6 @@ void PodLive::handleError(QSerialPort::SerialPortError serialPortError)
     }
 }
 
-// Captured data packets:
-unsigned char d1[] = {0x00, 0x63, 0x63, 0x00, 0x00, 0x00}; //5555 prefixed
-unsigned char d5[] = {0x00,0x06,0x80,0x00,0x00,0x00}; //Download start
-
-void display(const QByteArray& data)
-{
-    int i;
-    DEBUG("%d :", data.length());
-    for (i=0; i < data.length(); ++i)
-    {
-        DEBUG("%02x ", (unsigned char)data[i]);
-        if ((i & 0xff) == 0xff)
-        {
-            DEBUG("\n");
-        }
-    }
-    DEBUG("\n");
-}
-
-
-namespace
-{
-QByteArray data;
-void read(const QScopedPointer<QSerialPort> & serialPort, unsigned long len)
-{
-
-    data.clear();
-    //wait for buffer to fill
-    while (serialPort->waitForReadyRead(100) != false);
-
-    char tmp[266];
-    serialPort->read(tmp, len);  //read echo back
-
-    if (serialPort->bytesAvailable())
-    {
-        serialPort->read(tmp,1); //Skip initial zero byte
-        data = serialPort->readAll();
-    }
-    display(data);
-}
-
-void write(const QScopedPointer<QSerialPort> & serialPort, const unsigned char* data, unsigned long len)
-{
-    QByteArray out((char*)data,len);
-    serialPort->write(out);
-    serialPort->waitForBytesWritten(100);
-}
-
-// prefix 0x55 packet
-void sendandstart(const QScopedPointer<QSerialPort> & serialPort, const unsigned char* data, int len)
-{
-    uint32_t crc = crc32a(data,len);
-
-    unsigned char buf[256];
-    unsigned char head[]={0x00,0x00,0x55,0x55,0x55,0x55};
-    memcpy(buf, head, 6);
-    memcpy(&buf[6], data, len);
-    memcpy(buf+6+len, &crc, sizeof(uint32_t));
-
-    write(serialPort, buf, 6+len+sizeof(uint32_t));
-    read(serialPort, 6+len+sizeof(uint32_t));
-}
-
-// prefix 0xff packet
-void sendandwait(const QScopedPointer<QSerialPort> & serialPort, const unsigned char* data, int len)
-{
-    uint32_t crc = crc32a(data,len);
-
-    unsigned char buf[256];
-    unsigned char head[]={0x00,0x00,0xff,0xff,0xff,0xff};
-    memcpy(buf, head, 6);
-    memcpy(&buf[6], data, len);
-    memcpy(buf+6+len, &crc, sizeof(uint32_t));
-
-    write(serialPort, buf, 6+len+sizeof(uint32_t));
-    read(serialPort,6+len+sizeof(uint32_t));
-}
-
-}; //namespace
 bool PodLive::download(const QScopedPointer<QSerialPort> & serialPort, QByteArray& readData)
 {
     uint32_t req;
