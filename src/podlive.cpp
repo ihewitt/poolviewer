@@ -61,11 +61,10 @@ namespace
         DEBUG("\n");
     }
 
-    QByteArray data;
-
-    void read(const QScopedPointer<QSerialPort> & serialPort, unsigned long len)
+    QByteArray read(const QScopedPointer<QSerialPort> & serialPort, unsigned long len)
     {
-        data.clear();
+        QByteArray result;
+
         //wait for buffer to fill
         while (serialPort->waitForReadyRead(100) != false);
 
@@ -74,45 +73,50 @@ namespace
 
         if (serialPort->bytesAvailable())
         {
-            serialPort->read(tmp,1); //Skip initial zero byte
-            data = serialPort->readAll();
+            serialPort->read(tmp, 1); //Skip initial zero byte
+            result = serialPort->readAll();
         }
-        display(data);
+        display(result);
+        return result;
     }
 
-    void write(const QScopedPointer<QSerialPort> & serialPort, const unsigned char* output, unsigned long len)
+    void write(const QScopedPointer<QSerialPort> & serialPort, const QByteArray & message)
     {
-        QByteArray out((char *)output, len);
-        serialPort->write(out);
+        serialPort->write(message);
         serialPort->waitForBytesWritten(100);
     }
 
-    void sendAndWait(const QScopedPointer<QSerialPort> & serialPort, const unsigned char* output, int len, unsigned char prefix)
+    QByteArray sendAndWait(const QScopedPointer<QSerialPort> & serialPort, const unsigned char* output, int len, unsigned char prefix)
     {
         uint32_t crc = crc32a(output, len);
 
-        unsigned char buf[256];
+        const size_t size = 6 + len + sizeof(uint32_t); // 6 is the prefix and 4 the CRC
+        QByteArray buffer(size, 0);
 
-        buf[0] = 0x00;
-        buf[1] = 0x00;
-        memset(buf + 2, prefix, 4);
+        char * ptr = buffer.data();
+        // the first 2 are already 0
+        memset(ptr + 2, prefix, 4);
 
-        memcpy(buf + 6, output, len);
-        memcpy(buf + 6 + len, &crc, sizeof(uint32_t));
+        memcpy(ptr + 6, output, len);
+        memcpy(ptr + 6 + len, &crc, sizeof(uint32_t));
 
-        write(serialPort, buf, 6 + len + sizeof(uint32_t));
-        read(serialPort, 6 + len + sizeof(uint32_t));
+        write(serialPort, buffer);
+        QByteArray data = read(serialPort, buffer.size());
 
         if (data.length() > 4)
         {
             const uint32_t crcCheck = crc32a((const unsigned char*)data.data(), data.length() - 4);
             const uint32_t crcIn = *(const uint32_t*)(data.data() + data.length() - 4);
-            DEBUG("CRC %x %x\n", crcCheck, crcIn);
+            DEBUG("CRC %04x %04x\n", crcCheck, crcIn);
             if (crcCheck != crcIn)
             {
+                // Bad CRC discard
                 data.clear();
             }
         }
+        // can it ever be 1,2,3,4 bytes long?
+
+        return data;
     }
 
 }
@@ -377,10 +381,9 @@ void PodLive::handleError(QSerialPort::SerialPortError serialPortError)
     }
 }
 
-bool PodLive::download(const QScopedPointer<QSerialPort> & serialPort, QByteArray& readData)
+bool PodLive::download(const QScopedPointer<QSerialPort> & serialPort, QByteArray& readData, const QByteArray &handshake)
 {
-    uint32_t req;
-    req = *(const uint32_t*)data.data();
+    const uint32_t req = *(const uint32_t*)handshake.data();
 
     DEBUG("Bitflags: %04x\n", req); //bitflags
 
@@ -418,11 +421,12 @@ bool PodLive::download(const QScopedPointer<QSerialPort> & serialPort, QByteArra
                 }
 
                 int retry = 4;
+                QByteArray data;
                 do
                 {
                     request[3] = (nextBlockToRequest & 0x1f);
                     DEBUG("Request set %02x ", nextBlockToRequest);
-                    sendAndWait(serialPort, request, sizeof(request), 0xFF);
+                    data = sendAndWait(serialPort, request, sizeof(request), 0xFF);
                     DEBUG("Read %d\n", data.length());
                 } while (data.isEmpty() && --retry > 0);
 
@@ -475,23 +479,24 @@ void PodLive::run()
         const unsigned char d1[] = {0x00, 0x63, 0x63, 0x00, 0x00, 0x00}; //55 prefixed
         const unsigned char d5[] = {0x00, 0x06, 0x80, 0x00, 0x00, 0x00}; //FF Download start
 
+        QByteArray handshake;
         do {
-            sendAndWait(serialPort, d1, sizeof(d1), 0x55);
+            sendAndWait(serialPort, d1, sizeof(d1), 0x55); // there is no reply here
             usleep(50);
-            sendAndWait(serialPort, d5, sizeof(d5), 0xFF); //get data to decode.
+            handshake = sendAndWait(serialPort, d5, sizeof(d5), 0xFF); //get data to decode.
             usleep(50);
 
-            if (data.isEmpty())
+            if (handshake.isEmpty())
                 sleep(1);
 
-        } while (state != ERROR && data.isEmpty());
+        } while (state != ERROR && handshake.isEmpty());
 
         if (state != ERROR)
         {
             emit info("Transferring.");
 
             state = TRANSFER;
-            if (download(serialPort, readData))
+            if (download(serialPort, readData, handshake))
             {
                 state = DONE;
                 emit info("Complete.");
