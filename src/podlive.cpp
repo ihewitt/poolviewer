@@ -196,15 +196,14 @@ void PodLive::getData( std::vector<ExerciseSet>& exdata )
     if (readData.isEmpty() || state != DONE)
         return;
 
-    uint16_t type;
     const char *buffer = (const char*) readData.data();
 
     do
     {
         const unsigned char *ptr = (unsigned char*)buffer;
-        type = *(const uint16_t*)ptr;
+        const uint16_t workoutBlockType = *(const uint16_t*)ptr;
 
-        if (type == 0) // workout header
+        if (workoutBlockType == 0) // workout header
         {
             std::vector<ExerciseSet> exercises;
             int lengths=0, totaldistance=0, calories=0;
@@ -239,11 +238,11 @@ void PodLive::getData( std::vector<ExerciseSet>& exdata )
                 DEBUG("%02d/%02d/%04d %02d:%02d:%02d %d\n", D,M,Y,h,m,s,sets);
                 do
                 {
-                    uint16_t type =  *(const uint16_t*)ptr;
+                    const uint16_t setBlockType =  *(const uint16_t*)ptr;
 
-                    DEBUG("Type %04x: ", type);
+                    DEBUG("SetBlockType %04x: ", setBlockType);
 
-                    if (type == 0x100)      // length field
+                    if (setBlockType == 0x100)      // length field
                     {
                         double duration;
                         int strks;
@@ -265,7 +264,7 @@ void PodLive::getData( std::vector<ExerciseSet>& exdata )
                         times.push_back(duration);
                         strokes.push_back(strks);
                     }
-                    else if (type == 0x200) // set end
+                    else if (setBlockType == 0x200) // set end
                     {
                         int lens = ptr[2]; // + ((ptr[3]&0x7f)<<8); this isn't high bit
                         int h = ptr[3]&0x7f;
