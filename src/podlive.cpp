@@ -46,10 +46,6 @@ namespace
         return ~crc;
     }
 
-    // Captured data packets:
-    unsigned char d1[] = {0x00, 0x63, 0x63, 0x00, 0x00, 0x00}; //5555 prefixed
-    unsigned char d5[] = {0x00, 0x06, 0x80, 0x00, 0x00, 0x00}; //Download start
-
     void display(const QByteArray& data)
     {
         int i;
@@ -91,35 +87,34 @@ namespace
         serialPort->waitForBytesWritten(100);
     }
 
-    // prefix 0x55 packet
-    void sendandstart(const QScopedPointer<QSerialPort> & serialPort, const unsigned char* output, int len)
+    void sendAndWait(const QScopedPointer<QSerialPort> & serialPort, const unsigned char* output, int len, unsigned char prefix)
     {
         uint32_t crc = crc32a(output, len);
 
         unsigned char buf[256];
-        unsigned char head[]={0x00,0x00,0x55,0x55,0x55,0x55};
-        memcpy(buf, head, 6);
-        memcpy(buf+6, output, len);
-        memcpy(buf+6+len, &crc, sizeof(uint32_t));
 
-        write(serialPort, buf, 6+len+sizeof(uint32_t));
-        read(serialPort, 6+len+sizeof(uint32_t));
+        buf[0] = 0x00;
+        buf[1] = 0x00;
+        memset(buf + 2, prefix, 4);
+
+        memcpy(buf + 6, output, len);
+        memcpy(buf + 6 + len, &crc, sizeof(uint32_t));
+
+        write(serialPort, buf, 6 + len + sizeof(uint32_t));
+        read(serialPort, 6 + len + sizeof(uint32_t));
+
+        if (data.length() > 4)
+        {
+            const uint32_t crcCheck = crc32a((const unsigned char*)data.data(), data.length() - 4);
+            const uint32_t crcIn = *(const uint32_t*)(data.data() + data.length() - 4);
+            DEBUG("CRC %x %x\n", crcCheck, crcIn);
+            if (crcCheck != crcIn)
+            {
+                data.clear();
+            }
+        }
     }
 
-    // prefix 0xff packet
-    void sendandwait(const QScopedPointer<QSerialPort> & serialPort, const unsigned char* output, int len)
-    {
-        uint32_t crc = crc32a(output, len);
-
-        unsigned char buf[256];
-        unsigned char head[]={0x00,0x00,0xff,0xff,0xff,0xff};
-        memcpy(buf, head, 6);
-        memcpy(buf+6, output, len);
-        memcpy(buf+6+len, &crc, sizeof(uint32_t));
-
-        write(serialPort, buf, 6+len+sizeof(uint32_t));
-        read(serialPort,6+len+sizeof(uint32_t));
-    }
 }
 
 ///
@@ -389,12 +384,9 @@ bool PodLive::download(const QScopedPointer<QSerialPort> & serialPort, QByteArra
 
     DEBUG("Bitflags: %04x\n", req); //bitflags
 
-    unsigned char buf[20]; //6 header, 10 msg, 4 chksum
-    unsigned char msg[]={0x00,0x00,0xff,0xff,0xff,0xff,
-                         0x01,0x04,
-                         0x00,0x00, //dataset number
-                         0x00,0x00, 0x00,0x00, 0x00,0x00 };
-    memcpy(buf, msg, 16);
+    unsigned char request[] = {0x01, 0x04,
+                               0x00, 0x00, //dataset number
+                               0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
     for (int i = 0; i < 0x20; ++i)
     {
@@ -425,29 +417,21 @@ bool PodLive::download(const QScopedPointer<QSerialPort> & serialPort, QByteArra
                     }
                 }
 
-                uint32_t crc, crcin;
                 int retry = 4;
                 do
                 {
-                    buf[9]=(nextBlockToRequest & 0x1f);
-                    crc = crc32a(&buf[6], 10);
-                    memcpy(&buf[16], &crc, sizeof(uint32_t));
-
+                    request[3] = (nextBlockToRequest & 0x1f);
                     DEBUG("Request set %02x ", nextBlockToRequest);
-                    write(serialPort, buf, 20);
-                    read(serialPort, 20);
+                    sendAndWait(serialPort, request, sizeof(request), 0xFF);
                     DEBUG("Read %d\n", data.length());
-
-                    crc = crc32a((unsigned char*)data.data(), data.length()-4);
-                    crcin = *(uint32_t*)(data.data() + data.length()-4);
-                } while (crc != crcin && --retry > 0);
+                } while (data.isEmpty() && --retry > 0);
 
                 if (retry == 0)
                 {
                     return false; //give up
                 }
 
-                workout.append(data.data(), data.length()-4);
+                workout.append(data.data(), data.length() - 4);
 
                 if (stillToRequest < 0)
                 {
@@ -487,16 +471,20 @@ void PodLive::run()
     {
         emit info("Connect watch.");
 
+        // Captured data packets:
+        const unsigned char d1[] = {0x00, 0x63, 0x63, 0x00, 0x00, 0x00}; //55 prefixed
+        const unsigned char d5[] = {0x00, 0x06, 0x80, 0x00, 0x00, 0x00}; //FF Download start
+
         do {
-            sendandstart(serialPort, d1, sizeof(d1));
+            sendAndWait(serialPort, d1, sizeof(d1), 0x55);
             usleep(50);
-            sendandwait(serialPort, d5, sizeof(d5)); //get data to decode.
+            sendAndWait(serialPort, d5, sizeof(d5), 0xFF); //get data to decode.
             usleep(50);
 
-            if (data.length()==0)
+            if (data.isEmpty())
                 sleep(1);
 
-        } while (state != ERROR && data.length() == 0);
+        } while (state != ERROR && data.isEmpty());
 
         if (state != ERROR)
         {
