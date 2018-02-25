@@ -380,7 +380,7 @@ void PodLive::handleError(QSerialPort::SerialPortError serialPortError)
     }
 }
 
-bool PodLive::download(const QScopedPointer<QSerialPort> & serialPort, QByteArray& readData, const QByteArray &handshake)
+bool PodLive::download(const QScopedPointer<QSerialPort> & serialPort, const QByteArray &handshake, QByteArray& readData)
 {
     const uint32_t req = *(const uint32_t*)handshake.data();
 
@@ -495,7 +495,7 @@ void PodLive::run()
             emit info("Transferring.");
 
             state = TRANSFER;
-            if (download(serialPort, readData, handshake))
+            if (download(serialPort, handshake, readData))
             {
                 state = DONE;
                 emit info("Complete.");
