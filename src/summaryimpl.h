@@ -58,25 +58,21 @@ public:
     void closeEvent(QCloseEvent *event);
 
  private slots:
-    virtual void selectedDate(QDate);
-    virtual void workoutSelected();
-    virtual void syncButton();
-    virtual void configButton();
-    virtual void editButton();
-    virtual void scaleChanged(int);
-    virtual void printButton();
-    virtual void onCheckClicked(bool);
-    virtual void analysisButton();
-
-    void on_lengthGrid_itemSelectionChanged();
-    void on_shareButton_clicked();
+    void selectedDate(QDate);
+    void workoutSelected();
+    void syncButton();
+    void configButton();
+    void editButton();
+    void scaleChanged(int);
+    void printButton();
+    void onCheckClicked(bool);
+    void analysisButton();
+    void fitButton();
 
 private:
+    void on_lengthGrid_itemSelectionChanged();
+
     DataStore *ds;
     Scale scale;
 };
 #endif
-
-
-
-

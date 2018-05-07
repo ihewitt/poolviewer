@@ -759,7 +759,7 @@ void SummaryImpl::on_lengthGrid_itemSelectionChanged()
     status->setText(QString());
 }
 
-void SummaryImpl::on_shareButton_clicked()
+void SummaryImpl::fitButton()
 {
     Export share(this);
     share.setDataStore(ds); // will populate our datastore
