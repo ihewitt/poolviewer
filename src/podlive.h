@@ -49,7 +49,7 @@ private:
     QScopedPointer<QSerialPort> serialPort;
     QString      serialPortName;
     QByteArray   readData;
-    bool         download(const QScopedPointer<QSerialPort> & serialPort, QByteArray& readData);
+    bool         download(const QScopedPointer<QSerialPort> & serialPort, const QByteArray &handshake, QByteArray& readData);
 
 };
 
