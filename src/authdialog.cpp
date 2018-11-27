@@ -52,17 +52,15 @@ AuthDialog::urlChanged(const QUrl &url)
     if (url.toString().contains("localhost") &&
         url.toString().contains("code="))
     {
+        QUrlQuery quq(url);
+        QString code =quq.queryItemValue("code");
 
-        QString code = url.toString().right(url.toString().length()-url.toString().indexOf("code=")-5);
+        QString urlstr = QString("https://www.strava.com/oauth/token");
 
-        QString urlstr = QString("https://www.strava.com/oauth/token?");
         QUrlQuery params;
         params.addQueryItem("client_id", STRAVA_CLIENT_ID);
         params.addQueryItem("client_secret", STRAVA_SECRET);
         params.addQueryItem("code", code);
-
-        QByteArray data;
-        data.append(params.query(QUrl::FullyEncoded));
 
         QUrl url = QUrl(urlstr);
         QNetworkRequest request = QNetworkRequest(url);
@@ -72,7 +70,7 @@ AuthDialog::urlChanged(const QUrl &url)
         manager = new QNetworkAccessManager(this);
         connect(manager, SIGNAL(sslErrors(QNetworkReply*, const QList<QSslError> & )), this, SLOT(onSslErrors(QNetworkReply*, const QList<QSslError> & )));
         connect(manager, SIGNAL(finished(QNetworkReply*)), this, SLOT(networkRequestFinished(QNetworkReply*)));
-        manager->post(request, data);
+        manager->post(request, params.toString(QUrl::FullyEncoded).toUtf8());
     }
 }
 

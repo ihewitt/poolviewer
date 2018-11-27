@@ -1155,7 +1155,7 @@ bool FIT::parse(vector<uint8_t> &fitData, std::vector<ExerciseSet> &dst)
                             e.dist = 0;
                             e.strk = 0;
                             // so add the 1 length time to previous lap rest time
-                            e.rest.addSecs(e.len_time.back());
+                            e.rest=e.rest.addSecs(e.len_time.back());
                         } else {
                             // lengths are already added to len_strokes & len_time
                             e.set++;
@@ -1196,7 +1196,7 @@ bool FIT::parse(vector<uint8_t> &fitData, std::vector<ExerciseSet> &dst)
                         
                         if (! e.len_strokes.empty() && e.len_strokes.back() == 0) {
                             // add to lap rest
-                            e.rest.addSecs(e.len_time.back());
+                            e.rest=e.rest.addSecs(e.len_time.back());
                             // remove cur length
                             e.len_strokes.pop_back();
                             e.len_time.pop_back();
