@@ -97,7 +97,7 @@ void Export::on_shareButton_clicked()
     QString dirname=settings.value("fitDir").toString();
     if (dirname.isEmpty() || !QDir(dirname).exists())
     {
-        int ret = QMessageBox::information(this,tr("Error"),tr("Please set a valid .FIT export directory."));
+        QMessageBox::information(this,tr("Error"),tr("Please set a valid .FIT export directory."));
         return;
     }
 
@@ -244,7 +244,6 @@ bool Export::uploadToStrava(const QString& filename)
     QNetworkReply *reply = networkManager.post(request, multiPart);
 
     eventLoop.exec(); //Wait here until post complete
-    sleep(1);
 
     //now check response
 
@@ -269,7 +268,10 @@ bool Export::uploadToStrava(const QString& filename)
 bool Export::uploadToGarmin(const QString &filename )
 {
     if (!manager)
+    {
         manager = new QNetworkAccessManager(this);
+        manager->setCookieJar(new QNetworkCookieJar);
+    }
 
     if (!eventLoop)
     {
@@ -281,7 +283,7 @@ bool Export::uploadToGarmin(const QString &filename )
     {
         if (!initializeGarminCookies())
         {
-            int ret = QMessageBox::information(this,tr("Error"),tr("Unable to authenticate with Garmin, check credentials in config."));
+            QMessageBox::information(this,tr("Error"),tr("Unable to authenticate with Garmin, check credentials in config."));
             return false;
         }
     }
@@ -307,9 +309,7 @@ bool Export::uploadToGarmin(const QString &filename )
     filePart.setBody(file);
 
     multiPart->append(filePart);
-    sleep(1);
     QNetworkReply *reply = manager->post(request, multiPart);
-
     eventLoop->exec(); //Wait here until post complete
 
     QString response = reply->readAll();
@@ -341,65 +341,34 @@ bool Export::initializeGarminCookies()
     QNetworkRequest request;
     QNetworkReply *reply;
     QString response;
-    int i,j;
+    int statusCode;
 
-    //Switched to garmin modern calls.
+    //Switched to garmin connect 'modern' calls.
+    QUrl baseUrl("https://sso.garmin.com/sso/signin");
 
-    //Get login
-    serverUrl = QUrl("https://sso.garmin.com/sso/login");
-
-    QUrlQuery logpar;
-    logpar.addQueryItem("service","https://connect.garmin.com/modern/");
-    logpar.addQueryItem("clientId","GarminConnect");
-    logpar.addQueryItem("gauthHost", "https://sso.garmin.com/sso" );
-    logpar.addQueryItem("consumeServiceTicket","false");
-    serverUrl.setQuery(logpar);
-
-    request = QNetworkRequest(serverUrl);
-    sleep(1);
-    reply =  manager->get(request);
-    eventLoop->exec();    // holding pattern
-
-    int code = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-    QString loc = reply->attribute(QNetworkRequest::RedirectionTargetAttribute).toString();
-    response = reply->readAll();
-    delete reply;
-
-    i = response.indexOf("[", response.indexOf("flowExecutionKey"))+1;
-    j = response.indexOf("]", i);
-    flowExecutionKey = response.mid(i, j-i);
-    qDebug() << "flowExecutionKey" << flowExecutionKey;
-
-    //Now post login
-    request.setHeader(QNetworkRequest::ContentTypeHeader,QVariant("application/x-www-form-urlencoded"));
-    QByteArray data;
-    QUrlQuery params;
+    QUrlQuery service;
+    service.addQueryItem("service","https://connect.garmin.com/modern/");
+    baseUrl.setQuery(service);
 
     QSettings settings("Swim","Poolmate");
-    QString username=settings.value("garminUser").toString();
-    QString password=settings.value("garminPass").toString();
 
-    params.addQueryItem("_eventId","submit");
-    params.addQueryItem("embed","true");
-    params.addQueryItem("lt",flowExecutionKey);
-    params.addQueryItem("username",username);
-    params.addQueryItem("password",password);
-    //    params.addQueryItem("redirectAfterAccountLoginUrl","https://connect.garmin.com/modern/");
+    QUrlQuery params;
+    params.addQueryItem("embed","false");
+    params.addQueryItem("username",settings.value("garminUser").toString());
+    params.addQueryItem("password",settings.value("garminPass").toString());
+    QByteArray data = params.query(QUrl::FullyEncoded).toUtf8();
 
-    data=params.query(QUrl::FullyEncoded).toUtf8();
+    request.setRawHeader("origin","https://sso.garmin.com");
+    request.setUrl(baseUrl);
 
-    sleep(1);
     reply =  manager->post(request, data);
     eventLoop->exec();
-
-    code = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-    loc = reply->attribute(QNetworkRequest::RedirectionTargetAttribute).toString();
 
     qDebug() << "requestLoginGarminFinished()";
 
     response = reply->readAll();
 
-    int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+    statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
     qDebug() << "statusCode " << statusCode;
 
     if (reply->error() != QNetworkReply::NoError)
@@ -415,7 +384,8 @@ bool Export::initializeGarminCookies()
         }
         else
             i+=8;
-        int j = response.indexOf("'", i);
+
+        int j = response.indexOf("\"", i);
         ticket = response.mid(i, j-i);
         qDebug() << "ticket" << ticket;
 
@@ -428,10 +398,7 @@ bool Export::initializeGarminCookies()
         int maxloop=3;
         do {
             qDebug() << "Request: " <<serverUrl;
-            request = QNetworkRequest(serverUrl);
-
-            sleep(1);   // need to work out which delays are needed and how long.
-                        // but connection fails without any sleep.
+            request.setUrl(serverUrl);
             reply = manager->get(request);
             eventLoop->exec();
 

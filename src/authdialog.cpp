@@ -115,5 +115,5 @@ void AuthDialog::networkRequestFinished(QNetworkReply *reply) {
 }
 
 void
-AuthDialog::loadFinished(bool ok) {
+AuthDialog::loadFinished(bool /*ok*/) {
 }

@@ -257,7 +257,7 @@ void write_rest(QByteArray *array, const Workout& /*wrk*/, const Set& set,int sn
     reserved = 0;
     is_big_endian = 1;
     global_msg_num = 19;
-    num_fields = 11;
+    num_fields = 12;
 
     // Definition ------
     write_int8(array, definition_header);
@@ -274,6 +274,7 @@ void write_rest(QByteArray *array, const Workout& /*wrk*/, const Set& set,int sn
     write_field(array, 9,   ant_uint32); // distance
     write_field(array, 32,  ant_uint16); // lengths
     write_field(array, 40,  ant_uint16); // activelengths
+    write_field(array, 35,  ant_uint16); // first length index
     write_field(array, 0,   ant_enum);   // event
     write_field(array, 1,   ant_enum);   // eventtype
     write_field(array, 25,  ant_enum);   // sport
@@ -292,6 +293,7 @@ void write_rest(QByteArray *array, const Workout& /*wrk*/, const Set& set,int sn
     write_int32(array, 0);
     write_int16(array, 0); //lengths
     write_int16(array, 0);
+    write_int16(array, 0xffff); //invalid
     write_int8(array, 9); //lap
     write_int8(array, 1); //stop
     write_int8(array, 5); //swimming
@@ -306,7 +308,7 @@ void write_lens(QByteArray *array, const Workout& wrk, int snum, int lnum, const
     int s;
     for (s=0; s<snum; ++s)
     {
-        dist=dist+set.dist;
+        dist=dist+wrk.sets[s].dist;
     }
 
     int i;
@@ -386,7 +388,7 @@ void write_laps(QByteArray *array, const Workout &workout ) {
 
     QDateTime lap_end, lap_start;
     lap_start = QDateTime(workout.date, workout.time);
-    int snum=0,lnum=0;
+    int snum=0,lnum=0, lap_id=0;
 
     write_start(array, workout, lap_start);
     for (j = workout.sets.begin(); j!= workout.sets.end(); ++j)
@@ -397,7 +399,7 @@ void write_laps(QByteArray *array, const Workout &workout ) {
 
         if (s.lens)
         {
-            write_lens(array, workout, snum++, lnum, *j, lap_start);
+            write_lens(array, workout, snum, lnum, *j, lap_start);
             write_stop(array, workout, lap_end);
 
             int definition_header = 64;
@@ -431,7 +433,7 @@ void write_laps(QByteArray *array, const Workout &workout ) {
             int record_header = 0;
             write_int8(array, record_header);
 
-            write_int16(array, snum);
+            write_int16(array, lap_id++);
             write_int32(array, lap_end.toTime_t()-qbase_time.toTime_t());    //timestamp
             write_int32(array, lap_start.toTime_t()-qbase_time.toTime_t());  //lap start
             write_int32(array, s.duration.msecsSinceStartOfDay());           //elapsed
@@ -446,6 +448,7 @@ void write_laps(QByteArray *array, const Workout &workout ) {
             write_int16(array, lnum);
             lnum += s.lens;
         }
+
         lap_start = lap_end;
 
         // Add rest as a set
@@ -458,9 +461,10 @@ void write_laps(QByteArray *array, const Workout &workout ) {
             {
                 write_start(array,workout,lap_start);
             }
-            write_rest(array,workout, *j, snum++, lnum++, lap_start);
+            write_rest(array,workout, *j, lap_id++, lnum++, lap_start);
         }
         lap_start = lap_end;
+        snum++;
     }
     write_stop(array,workout,lap_end);
 }
@@ -471,7 +475,7 @@ void write_session(QByteArray *array, const Workout &workout )
     int reserved = 0;
     int is_big_endian = 1;
     int global_msg_num = 18;
-    int num_fields = 18;
+    int num_fields = 19;
 
     // Definition ------
     write_int8(array, definition_header);
@@ -486,6 +490,7 @@ void write_session(QByteArray *array, const Workout &workout )
     write_field(array, 8,   ant_uint32);   // timer_time
     write_field(array, 5,   ant_enum);     // sport
     write_field(array, 6,   ant_enum);     // subsport
+    write_field(array, 25,  ant_uint16);   // first lap
     write_field(array, 26,  ant_uint16);   // laps sets
     write_field(array, 33,  ant_uint16);   // lengths
     write_field(array, 9,   ant_uint32);   // distance
@@ -517,6 +522,7 @@ void write_session(QByteArray *array, const Workout &workout )
 
     write_int8(array, 5);                            //.sport - swim
     write_int8(array, 17);                           //. subsport - lap swim
+    write_int16(array, 0);                           // lap index
     write_int16(array, workout.sets.size());         //. laps
     write_int16(array, workout.lengths);             //. lengths
     write_int32(array, workout.totaldistance * 100); //. distance

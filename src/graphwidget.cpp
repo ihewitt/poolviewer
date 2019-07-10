@@ -211,7 +211,7 @@ void GraphWidget::drawBars( QPainter &painter,
 
     //now rescale
     int max=0;
-    for (i=0; i < vals1.size(); i++)
+    for (i=0; i < (int)vals1.size(); i++)
     {
         if (vals1[i] + vals2[i] > max)
         {
@@ -322,7 +322,7 @@ void GraphWidget::drawSeries( QPainter &painter,
 
     //now rescale
     int max=0;
-    for (i=0; i < vals.size(); i++)
+    for (i=0; i < (int)vals.size(); i++)
     {
         if (vals[i]>max)
         {

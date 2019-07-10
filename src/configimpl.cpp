@@ -138,7 +138,7 @@ void ConfigImpl::on_podTypeA_clicked(bool /*checked*/)
 void ConfigImpl::on_stravaAuth_clicked()
 {
     AuthDialog win(this);
-    int ret = win.exec();
+    /*int ret =*/ win.exec();
 
     QSettings settings("Swim","Poolmate");
     QString stravaToken = settings.value("stravaToken").toString();
