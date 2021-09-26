@@ -24,8 +24,8 @@
 
 namespace
 {
-    const double distances[] = {25, 100, 400, 750, 1000, 1250, 1500, 1931, 2000, 3862, 5000};
-    const char * labels[] = {"25m", "100m", "400m", "750m", "1000m", "1250m", "1500m", "1931m (1.2ml)", "2000m", "3862m (2.4ml)", "5000m"};
+    const double distances[] = {25, 100, 200, 250, 400, 500, 750, 800, 1000, 1500, 2000};
+    const char * labels[] = {"25m", "100m", "200m", "250m", "400m", "500m", "750m", "800m", "1000m", "1500m", "2000m"};
     const size_t numberOfRows = sizeof(distances) / sizeof(distances[0]);
 }
 
