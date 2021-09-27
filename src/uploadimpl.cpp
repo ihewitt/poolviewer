@@ -41,34 +41,32 @@ void UploadImpl::fillList()
     std::vector<ExerciseSet>::iterator i;
     
     int pos=0;
-    QDateTime run;
     for (i=exdata.begin(); i!= exdata.end(); ++i, ++pos)
     {
-        if (run != QDateTime(i->date,i->time))
+        const QDateTime date(i->date, i->time);
+        if (date.isValid())
         {
-            run = QDateTime(i->date,i->time);
-            
             // TODO replace this with custom drawn control
             QString line = QString("[%1] \t%2")
-                    .arg(run.toString("yyyy/MM/dd hh:mm"))
+                    .arg(date.toString("yyyy/MM/dd hh:mm"))
                     .arg(i->lengths);
             
-            QListWidgetItem* i = new QListWidgetItem(line);
-            i->setData(Qt::UserRole, pos);
+            QListWidgetItem* item = new QListWidgetItem(line);
+            item->setData(Qt::UserRole, pos);
 
             // if set already uploaded, check and disable
-            if (ds->findExercise(run) >= 0)
+            if (ds->findExercise(date) >= 0)
             {
                 //                i->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
-                i->setFlags(0);
-                i->setCheckState(Qt::Checked);
+                item->setFlags(Qt::NoItemFlags);
+                item->setCheckState(Qt::Checked);
             }
             else
             {
-                i->setFlags(Qt::ItemIsUserCheckable|Qt::ItemIsEnabled);
-                i->setCheckState(Qt::Unchecked);
+                item->setFlags(Qt::ItemIsUserCheckable|Qt::ItemIsEnabled);
+                item->setCheckState(Qt::Unchecked);
             }
-            listWidget->addItem(i);
+            listWidget->addItem(item);
         }
     }
 }
@@ -96,7 +94,7 @@ void UploadImpl::importButton()
     file = QFileDialog::getOpenFileName(this,
                                         tr("Import Exercise Data"),
                                         "",
-                                        tr("Comma separated files (*.csv *.txt);;Garmin FIT file (*.fit)"));
+                                        tr("Garmin FIT file (*.fit);;Comma separated files (*.csv *.txt)"));
     
     if (!file.isEmpty())
     {
@@ -170,6 +168,8 @@ void UploadImpl::add()
     //	QList<QListWidgetItem *> items;
     //  items = listWidget->selectedItems();
 
+    std::vector<ExerciseSet> sets;
+
     for (int n=0; n< listWidget->count(); ++n)
     {
         QListWidgetItem* i = listWidget->item(n);
@@ -183,19 +183,22 @@ void UploadImpl::add()
             //Disable once uploaded
             i->setFlags(0);
             i->setCheckState(Qt::Checked);
-            
+
             // TODO add session ids to remove this date grouping hack.
             QDateTime initial(exdata[pos].date, exdata[pos].time);
 
-            std::vector<ExerciseSet> sets;
-            while (pos < exdata.size() &&
-                   QDateTime(exdata[pos].date, exdata[pos].time) == initial)
+            if (!sets.empty() && initial != QDateTime(sets.back().date, sets.back().time))
             {
-                sets.push_back(exdata[pos++]);
-            }
-            if (sets.size())
                 ds->add(sets);
+                sets.clear();
+            }
+            sets.push_back(exdata[pos]);
         }
+    }
+    if (!sets.empty())
+    {
+        ds->add(sets);
+        sets.clear();
     }
     close();
 }

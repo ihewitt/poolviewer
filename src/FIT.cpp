@@ -867,6 +867,8 @@ bool FIT::parse(vector<uint8_t> &fitData, std::vector<ExerciseSet> &dst)
     ExerciseSet e;
     e.user = 1;
     e.set = 0;
+    e.pool = 0;
+    e.totaldistance = 0;
     e.type = "SwimHR";
     int total_lengths = 0;
     int total_cals = 0;
@@ -995,8 +997,8 @@ bool FIT::parse(vector<uint8_t> &fitData, std::vector<ExerciseSet> &dst)
 //                                timestampOffset += *(uint32_t*)ptr;
                                 break;
                             }
-                            break;
                             }
+                            break;
                         }
                         case 18: { // Session
                             switch (rf.definitionNum) {
@@ -1005,6 +1007,7 @@ bool FIT::parse(vector<uint8_t> &fitData, std::vector<ExerciseSet> &dst)
                                 INFO ("0x%X", t);
                                 QDateTime timestamp;
                                 timestamp.setTime_t(t + timestampOffset);
+
                                 e.date = timestamp.date();
                                 e.time = timestamp.time();
                                 break;
@@ -1037,6 +1040,17 @@ bool FIT::parse(vector<uint8_t> &fitData, std::vector<ExerciseSet> &dst)
                                 time = *(uint32_t *)ptr;
                                 // TODO: add to gpx?
                                 tstamps.push_back(time);
+
+                                QDateTime timestamp;
+                                timestamp.setTime_t(time + timestampOffset);
+
+                                if (e.date.isNull()) {
+                                    e.date = timestamp.date();
+                                }
+
+                                if (e.time.isNull()) {
+                                    e.time = timestamp.time();
+                                }
                                 break;
                             }
                             case 7 : { // "Total Elapsed Time";
@@ -1059,7 +1073,8 @@ bool FIT::parse(vector<uint8_t> &fitData, std::vector<ExerciseSet> &dst)
                             }
                             case 13 : { //  "Average Speed";
                                 // average speed of the Lap/Set
-                                e.speed = *(uint16_t *)ptr; // 1000 m/s
+                                // ptr is 1000 * m/s
+                                e.speed = 100000 / *(uint16_t *)ptr;
                                 break;
                             }
                             case 38 : { //  "Average strokes";
@@ -1221,6 +1236,19 @@ bool FIT::parse(vector<uint8_t> &fitData, std::vector<ExerciseSet> &dst)
     for(std::vector<ExerciseSet>::iterator j=dst.begin();j!=dst.end();++j) {
         j->lengths = total_lengths;
         j->cal     = total_cals;
+
+        // these 3 fields only appear at the end of the FIT file
+        // and so are missed during early processing
+        if (!j->pool) {
+            j->pool = e.pool;
+            j->dist = j->lens * j->pool;
+        }
+        if (!j->totaldistance) {
+            j->totaldistance = e.totaldistance;
+        }
+        if (!j->totalduration.isValid()) {
+            j->totalduration = e.totalduration;
+        }
     }
 
     std::remove_if(tstamps.begin(), tstamps.end(), isZero);
