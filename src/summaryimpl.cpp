@@ -41,7 +41,7 @@ SummaryImpl::SummaryImpl( QWidget * parent, Qt::WindowFlags f)
     : QDialog(parent, f)
 {
     setupUi(this);
-    setWindowFlags(Qt::WindowMinimizeButtonHint|Qt::WindowMaximizeButtonHint);
+    setWindowFlags(Qt::WindowMinimizeButtonHint|Qt::WindowMaximizeButtonHint|Qt::WindowCloseButtonHint);
 
     // Graph control settings
     efficCheck->setChecked(true);
@@ -584,21 +584,6 @@ void SummaryImpl::editButton()
     }
 }
 
-
-//
-// since we are a dialog application, handle escape as a close request
-//
-void SummaryImpl::keyPressEvent(QKeyEvent *event)
-{
-    if (event->key() != Qt::Key_Escape)
-    {
-        QDialog::keyPressEvent(event);
-    }
-    else
-    {
-        // close();
-    }
-}
 
 void SummaryImpl::closeEvent(QCloseEvent *event)
 {
