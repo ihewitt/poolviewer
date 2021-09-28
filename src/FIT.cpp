@@ -995,8 +995,8 @@ bool FIT::parse(vector<uint8_t> &fitData, std::vector<ExerciseSet> &dst)
 //                                timestampOffset += *(uint32_t*)ptr;
                                 break;
                             }
-                            break;
                             }
+                            break;
                         }
                         case 18: { // Session
                             switch (rf.definitionNum) {
