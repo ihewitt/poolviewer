@@ -101,7 +101,7 @@ void fillSet(QTableWidget * grid, int row, const Set & set, const Workout & orig
         int i;
         for (i = 0; i < grid->columnCount(); ++i )
         {
-            grid->item(row, i)->setBackgroundColor(QColor(Qt::lightGray));
+            grid->item(row, i)->setBackground(QBrush(Qt::lightGray));
         }
     }
 
