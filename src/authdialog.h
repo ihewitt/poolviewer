@@ -21,7 +21,7 @@ class AuthDialog : public QDialog
 Q_OBJECT
 
 public:
-    AuthDialog(QWidget * parent = 0, Qt::WindowFlags f = 0 );
+    AuthDialog(QWidget * parent = 0, Qt::WindowFlags f = Qt::WindowFlags() );
 
 private slots:
     void urlChanged(const QUrl& url);

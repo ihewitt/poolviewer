@@ -60,7 +60,7 @@ void UploadImpl::fillList()
             if (ds->findExercise(run) >= 0)
             {
                 //                i->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
-                i->setFlags(0);
+                i->setFlags(Qt::ItemFlags());
                 i->setCheckState(Qt::Checked);
             }
             else
@@ -181,7 +181,7 @@ void UploadImpl::add()
             unsigned int pos = i->data(Qt::UserRole).toInt();
 
             //Disable once uploaded
-            i->setFlags(0);
+            i->setFlags(Qt::ItemFlags());
             i->setCheckState(Qt::Checked);
             
             // TODO add session ids to remove this date grouping hack.

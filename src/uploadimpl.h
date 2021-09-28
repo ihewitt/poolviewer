@@ -29,7 +29,7 @@ class UploadImpl : public QDialog, public Ui::UploadDlg
 {
 Q_OBJECT
 public:
-    UploadImpl( QWidget * parent = 0, Qt::WindowFlags f = 0 );
+    UploadImpl( QWidget * parent = 0, Qt::WindowFlags f = Qt::WindowFlags() );
 
 	void fillList();
 	void setDataStore(DataStore *_ds) { ds = _ds;}

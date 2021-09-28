@@ -39,7 +39,7 @@ class SummaryImpl : public QDialog, public Ui::Summary
 
 Q_OBJECT
 public:
-    SummaryImpl( QWidget * parent = 0, Qt::WindowFlags f = 0 );
+    SummaryImpl( QWidget * parent = 0, Qt::WindowFlags f = Qt::WindowFlags() );
 
     void setData();
     void setData( const std::vector<Workout>& workouts);
