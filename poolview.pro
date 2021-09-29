@@ -71,6 +71,7 @@ HEADERS = src/uploadimpl.h \
     src/authdialog.h \
     src/authprivate.h
 SOURCES = src/uploadimpl.cpp \
+    src/ExerciseSet.cpp \
     src/syncimpl.cpp \
     src/configimpl.cpp \
     src/summaryimpl.cpp \
