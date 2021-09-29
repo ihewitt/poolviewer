@@ -51,9 +51,27 @@
 
 using namespace std;
 
-bool isZero(const uint32_t i)
+namespace
 {
-    return i == 0;
+    bool isZero(const uint32_t i)
+    {
+        return i == 0;
+    }
+
+    struct SessionData
+    {
+        QDate date;                 /**< date of workout */
+        QTime time;                 /**< time of workout begining */
+        QTime totalduration;        /**< Total duration of workout */
+        int pool;                   /**< Pool length */
+        int lengths;                /**< number of length in this workout */
+        int totaldistance;          /**< total distance of this workout (in units) */
+
+        SessionData() : pool(), lengths(), totaldistance()
+        {
+
+        }
+    };
 }
 
 
@@ -861,13 +879,17 @@ string FIT::getDataString(uint8_t *ptr, uint8_t size, uint8_t baseType, uint8_t 
     return strstrm.str();
 }
 
-bool FIT::parse(vector<uint8_t> &fitData, std::vector<ExerciseSet> &dst)
+bool FIT::parse(vector<uint8_t> &fitData, std::vector<ExerciseSet> &result)
 {
+    std::vector<ExerciseSet> dst;
 //     LOG(LOG_DBG2) << "Parsing FIT file\n";
     ExerciseSet e;
     e.user = 1;
     e.set = 0;
     e.type = "SwimHR";
+
+    SessionData session_data;
+
     int total_lengths = 0;
     int total_cals = 0;
     int timestampOffset = QDateTime(QDate(1989, 12, 31), QTime(0, 0, 0), Qt::UTC).toTime_t();
@@ -1005,24 +1027,25 @@ bool FIT::parse(vector<uint8_t> &fitData, std::vector<ExerciseSet> &dst)
                                 INFO ("0x%X", t);
                                 QDateTime timestamp;
                                 timestamp.setTime_t(t + timestampOffset);
-                                e.date = timestamp.date();
-                                e.time = timestamp.time();
+
+                                session_data.date = timestamp.date();
+                                session_data.time = timestamp.time();
                                 break;
                             }
                             case 9: { //"Total Distance";
-                                e.totaldistance = *(uint32_t *)ptr / 100;
+                                session_data.totaldistance = *(uint32_t *)ptr / 100;
                                 break;
                             }
                             case 8: { //Total Timer Time";
-                                e.totalduration = QTime(0, 0).addSecs(*(uint32_t *)ptr / 1000);
+                                session_data.totalduration = QTime(0, 0).addSecs(*(uint32_t *)ptr / 1000);
                                 break;
                             }
                             case 44: { // Pool length
-                                e.pool = *(uint16_t *)ptr / 100;
+                                session_data.pool = *(uint16_t *)ptr / 100;
                                 break;
                             }
                             case 47: { //num_active_lengths
-                                e.lengths = *(uint16_t *)ptr;
+                                session_data.lengths = *(uint16_t *)ptr;
                                 break;
                             }
 
@@ -1059,7 +1082,12 @@ bool FIT::parse(vector<uint8_t> &fitData, std::vector<ExerciseSet> &dst)
                             }
                             case 13 : { //  "Average Speed";
                                 // average speed of the Lap/Set
-                                e.speed = *(uint16_t *)ptr; // 1000 m/s
+                                // ptr is 1000 * m/s
+                                if (*ptr) {
+                                    e.speed = 100000 / *(uint16_t *)ptr;
+                                } else {
+                                    e.speed = 0;
+                                }
                                 break;
                             }
                             case 38 : { //  "Average strokes";
@@ -1150,18 +1178,19 @@ bool FIT::parse(vector<uint8_t> &fitData, std::vector<ExerciseSet> &dst)
                         // now the lap is "closed"
                                                 
                         if (e.len_strokes.empty()) {
-                            // no strokes in this lap, this is a rest
-                            e.lens = 0;
-                            e.dist = 0;
-                            e.strk = 0;
                             // so add the 1 length time to previous lap rest time
-                            e.rest=e.rest.addSecs(e.len_time.back());
+                            if (!dst.empty()) {
+                                ExerciseSet & previous = dst.back();
+                                previous.rest = e.rest.addSecs(e.len_time.back());
+                            } else {
+                                INFO ("Rest before a set: not yet implemented\n");
+                                // we could add an empty set with just a rest
+                            }
                         } else {
                             // lengths are already added to len_strokes & len_time
                             e.set++;
                             e.lens = e.len_strokes.size();
                             total_lengths += e.lens;
-                            e.dist = e.lens * e.pool; // not usefull ?
 
                             // average number of strokes for this lap/set
                             e.strk = 0;
@@ -1192,11 +1221,10 @@ bool FIT::parse(vector<uint8_t> &fitData, std::vector<ExerciseSet> &dst)
                     }
                     case 101: // length is closed
                     {
-                        INFO ("len %f, %d, %s\n", e.len_time.back(), e.len_strokes.back(), e.len_style.back().toLocal8Bit().constData());
-                        
                         if (! e.len_strokes.empty() && e.len_strokes.back() == 0) {
+                            INFO ("len %f, %d, %s\n", e.len_time.back(), e.len_strokes.back(), e.len_style.back().toLocal8Bit().constData());
                             // add to lap rest
-                            e.rest=e.rest.addSecs(e.len_time.back());
+                            e.rest = e.rest.addSecs(e.len_time.back());
                             // remove cur length
                             e.len_strokes.pop_back();
                             e.len_time.pop_back();
@@ -1218,9 +1246,17 @@ bool FIT::parse(vector<uint8_t> &fitData, std::vector<ExerciseSet> &dst)
         }
     }
     // add total numbers to every ExerciseSet
-    for(std::vector<ExerciseSet>::iterator j=dst.begin();j!=dst.end();++j) {
-        j->lengths = total_lengths;
-        j->cal     = total_cals;
+    for (ExerciseSet & ex : dst) {
+        ex.lengths = total_lengths;
+        ex.cal     = total_cals;
+
+        // session fields applied to all sets
+        ex.date = session_data.date;
+        ex.time = session_data.time;
+        ex.pool = session_data.pool;
+        ex.dist = ex.lens * ex.pool;
+        ex.totaldistance = session_data.totaldistance;
+        ex.totalduration = session_data.totalduration;
     }
 
     std::remove_if(tstamps.begin(), tstamps.end(), isZero);
@@ -1231,6 +1267,8 @@ bool FIT::parse(vector<uint8_t> &fitData, std::vector<ExerciseSet> &dst)
 //        }
     mFirstTimestamp = tstamps.front();
     mLastTimestamp = tstamps.back();
+
+    result.insert(result.end(), dst.begin(), dst.end());
 
     return true;
 }
