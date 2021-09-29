@@ -62,6 +62,7 @@ ConfigImpl::ConfigImpl( QWidget * parent, Qt::WindowFlags f)
 
     dataFile->setText(path);
     backup->setChecked(settings.value("backup").toBool());
+    speed->setChecked(settings.value("speed").toBool());
 
     garminUser->setText(settings.value("garminUser").toString());
     garminPassword->setText(settings.value("garminPass").toString());
@@ -100,6 +101,7 @@ void ConfigImpl::on_buttonBox_accepted()
     }
 
     settings.setValue("backup", backup->isChecked());
+    settings.setValue("speed", speed->isChecked());
 
     settings.setValue("garminUser", garminUser->text());
     settings.setValue("garminPass", garminPassword->text());

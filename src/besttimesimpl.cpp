@@ -20,10 +20,14 @@
 #include "datastore.h"
 #include "utilities.h"
 
+#include <QSettings>
+
 namespace
 {
     void addSet(const Set & set, const Workout & workout, const int numberOfLanes, double & bestSpeed, QTableWidget * table)
     {
+        const bool speedAsMinuteAndSeconds = QSettings("Swim", "Poolmate").value("speed").toBool();
+
         const int distance = workout.pool * numberOfLanes;
         QTime duration(0, 0);
         double range = 0.0; // time range per length: slowest - fastest
@@ -81,7 +85,7 @@ namespace
         QTableWidgetItem * durationItem = createTableWidgetItem(QVariant(duration.toString()));
         table->setItem(row, 4, durationItem);
 
-        QTableWidgetItem * speedItem = createTableWidgetItem(QVariant(speed));
+        QTableWidgetItem * speedItem = createTableWidgetItem(QVariant(formatSpeed(speed, speedAsMinuteAndSeconds)));
         table->setItem(row, 5, speedItem);
 
         QTableWidgetItem * totalItem = createTableWidgetItem(QVariant(total));

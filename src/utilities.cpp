@@ -100,3 +100,16 @@ void synchroniseWorkout(Workout & workout)
     totalDuration = totalDuration.addMSecs(workout.rest.msecsSinceStartOfDay());
     workout.totalduration = totalDuration;
 }
+
+QString formatSpeed(const int speed, const bool asMinuteAndSeconds)
+{
+    if (asMinuteAndSeconds)
+    {
+        QTime time = QTime(0, 0).addSecs(speed);
+        return time.toString("mm:ss");
+    }
+    else
+    {
+        return QString::number(speed);
+    }
+}

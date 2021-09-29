@@ -421,6 +421,8 @@ void SummaryImpl::fillLengths( const Workout& wrk)
 
 void SummaryImpl::fillSets( const std::vector<Set>& sets)
 {
+    const bool speedAsMinuteAndSeconds = QSettings("Swim", "Poolmate").value("speed").toBool();
+
     // clearContents() does not reset selected line
     setGrid->setCurrentCell(0,0);
 
@@ -451,7 +453,7 @@ void SummaryImpl::fillSets( const std::vector<Set>& sets)
         item = createTableWidgetItem(QVariant(i->strk));
         setGrid->setItem( row, col++, item );
 
-        item = createTableWidgetItem(QVariant(i->speed));
+        item = createTableWidgetItem(QVariant(formatSpeed(i->speed, speedAsMinuteAndSeconds)));
         setGrid->setItem( row, col++, item );
 
         item = createTableWidgetItem(QVariant(i->effic));
@@ -700,6 +702,8 @@ void SummaryImpl::on_lengthGrid_itemSelectionChanged()
 
     if (select->hasSelection())
     {
+        const bool speedAsMinuteAndSeconds = QSettings("Swim", "Poolmate").value("speed").toBool();
+
         const QModelIndexList selected = select->selectedRows();
 
         // we know that if there are lengths on the grid
@@ -734,7 +738,7 @@ void SummaryImpl::on_lengthGrid_itemSelectionChanged()
             const int distance = n * workout.pool;
             const int speed = duration.msecsSinceStartOfDay() / distance / 10;
 
-            QString str = QString::number(n) + " - "  + duration.toString() + " - " + QString::number(speed);
+            QString str = QString::number(n) + " - "  + duration.toString() + " - " + formatSpeed(speed, speedAsMinuteAndSeconds);
 
             status->setText(str);
             return;

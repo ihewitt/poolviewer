@@ -115,7 +115,7 @@
    <property name="geometry">
     <rect>
      <x>20</x>
-     <y>390</y>
+     <y>370</y>
      <width>101</width>
      <height>16</height>
     </rect>
@@ -127,8 +127,8 @@
   <widget class="QLineEdit" name="dataFile">
    <property name="geometry">
     <rect>
-     <x>140</x>
-     <y>380</y>
+     <x>150</x>
+     <y>360</y>
      <width>371</width>
      <height>28</height>
     </rect>
@@ -206,8 +206,8 @@
   <widget class="QCheckBox" name="backup">
    <property name="geometry">
     <rect>
-     <x>520</x>
-     <y>380</y>
+     <x>530</x>
+     <y>360</y>
      <width>91</width>
      <height>27</height>
     </rect>
@@ -320,6 +320,32 @@
     <iconset>
      <normalon>:/images/tick.png</normalon>
     </iconset>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_7">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>410</y>
+     <width>81</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Speed</string>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="speed">
+   <property name="geometry">
+    <rect>
+     <x>150</x>
+     <y>406</y>
+     <width>92</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>as mm:ss</string>
    </property>
   </widget>
  </widget>

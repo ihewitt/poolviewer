@@ -20,6 +20,7 @@
 #define UTILITIES_H
 
 #include <QTime>
+#include <QString>
 
 class QTableWidgetItem;
 class QVariant;
@@ -42,5 +43,7 @@ double roundTo8thSecond(double value);
 
 // synchronise workout
 void synchroniseWorkout(Workout & workout);
+
+QString formatSpeed(const int speed, const bool asMinuteAndSeconds);
 
 #endif // UTILITIES_H
