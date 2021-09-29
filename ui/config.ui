@@ -10,6 +10,24 @@
     <height>479</height>
    </rect>
   </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>711</width>
+    <height>479</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>711</width>
+    <height>479</height>
+   </size>
+  </property>
   <property name="windowTitle">
    <string>Config</string>
   </property>
@@ -34,7 +52,7 @@
     <rect>
      <x>10</x>
      <y>50</y>
-     <width>131</width>
+     <width>151</width>
      <height>121</height>
     </rect>
    </property>
@@ -58,7 +76,7 @@
      <rect>
       <x>10</x>
       <y>30</y>
-      <width>100</width>
+      <width>121</width>
       <height>20</height>
      </rect>
     </property>
@@ -71,7 +89,7 @@
      <rect>
       <x>10</x>
       <y>60</y>
-      <width>100</width>
+      <width>121</width>
       <height>20</height>
      </rect>
     </property>
@@ -84,7 +102,7 @@
      <rect>
       <x>10</x>
       <y>90</y>
-      <width>101</width>
+      <width>121</width>
       <height>21</height>
      </rect>
     </property>
@@ -98,8 +116,8 @@
     <rect>
      <x>20</x>
      <y>390</y>
-     <width>80</width>
-     <height>14</height>
+     <width>101</width>
+     <height>16</height>
     </rect>
    </property>
    <property name="text">
@@ -109,9 +127,9 @@
   <widget class="QLineEdit" name="dataFile">
    <property name="geometry">
     <rect>
-     <x>100</x>
+     <x>140</x>
      <y>380</y>
-     <width>270</width>
+     <width>371</width>
      <height>28</height>
     </rect>
    </property>
@@ -188,7 +206,7 @@
   <widget class="QCheckBox" name="backup">
    <property name="geometry">
     <rect>
-     <x>410</x>
+     <x>520</x>
      <y>380</y>
      <width>91</width>
      <height>27</height>
@@ -203,7 +221,7 @@
     <rect>
      <x>10</x>
      <y>10</y>
-     <width>400</width>
+     <width>501</width>
      <height>21</height>
     </rect>
    </property>
@@ -229,7 +247,7 @@
     <rect>
      <x>20</x>
      <y>280</y>
-     <width>101</width>
+     <width>121</width>
      <height>16</height>
     </rect>
    </property>
@@ -255,7 +273,7 @@
     <rect>
      <x>160</x>
      <y>300</y>
-     <width>61</width>
+     <width>81</width>
      <height>16</height>
     </rect>
    </property>

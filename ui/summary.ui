@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1059</width>
+    <width>1309</width>
     <height>709</height>
    </rect>
   </property>
@@ -144,17 +144,17 @@
               <property name="columnCount">
                <number>9</number>
               </property>
-              <attribute name="horizontalHeaderDefaultSectionSize">
-               <number>60</number>
-              </attribute>
               <attribute name="horizontalHeaderMinimumSectionSize">
                <number>30</number>
+              </attribute>
+              <attribute name="horizontalHeaderDefaultSectionSize">
+               <number>60</number>
               </attribute>
               <attribute name="verticalHeaderVisible">
                <bool>false</bool>
               </attribute>
               <attribute name="verticalHeaderDefaultSectionSize">
-               <number>19</number>
+               <number>21</number>
               </attribute>
               <row/>
               <column>
@@ -259,17 +259,17 @@
               <property name="selectionBehavior">
                <enum>QAbstractItemView::SelectRows</enum>
               </property>
-              <attribute name="horizontalHeaderDefaultSectionSize">
-               <number>60</number>
-              </attribute>
               <attribute name="horizontalHeaderMinimumSectionSize">
                <number>30</number>
+              </attribute>
+              <attribute name="horizontalHeaderDefaultSectionSize">
+               <number>60</number>
               </attribute>
               <attribute name="verticalHeaderVisible">
                <bool>false</bool>
               </attribute>
               <attribute name="verticalHeaderDefaultSectionSize">
-               <number>19</number>
+               <number>21</number>
               </attribute>
               <column>
                <property name="text">
@@ -343,17 +343,17 @@
               <property name="selectionBehavior">
                <enum>QAbstractItemView::SelectRows</enum>
               </property>
-              <attribute name="horizontalHeaderDefaultSectionSize">
-               <number>60</number>
-              </attribute>
               <attribute name="horizontalHeaderMinimumSectionSize">
                <number>30</number>
+              </attribute>
+              <attribute name="horizontalHeaderDefaultSectionSize">
+               <number>60</number>
               </attribute>
               <attribute name="verticalHeaderVisible">
                <bool>false</bool>
               </attribute>
               <attribute name="verticalHeaderDefaultSectionSize">
-               <number>19</number>
+               <number>21</number>
               </attribute>
               <column>
                <property name="text">
