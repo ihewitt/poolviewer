@@ -68,9 +68,9 @@ public:
     void analysisButton();
     void fitButton();
 
-private:
     void on_lengthGrid_itemSelectionChanged();
 
+private:
     DataStore *ds;
     Scale scale;
 };
