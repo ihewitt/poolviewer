@@ -92,34 +92,42 @@ void UploadImpl::fillList()
 
 void UploadImpl::importButton()
 {
-    QString file;
-    file = QFileDialog::getOpenFileName(this,
-                                        tr("Import Exercise Data"),
-                                        "",
-                                        tr("Comma separated files (*.csv *.txt);;Garmin FIT file (*.fit)"));
-    
-    if (!file.isEmpty())
-    {
-        if ( QFileInfo(file.toLower()).suffix() == "fit") {
+    QSettings settings("Swim", "Poolmate");
+    const QString importFolder = settings.value("import folder").toString();
+
+    const QStringList files = QFileDialog::getOpenFileNames(
+                this,
+                tr("Import Exercise Data"),
+                importFolder,
+                tr("All supported formats (*.csv *.txt *.fit);;Comma separated files (*.csv *.txt);;Garmin FIT files (*.fit)"));
+
+    for (const QString & file : files) {
+        const QFileInfo info(file);
+        const QString fileFolder = info.absoluteDir().canonicalPath();
+
+        // the last will win, but they should all be the same anyway
+        settings.setValue("import folder", fileFolder);
+
+        if (info.suffix().toLower() == "fit") {
             // Garmin FIT file
             QFile fitFile(file);
-            if (!fitFile.open(QIODevice::ReadOnly)) return;
-            QByteArray blob = fitFile.readAll();
-            std::vector<uint8_t> fitData(blob.begin(), blob.end());
+            if (fitFile.open(QIODevice::ReadOnly)) {
+                const QByteArray blob = fitFile.readAll();
+                std::vector<uint8_t> fitData(blob.begin(), blob.end());
 
-            FIT fit;
-            fit.parse (fitData, exdata);
-
+                FIT fit;
+                fit.parse(fitData, exdata);
+            }
         } else {
             // csv file
             ReadCSV(qPrintable(file), exdata);
         }
-        if (exdata.size())
-        {
-            fillList();
-        }
-
     }
+
+    if (exdata.size()) {
+        fillList();
+    }
+
 }
 
 void UploadImpl::selectAll()
