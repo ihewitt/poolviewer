@@ -757,11 +757,7 @@ string FIT::getDataString(uint8_t *ptr, uint8_t size, uint8_t baseType, uint8_t 
         uint8_t type = messageFieldTypeMap[messageType][fieldNum];
         string strVal(enumMap[type][val]);
 
-        if (!strVal.empty()) {
-            strstrm << strVal;
-        } else {
-            strstrm << "[" << dec << val << "]";
-        }
+        strstrm << strVal; // if missing it will be empty
         break;
     }
     case BT_Int8: {
@@ -1139,7 +1135,13 @@ bool FIT::parse(vector<uint8_t> &fitData, std::vector<ExerciseSet> &result)
 //                                 INFO("%d %s\n", 
 //                                      *(uint8_t *)ptr,
 //                                      getDataString(ptr, 0, BT_Enum, rd.rfx.globalNum, rf.definitionNum).c_str());
-                                e.len_style.push_back(getDataString(ptr, 0, BT_Enum, rd.rfx.globalNum, rf.definitionNum).c_str());
+                                const std::string style = getDataString(ptr, 0, BT_Enum, rd.rfx.globalNum, rf.definitionNum);
+                                if (!style.empty()) {
+                                    // there is a danger to produce a len_style vector
+                                    // shorter than the actual number of lengths
+                                    // but at least we avoid all the spurious values
+                                    e.len_style.push_back(QString::fromStdString(style));
+                                }
                                 break;
                             }
                             case 9: { // Average Swimming Cadence
