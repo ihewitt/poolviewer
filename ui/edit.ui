@@ -241,19 +241,22 @@
         </widget>
        </item>
        <item>
+        <widget class="QPushButton" name="squashButton">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Merge selected length with previous.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="text">
+          <string>Merge lentghs</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QPushButton" name="revertButton">
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Revert all changes.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
           <string>Revert all</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="squashButton">
-         <property name="text">
-          <string>Merge lentgh with previous</string>
          </property>
         </widget>
        </item>
@@ -292,6 +295,15 @@ editor and what a 'gap' is. )</string>
     <layout class="QHBoxLayout" name="horizontalLayout_3">
      <item>
       <widget class="QTableWidget" name="setsGrid">
+       <property name="selectionMode">
+        <enum>QAbstractItemView::SingleSelection</enum>
+       </property>
+       <property name="selectionBehavior">
+        <enum>QAbstractItemView::SelectRows</enum>
+       </property>
+       <attribute name="verticalHeaderVisible">
+        <bool>false</bool>
+       </attribute>
        <column>
         <property name="text">
          <string>Set</string>

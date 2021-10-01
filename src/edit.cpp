@@ -125,7 +125,6 @@ void Edit::populate(const Workout& _wrk)
     const int oldCurrentSet = currentSet;
     setsGrid->clearContents();
     setsGrid->setRowCount(_wrk.sets.size());
-    setsGrid->setSelectionBehavior(QAbstractItemView::SelectRows);
 
     size_t i=0;
     for (i=0; i<_wrk.sets.size(); ++i)
