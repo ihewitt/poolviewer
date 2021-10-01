@@ -101,6 +101,16 @@ void synchroniseWorkout(Workout & workout)
     workout.totalduration = totalDuration;
 }
 
+void synchroniseSet(Set & set, const Workout & workout)
+{
+    set.dist = workout.pool * set.lens;
+    const int setsecs = set.duration.msecsSinceStartOfDay() / 1000;
+    set.speed = 100 * setsecs / set.dist;
+    set.effic = ((25 * setsecs / set.lens) + (25 * set.strk)) / workout.pool;
+    set.rate = (60 * set.strk * set.lens) / setsecs;
+    set.strk = std::accumulate(set.strokes.begin(), set.strokes.end(), 0) / set.lens;
+}
+
 QString formatSpeed(const int speed, const bool asMinuteAndSeconds)
 {
     if (asMinuteAndSeconds)

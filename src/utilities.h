@@ -44,6 +44,9 @@ double roundTo8thSecond(double value);
 // synchronise workout
 void synchroniseWorkout(Workout & workout);
 
+// synchronise set
+void synchroniseSet(Set & set, const Workout & workout);
+
 QString formatSpeed(const int speed, const bool asMinuteAndSeconds);
 
 #endif // UTILITIES_H

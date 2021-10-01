@@ -121,6 +121,8 @@ void fillSet(QTableWidget * grid, int row, const Set & set, const Workout & orig
 
 void Edit::populate(const Workout& _wrk)
 {
+    lengthsGrid->clearContents();
+    const int oldCurrentSet = currentSet;
     setsGrid->clearContents();
     setsGrid->setRowCount(_wrk.sets.size());
     setsGrid->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -130,6 +132,7 @@ void Edit::populate(const Workout& _wrk)
     {
         fillSet(setsGrid, i, _wrk.sets[i], _wrk); //Fill sets
     }
+    setsGrid->setCurrentCell(oldCurrentSet, 1);
 }
 
 Edit::Edit(QWidget *parent, const Workout & _wrk) :
@@ -173,12 +176,12 @@ void Edit::on_strokesEdit_valueChanged(int /* strokes */)
 {
     calculate();
 }
+
 void Edit::calculate()
 {
     if (currentSet>=0)
     {
         setMod = setOrig;
-
 
         const int extraLengths = newLengthsSpin->value();
 
@@ -211,16 +214,11 @@ void Edit::calculate()
                 setMod.styles.resize(setMod.lens);
             }
 
-            //Add pool length edit too
-            setMod.dist = modified.pool * setMod.lens;
-
             //adjust duration
             setMod.duration = duration.addSecs( gapTime );
-            int setsecs = setMod.duration.msecsSinceStartOfDay() / 1000;
 
-            setMod.speed = 100 * setsecs / setMod.dist;
-            setMod.effic = ((25 * setsecs / setMod.lens) + (25 * setMod.strk)) / modified.pool;
-            setMod.rate = (60 * setMod.strk * setMod.lens) / setsecs;
+            //Add pool length edit too
+            synchroniseSet(setMod, modified);
 
             efficEdit->setText(QString("%1").arg(setMod.effic));
             speedEdit->setText(QString("%1").arg(setMod.speed));
@@ -292,12 +290,14 @@ void Edit::on_adjustButton_clicked()
 //
 void Edit::on_setsGrid_currentCellChanged(int currentRow, int /*currentColumn*/, int /*previousRow*/, int /*previousColumn*/)
 {
+    lengthsGrid->clearContents();
+
     // Fill edit fields with current set.
     currentSet = currentRow;
 
     if (currentSet >=0)
     {
-        setOrig = modified.sets[currentRow];
+        setOrig = modified.sets[currentSet];
 
         int lengths;
         QTime duration;
@@ -339,6 +339,24 @@ void Edit::on_setsGrid_currentCellChanged(int currentRow, int /*currentColumn*/,
         {
             adjustButton->setEnabled(true);
         }*/
+
+        fillLengths(setOrig);
+    }
+}
+
+void Edit::fillLengths(const Set & set)
+{
+    lengthsGrid->setRowCount(set.times.size());
+    for (uint i = 0; i < set.times.size(); ++i)
+    {
+        QTableWidgetItem *item;
+
+        item = createTableWidgetItem(QVariant(set.times[i]));
+        item->setData(Qt::UserRole, static_cast<uint>(i));
+        lengthsGrid->setItem(i, 0, item);
+
+        item = createTableWidgetItem(QVariant(set.strokes[i]));
+        lengthsGrid->setItem(i, 1, item);
     }
 }
 
@@ -350,3 +368,33 @@ void Edit::on_revertButton_clicked()
     calculate();
 }
 
+void Edit::on_squashButton_clicked()
+{
+    const int row = lengthsGrid->currentRow();
+    if (row >= 0)
+    {
+        setMod = setOrig;
+        const QTableWidgetItem * item = lengthsGrid->item(row, 0);
+        const uint pos = item->data(Qt::UserRole).toUInt();
+        if (pos > 0 && pos < setMod.times.size())
+        {
+            setMod.times[pos - 1] += setMod.times[pos];
+            setMod.strokes[pos - 1] += setMod.strokes[pos];
+
+            --setMod.lens;
+            setMod.times.erase(setMod.times.begin() + pos);
+            setMod.strokes.erase(setMod.strokes.begin() + pos);
+
+            if (pos < setMod.styles.size())
+            {
+                setMod.styles.erase(setMod.styles.begin() + pos);
+            }
+
+            synchroniseSet(setMod, modified);
+            modified.sets[currentSet] = setMod;
+            synchroniseWorkout(modified);
+            changed = true;
+            populate(modified);
+        }
+    }
+}

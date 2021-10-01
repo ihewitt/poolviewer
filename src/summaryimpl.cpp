@@ -571,7 +571,8 @@ void SummaryImpl::editButton()
             if ( edit.getModifiedWrk(wrk) )
             {
                 ds->replaceWorkout(row, wrk);
-                workoutSelected();
+                fillWorkouts(ds->Workouts());
+                // QT calls workoutSelected()
             }
         }
         else
@@ -579,8 +580,8 @@ void SummaryImpl::editButton()
             if (edit.isDeleted())
             {
                 ds->remove(row);
-                //Repopulate controls
                 fillWorkouts(ds->Workouts());
+                // QT calls workoutSelected()
             }
         }
     }

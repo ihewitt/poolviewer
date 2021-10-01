@@ -51,6 +51,8 @@ private slots:
 
     void on_strokesEdit_valueChanged(int arg1);
 
+    void on_squashButton_clicked();
+
 private:
 
     void calculate();
@@ -68,6 +70,7 @@ private:
     bool changed;
 
     void populate(const Workout& _wrk);
+    void fillLengths(const Set & set);
 };
 
 #endif // EDIT_H
