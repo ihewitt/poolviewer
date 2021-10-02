@@ -155,6 +155,7 @@ void AnalysisImpl::fillTable()
             analysisTable->setItem(i, 2, createTableWidgetItem("none"));
         }
     }
+    analysisTable->resizeColumnsToContents();
 }
 
 int AnalysisImpl::precalculate(const double minimum)
@@ -263,7 +264,12 @@ void AnalysisImpl::fillChart()
         serie->attachAxis(axisY);
     }
 
+    // Utter qt nonsense! Is this needed? Doc it unclear and so is valgrind
+    // Memory usage seems to indicate this is indeed needed
+    // We are back in the dark ages on new / delete!!!
+    QtCharts::QChart * previous = chartView->chart();
     chartView->setChart(chart);
+    delete previous;
 }
 
 void AnalysisImpl::setDataStore(const DataStore *_ds)
