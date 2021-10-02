@@ -23,6 +23,11 @@
 #include "datastore.h"
 
 #include <QRadioButton>
+#include <QChartView>
+#include <QLineSeries>
+#include <QValueAxis>
+#include <QDateTimeAxis>
+
 
 namespace
 {
@@ -201,7 +206,7 @@ void AnalysisImpl::fillPredicted(const int ref)
     {
         if (ref >=0 && times[i][0] > 0)
         {
-            // Use Peter Riegel's formula: t2 = t1 * (d2 / d1)^1.06.
+            // Use Peter Riegel's formula: t2 = t1 * (d2 / d1) ^ 1.06.
             times[i][1] = times[ref][0] * pow(distances[i] / distances[ref], peterRiegelExponent);
             times[i][2] = distances[ref];
         }
@@ -213,13 +218,59 @@ void AnalysisImpl::fillPredicted(const int ref)
     }
 
     fillTable();
+    fillChart();
+}
+
+void AnalysisImpl::fillChart()
+{
+    QtCharts::QLineSeries *series[2] = {new QtCharts::QLineSeries(), new QtCharts::QLineSeries()};
+    series[0]->setName("best");
+    series[1]->setName("predicted");
+
+    // Y axis is speed in ms per 100m (see QDateTimeAxis)
+    const double multiplier = 100 * 1000;
+
+    for (size_t i = 0; i < numberOfRows; ++i)
+    {
+        for (size_t j = 0; j < 2; ++j)
+        {
+            if (times[i][j] > 0)
+            {
+                series[j]->append(distances[i], times[i][j] / distances[i] * multiplier);
+            }
+        }
+    }
+
+    QtCharts::QChart *chart = new QtCharts::QChart();
+
+    QtCharts::QDateTimeAxis *axisY = new QtCharts::QDateTimeAxis;
+    axisY->setTitleText("speed");
+    axisY->setFormat("mm:ss");
+    chart->addAxis(axisY, Qt::AlignLeft);
+
+    QtCharts::QValueAxis *axisX = new QtCharts::QValueAxis;
+    axisX->setTitleText("distance");
+    axisX->setLabelFormat("%.0fm");
+    axisX->setTickInterval(200);
+    axisX->setTickAnchor(200);
+    axisX->setTickType(QtCharts::QValueAxis::TicksDynamic);
+    chart->addAxis(axisX, Qt::AlignBottom);
+
+    for (QtCharts::QLineSeries *serie : series)
+    {
+        chart->addSeries(serie);
+        serie->attachAxis(axisX);
+        serie->attachAxis(axisY);
+    }
+
+    chartView->setChart(chart);
 }
 
 void AnalysisImpl::setDataStore(const DataStore *_ds)
 {
     ds = _ds;
-    // times below 100m are less reliable
-    const int ref = precalculate(10000.0);
+    // times below 100m are less reliable to determine best fit
+    const int ref = precalculate(100.0);
     fillPredicted(ref);
 }
 

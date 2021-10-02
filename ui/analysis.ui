@@ -6,47 +6,71 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>579</width>
-    <height>414</height>
+    <width>759</width>
+    <height>532</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Analysis</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <item>
     <layout class="QVBoxLayout" name="verticalLayout">
      <item>
-      <widget class="QTableWidget" name="analysisTable">
-       <property name="autoFillBackground">
-        <bool>false</bool>
+      <widget class="QTabWidget" name="tabWidget">
+       <property name="currentIndex">
+        <number>0</number>
        </property>
-       <property name="gridStyle">
-        <enum>Qt::SolidLine</enum>
-       </property>
-       <property name="cornerButtonEnabled">
-        <bool>false</bool>
-       </property>
-       <column>
-        <property name="text">
-         <string>Best</string>
-        </property>
-       </column>
-       <column>
-        <property name="text">
-         <string>Predicted</string>
-        </property>
-       </column>
-       <column>
-        <property name="text">
-         <string>Based on</string>
-        </property>
-       </column>
-       <column>
-        <property name="text">
-         <string>Reference</string>
-        </property>
-       </column>
+       <widget class="QWidget" name="tab">
+        <attribute name="title">
+         <string>Analysis</string>
+        </attribute>
+        <layout class="QGridLayout" name="gridLayout">
+         <item row="0" column="0">
+          <widget class="QTableWidget" name="analysisTable">
+           <property name="autoFillBackground">
+            <bool>false</bool>
+           </property>
+           <property name="gridStyle">
+            <enum>Qt::SolidLine</enum>
+           </property>
+           <property name="cornerButtonEnabled">
+            <bool>false</bool>
+           </property>
+           <column>
+            <property name="text">
+             <string>Best</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>Predicted</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>Based on</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>Reference</string>
+            </property>
+           </column>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="tab_2">
+        <attribute name="title">
+         <string>Charts</string>
+        </attribute>
+        <layout class="QGridLayout" name="gridLayout_2">
+         <item row="0" column="0">
+          <widget class="QtCharts::QChartView" name="chartView"/>
+         </item>
+        </layout>
+       </widget>
       </widget>
      </item>
      <item>
@@ -91,6 +115,13 @@ Predictions can be recalculated by selecting a different distance.</string>
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QtCharts::QChartView</class>
+   <extends>QGraphicsView</extends>
+   <header>QChartView</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections>
   <connection>

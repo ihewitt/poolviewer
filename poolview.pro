@@ -1,5 +1,5 @@
 TEMPLATE = app
-QT = gui core widgets printsupport serialport webengine webenginecore webenginewidgets
+QT = gui core widgets printsupport serialport webengine webenginecore webenginewidgets charts
 
 VERSION = 0.6
 

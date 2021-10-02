@@ -38,6 +38,7 @@ private:
     double getBestTime(int distance);
     void createTable();
     void fillTable();
+    void fillChart();
     int precalculate(const double minimum);
     void fillPredicted(const int ref);
 
