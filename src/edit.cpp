@@ -189,7 +189,7 @@ void Edit::calculate()
             int setLens;
             QTime duration;
             double setAvg;
-            extractSetData(setOrig, setLens, duration, setAvg);
+            extractSetData(setMod, setLens, duration, setAvg);
 
 
             const double gapTime = gapTimeUsedSpin->value();
@@ -262,7 +262,7 @@ void Edit::on_deleteButton_clicked()
             }
         }
         modified.sets = sets;
-        changed=true;
+        changed = true;
 
         populate(modified);
         calculate();
@@ -297,12 +297,13 @@ void Edit::on_setsGrid_currentCellChanged(int currentRow, int /*currentColumn*/,
     if (currentSet >=0)
     {
         setOrig = modified.sets[currentSet];
+        setMod = setOrig;
 
         int lengths;
         QTime duration;
         double average;
 
-        extractSetData(setOrig, lengths, duration, average);
+        extractSetData(setMod, lengths, duration, average);
 
         if (average < 1) //increase to a sensible lower value
         {
@@ -313,7 +314,7 @@ void Edit::on_setsGrid_currentCellChanged(int currentRow, int /*currentColumn*/,
         }
 
         const double actualTime = duration.msecsSinceStartOfDay() / 1000.0;
-        const double recordedTime = setOrig.duration.msecsSinceStartOfDay() / 1000;
+        const double recordedTime = setMod.duration.msecsSinceStartOfDay() / 1000;
         gap = recordedTime - actualTime;
 
         gapTimeUsedSpin->setMaximum(gap);
@@ -339,7 +340,7 @@ void Edit::on_setsGrid_currentCellChanged(int currentRow, int /*currentColumn*/,
             adjustButton->setEnabled(true);
         }*/
 
-        fillLengths(setOrig);
+        fillLengths(setMod);
     }
 }
 
@@ -361,7 +362,7 @@ void Edit::fillLengths(const Set & set)
 
 void Edit::on_revertButton_clicked()
 {
-    changed=false;
+    changed = false;
     modified = original;
     populate(modified);
     calculate();
@@ -372,7 +373,6 @@ void Edit::on_squashLength_clicked()
     const int row = lengthsGrid->currentRow();
     if (row >= 0)
     {
-        setMod = setOrig;
         const QTableWidgetItem * item = lengthsGrid->item(row, 0);
         const uint pos = item->data(Qt::UserRole).toUInt();
         if (pos > 0)
@@ -403,7 +403,6 @@ void Edit::on_deleteLength_clicked()
     const int row = lengthsGrid->currentRow();
     if (row >= 0)
     {
-        setMod = setOrig;
         const QTableWidgetItem * item = lengthsGrid->item(row, 0);
         const uint pos = item->data(Qt::UserRole).toUInt();
         if (setMod.lens > 1)
@@ -433,7 +432,6 @@ void Edit::on_balanceLength_clicked()
     const int row = lengthsGrid->currentRow();
     if (row >= 0)
     {
-        setMod = setOrig;
         const QTableWidgetItem * item = lengthsGrid->item(row, 0);
         const uint pos = item->data(Qt::UserRole).toUInt();
         if (pos > 0)
