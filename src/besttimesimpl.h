@@ -39,6 +39,8 @@ private slots:
 
 private:
     const DataStore *ds;
+
+    void fillChart(const std::vector<QTime> & allTimes);
 };
 
 #endif // BESTTIMESIMPL_H

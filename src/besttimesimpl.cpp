@@ -21,10 +21,15 @@
 #include "utilities.h"
 
 #include <QSettings>
+#include <QChartView>
+#include <QLineSeries>
+#include <QDateTimeAxis>
+#include <QtMath>
 
 namespace
 {
-    void addSet(const Set & set, const Workout & workout, const int numberOfLanes, double & bestSpeed, QTableWidget * table)
+    void addSet(const Set & set, const Workout & workout, const int numberOfLanes, double & bestSpeed, QTableWidget * table,
+                std::vector<QTime> &allTimes)
     {
         const bool speedAsMinuteAndSeconds = QSettings("Swim", "Poolmate").value("speed").toBool();
 
@@ -63,6 +68,8 @@ namespace
             }
             duration = duration.addMSecs(min * 1000.0);
         }
+
+        allTimes.push_back(duration);
 
         const double speed = duration.msecsSinceStartOfDay() / distance / 10.0;
         const double total = workout.pool * set.lens;
@@ -155,6 +162,8 @@ void BestTimesImpl::on_calculateButton_clicked()
 
     const std::vector<Workout>& workouts = ds->Workouts();
 
+    std::vector<QTime> allTimes;
+
     for (size_t i = 0; i < workouts.size(); ++i)
     {
         const Workout & w = workouts[i];
@@ -223,14 +232,73 @@ void BestTimesImpl::on_calculateButton_clicked()
                 continue;
             }
 
-            addSet(set, w, numberOfLanes, bestSpeed, timesTable);
+            addSet(set, w, numberOfLanes, bestSpeed, timesTable, allTimes);
         }
     }
+
+    fillChart(allTimes);
 
     // ensure the state of the "record progression" is correct
     on_progressionBox_clicked();
     timesTable->resizeColumnsToContents();
     timesTable->setSortingEnabled(true);
+}
+
+void BestTimesImpl::fillChart(const std::vector<QTime> & allTimes)
+{
+    QtCharts::QChart *chart = new QtCharts::QChart();
+    if (allTimes.size() > 1)
+    {
+        std::vector<QTime> sorted(allTimes);
+        std::sort(sorted.begin(), sorted.end());
+
+        QtCharts::QLineSeries *series = new QtCharts::QLineSeries();
+        QtCharts::QLineSeries *medianSeries = new QtCharts::QLineSeries();
+
+        const QTime minTime = sorted.front();
+        const QTime maxTime = sorted.back();
+        const int span = minTime.msecsTo(maxTime);
+
+        // heuristic to get a decent number of bins
+        const size_t bins = qSqrt(sorted.size()) * 2.5;
+        int previous = 0;
+        int maximum = 0;
+        for (size_t i = 0; i < bins; ++i)
+        {
+            const QTime currentTime = minTime.addMSecs(span * i / (bins - 1));
+            const std::vector<QTime>::iterator it = std::upper_bound(sorted.begin(), sorted.end(), currentTime);
+            const int total = std::distance(sorted.begin(), it);
+            const int diff = total - previous;
+            previous = total;
+            series->append(currentTime.msecsSinceStartOfDay(), diff);
+            maximum = std::max(maximum, diff);
+        }
+
+        const QTime median = sorted[sorted.size() / 2];
+        medianSeries->append(median.msecsSinceStartOfDay(), 0);
+        medianSeries->append(median.msecsSinceStartOfDay(), maximum);
+
+        QtCharts::QDateTimeAxis *axisX = new QtCharts::QDateTimeAxis;
+        axisX->setTitleText("time");
+        axisX->setFormat("mm:ss");
+        axisX->setTickCount(13);
+        chart->addAxis(axisX, Qt::AlignBottom);
+
+        chart->addSeries(series);
+        chart->addSeries(medianSeries);
+
+        series->attachAxis(axisX);
+        medianSeries->attachAxis(axisX);
+
+        chart->legend()->hide();
+    }
+
+    // Utter qt nonsense! Is this needed? Doc it unclear and so is valgrind
+    // Memory usage seems to indicate this is indeed needed
+    // We are back in the dark ages on new / delete!!!
+    QtCharts::QChart * previous = chartView->chart();
+    chartView->setChart(chart);
+    delete previous;
 }
 
 void BestTimesImpl::on_progressionBox_clicked()

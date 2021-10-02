@@ -14,14 +14,73 @@
    <string>Best Times</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="2" column="0">
-    <widget class="QLabel" name="label">
+   <item row="1" column="3">
+    <widget class="QLabel" name="label_2">
      <property name="text">
-      <string>Distance:</string>
+      <string>Period:</string>
      </property>
     </widget>
    </item>
-   <item row="2" column="1">
+   <item row="1" column="2">
+    <widget class="QPushButton" name="calculateButton">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text">
+      <string>Calculate</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="6">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="4">
+    <widget class="QComboBox" name="periodBox">
+     <item>
+      <property name="text">
+       <string>All Time</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>This Month</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>This Year</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Last Month</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>Last Year</string>
+      </property>
+     </item>
+    </widget>
+   </item>
+   <item row="1" column="5">
+    <widget class="QCheckBox" name="progressionBox">
+     <property name="text">
+      <string>Record progression</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1">
     <widget class="QComboBox" name="distanceBox">
      <property name="editable">
       <bool>true</bool>
@@ -53,118 +112,90 @@
      </item>
     </widget>
    </item>
-   <item row="2" column="6">
-    <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Ok</set>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="2">
-    <widget class="QPushButton" name="calculateButton">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
+   <item row="1" column="0">
+    <widget class="QLabel" name="label">
      <property name="text">
-      <string>Calculate</string>
+      <string>Distance:</string>
      </property>
     </widget>
    </item>
    <item row="0" column="0" colspan="7">
-    <widget class="QTableWidget" name="timesTable">
-     <column>
-      <property name="text">
-       <string>Date</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>Time</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>Pool</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>Distance</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>Duration</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>Speed</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>Total</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>Length range</string>
-      </property>
-     </column>
-    </widget>
-   </item>
-   <item row="2" column="3">
-    <widget class="QLabel" name="label_2">
-     <property name="text">
-      <string>Period:</string>
+    <widget class="QTabWidget" name="tabWidget">
+     <property name="currentIndex">
+      <number>0</number>
      </property>
-    </widget>
-   </item>
-   <item row="2" column="4">
-    <widget class="QComboBox" name="periodBox">
-     <item>
-      <property name="text">
-       <string>All Time</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>This Month</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>This Year</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Last Month</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Last Year</string>
-      </property>
-     </item>
-    </widget>
-   </item>
-   <item row="2" column="5">
-    <widget class="QCheckBox" name="progressionBox">
-     <property name="text">
-      <string>Record progression</string>
-     </property>
+     <widget class="QWidget" name="tab">
+      <attribute name="title">
+       <string>Table</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout_2">
+       <item row="0" column="0">
+        <widget class="QTableWidget" name="timesTable">
+         <column>
+          <property name="text">
+           <string>Date</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Time</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Pool</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Distance</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Duration</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Speed</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Total</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Length range</string>
+          </property>
+         </column>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tab">
+      <attribute name="title">
+       <string>Chart</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout_3">
+       <item row="0" column="0">
+        <widget class="QtCharts::QChartView" name="chartView"/>
+       </item>
+      </layout>
+     </widget>
     </widget>
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QtCharts::QChartView</class>
+   <extends>QGraphicsView</extends>
+   <header>QChartView</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections>
   <connection>
