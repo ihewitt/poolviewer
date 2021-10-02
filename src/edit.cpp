@@ -367,7 +367,7 @@ void Edit::on_revertButton_clicked()
     calculate();
 }
 
-void Edit::on_squashButton_clicked()
+void Edit::on_squashLength_clicked()
 {
     const int row = lengthsGrid->currentRow();
     if (row >= 0)
@@ -375,7 +375,7 @@ void Edit::on_squashButton_clicked()
         setMod = setOrig;
         const QTableWidgetItem * item = lengthsGrid->item(row, 0);
         const uint pos = item->data(Qt::UserRole).toUInt();
-        if (pos > 0 && pos < setMod.times.size())
+        if (pos > 0)
         {
             setMod.times[pos - 1] += setMod.times[pos];
             setMod.strokes[pos - 1] += setMod.strokes[pos];
@@ -392,6 +392,60 @@ void Edit::on_squashButton_clicked()
             synchroniseSet(setMod, modified);
             modified.sets[currentSet] = setMod;
             synchroniseWorkout(modified);
+            changed = true;
+            populate(modified);
+        }
+    }
+}
+
+void Edit::on_deleteLength_clicked()
+{
+    const int row = lengthsGrid->currentRow();
+    if (row >= 0)
+    {
+        setMod = setOrig;
+        const QTableWidgetItem * item = lengthsGrid->item(row, 0);
+        const uint pos = item->data(Qt::UserRole).toUInt();
+        if (setMod.lens > 1)
+        {
+            setMod.duration = setMod.duration.addSecs(-setMod.times[pos]);
+
+            --setMod.lens;
+            setMod.times.erase(setMod.times.begin() + pos);
+            setMod.strokes.erase(setMod.strokes.begin() + pos);
+
+            if (pos < setMod.styles.size())
+            {
+                setMod.styles.erase(setMod.styles.begin() + pos);
+            }
+
+            synchroniseSet(setMod, modified);
+            modified.sets[currentSet] = setMod;
+            synchroniseWorkout(modified);
+            changed = true;
+            populate(modified);
+        }
+    }
+}
+
+void Edit::on_balanceLength_clicked()
+{
+    const int row = lengthsGrid->currentRow();
+    if (row >= 0)
+    {
+        setMod = setOrig;
+        const QTableWidgetItem * item = lengthsGrid->item(row, 0);
+        const uint pos = item->data(Qt::UserRole).toUInt();
+        if (pos > 0)
+        {
+            const double totalTime = setMod.times[pos] + setMod.times[pos - 1];
+            const int totalStrokes = setMod.strokes[pos] + setMod.strokes[pos - 1];
+            setMod.times[pos] = setMod.times[pos - 1] = totalTime * 0.5;
+            setMod.strokes[pos - 1] = totalStrokes / 2;
+            setMod.strokes[pos] = totalStrokes - setMod.strokes[pos - 1];
+
+            // no need to synchronise as totals are preserved
+            modified.sets[currentSet] = setMod;
             changed = true;
             populate(modified);
         }

@@ -51,7 +51,11 @@ private slots:
 
     void on_strokesEdit_valueChanged(int arg1);
 
-    void on_squashButton_clicked();
+    void on_deleteLength_clicked();
+
+    void on_squashLength_clicked();
+
+    void on_balanceLength_clicked();
 
 private:
 
