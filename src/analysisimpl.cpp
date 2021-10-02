@@ -22,10 +22,12 @@
 #include "utilities.h"
 #include "datastore.h"
 
+#include <QRadioButton>
+
 namespace
 {
-    const double distances[] = {25, 100, 400, 750, 1000, 1250, 1500, 1931, 2000, 3862, 5000};
-    const char * labels[] = {"25m", "100m", "400m", "750m", "1000m", "1250m", "1500m", "1931m (1.2ml)", "2000m", "3862m (2.4ml)", "5000m"};
+    const double distances[] = {25, 50, 100, 200, 400, 800, 1000, 1500, 1931, 2000, 3862, 5000};
+    const char * labels[] = {"25m", "50m", "100m", "200m", "400m", "800m", "1000m", "1500m", "1931m (1.2ml)", "2000m", "3862m (2.4ml)", "5000m"};
     const size_t numberOfRows = sizeof(distances) / sizeof(distances[0]);
 }
 
@@ -39,6 +41,16 @@ void AnalysisImpl::createTable()
     {
         QTableWidgetItem * item = new QTableWidgetItem(labels[i]);
         analysisTable->setVerticalHeaderItem(i, item);
+
+        QRadioButton *button = new QRadioButton(labels[i], this);
+        analysisTable->setCellWidget(i, 3, button);
+        const auto handler = [this, i] (const bool x) {
+            if (x)
+            {
+                this->fillPredicted(i);
+            }
+        };
+        connect(button, &QRadioButton::toggled, handler);
     }
 }
 
@@ -118,63 +130,85 @@ void AnalysisImpl::fillTable()
 {
     for (size_t i = 0; i < numberOfRows; ++i)
     {
-        if (times[i][0]>0)
-        {
-            QTime best = QTime(0,0,0).addSecs(times[i][0]);
-            analysisTable->setItem(i, 0, createTableWidgetItem(best.toString("hh:mm:ss")));
-        }
-        else
-        {
-            analysisTable->setItem(i, 0, createTableWidgetItem("none"));
-        }
-
-        if (times[i][1]>0)
+        if (times[i][1] > 0)
         {
             QTime calc = QTime(0,0,0).addSecs(times[i][1]);
             analysisTable->setItem(i, 1, createTableWidgetItem(calc.toString("hh:mm:ss")));
+            const double reference = times[i][2];
+
+            analysisTable->setItem(i, 2, createTableWidgetItem(reference));
+
+            if (distances[i] == reference)
+            {
+                QRadioButton * radio = dynamic_cast<QRadioButton *>(analysisTable->cellWidget(i, 3));
+                radio->setChecked(true);
+            }
         }
         else
         {
             analysisTable->setItem(i, 1, createTableWidgetItem("none"));
+            analysisTable->setItem(i, 2, createTableWidgetItem("none"));
         }
-        analysisTable->setItem(i,2, createTableWidgetItem(times[i][2]));
     }
 }
 
-void AnalysisImpl::precalculate()
+int AnalysisImpl::precalculate(const double minimum)
 {
-    //Populate times
+    std::vector<double> normalised(numberOfRows, std::numeric_limits<double>::infinity());
+    // Populate best times
     for (size_t i = 0; i < numberOfRows; ++i)
     {
-        double best = getBestTime(distances[i]);
+        const double best = getBestTime(distances[i]);
         times[i][0] = best;
-        times[i][1] = -1;
+        QWidget * radio = analysisTable->cellWidget(i, 3);
+
+        if (best > 0)
+        {
+            if (distances[i] >= minimum)
+            {
+                // we skip predictions based on very short distances as less accurate
+                normalised[i] = best / std::pow(distances[i], peterRiegelExponent);
+            }
+
+            const QTime calc = QTime(0, 0, 0).addSecs(best);
+            analysisTable->setItem(i, 0, createTableWidgetItem(calc.toString("hh:mm:ss")));
+            radio->setEnabled(true);
+        }
+        else
+        {
+            analysisTable->setItem(i, 0, createTableWidgetItem("none"));
+            radio->setEnabled(false);
+        }
     }
 
-    // For each time/distance predict best time
-    for (size_t i = 1; i < numberOfRows; ++i) //start at 100m for intial calc
+    // and default reference
+    const std::vector<double>::iterator min_it = std::min_element(normalised.begin(), normalised.end());
+    if (isfinite(*min_it))
     {
-        if (times[i][0] > 0)
-        {
-            for (size_t j = 0; j < numberOfRows; ++j)
-            {
-                if (i == j && times[j][1] > times[i][0])
-                {
-                    times[j][1] = times[i][0];
-                    times[j][2] = distances[i];
-                }
-                else
-                {
-                    //Use Peter Riegel's formula: t2 = t1 * (d2 / d1)^1.06.
-                    double calc = times[i][0] * pow(distances[j]/distances[i],1.06);
+        const int ref = std::distance(normalised.begin(), min_it);
+        return ref;
+    }
+    else
+    {
+        return -1;
+    }
+}
 
-                    if (times[j][1] < 0 || times[j][1] > calc)
-                    {
-                        times[j][1] = calc;
-                        times[j][2] = distances[i];
-                    }
-                }
-            }
+void AnalysisImpl::fillPredicted(const int ref)
+{
+    // For each time / distance predict best time
+    for (size_t i = 0; i < numberOfRows; ++i)
+    {
+        if (ref >=0 && times[i][0] > 0)
+        {
+            // Use Peter Riegel's formula: t2 = t1 * (d2 / d1)^1.06.
+            times[i][1] = times[ref][0] * pow(distances[i] / distances[ref], peterRiegelExponent);
+            times[i][2] = distances[ref];
+        }
+        else
+        {
+            times[i][1] = 0.0;
+            times[i][2] = 0.0;
         }
     }
 
@@ -184,25 +218,9 @@ void AnalysisImpl::precalculate()
 void AnalysisImpl::setDataStore(const DataStore *_ds)
 {
     ds = _ds;
-    precalculate();
-}
-
-void AnalysisImpl::on_calcButton_clicked()
-{
-    int row = analysisTable->currentRow();
-    double dist = distances[row];
-
-    double best = times[row][0];
-    for (size_t i = 0; i < numberOfRows; ++i)
-    {
-        //Use Peter Riegel's formula: t2 = t1 * (d2 / d1)^1.06.
-        double calc = best * pow(distances[i]/distances[row],1.06);
-
-        times[i][1]=calc;
-        times[i][2]=dist;
-    }
-
-    fillTable();
+    // times below 100m are less reliable
+    const int ref = precalculate(10000.0);
+    fillPredicted(ref);
 }
 
 void AnalysisImpl::on_allBest_clicked()

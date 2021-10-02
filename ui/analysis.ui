@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>442</width>
+    <width>579</width>
     <height>414</height>
    </rect>
   </property>
@@ -42,6 +42,11 @@
          <string>Based on</string>
         </property>
        </column>
+       <column>
+        <property name="text">
+         <string>Reference</string>
+        </property>
+       </column>
       </widget>
      </item>
      <item>
@@ -65,26 +70,6 @@ Predictions can be recalculated by selecting a different distance.</string>
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
-     <item>
-      <widget class="QPushButton" name="calcButton">
-       <property name="text">
-        <string>Recalculate</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <spacer name="horizontalSpacer">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
      <item>
       <widget class="QPushButton" name="allBest">
        <property name="text">

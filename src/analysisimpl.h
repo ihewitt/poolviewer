@@ -32,19 +32,20 @@ public:
     void setDataStore(const DataStore *_ds);
 
 private slots:
-    void on_calcButton_clicked();
-
     void on_allBest_clicked();
 
 private:
     double getBestTime(int distance);
     void createTable();
     void fillTable();
-    void precalculate();
+    int precalculate(const double minimum);
+    void fillPredicted(const int ref);
 
     const DataStore *ds;
 
     std::vector<std::vector<double> > times;
+
+    static constexpr double peterRiegelExponent = 1.06;
 };
 
 #endif // ANALYSISIMPL_H
