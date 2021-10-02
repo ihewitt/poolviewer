@@ -57,6 +57,8 @@ private slots:
 
     void on_balanceLength_clicked();
 
+    void on_lengthsGrid_itemSelectionChanged();
+
 private:
 
     void calculate();

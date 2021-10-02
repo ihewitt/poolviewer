@@ -122,6 +122,8 @@ void fillSet(QTableWidget * grid, int row, const Set & set, const Workout & orig
 void Edit::populate(const Workout& _wrk)
 {
     lengthsGrid->clearContents();
+    lengthsGrid->setRowCount(0);
+
     const int oldCurrentSet = currentSet;
     setsGrid->clearContents();
     setsGrid->setRowCount(_wrk.sets.size());
@@ -131,6 +133,8 @@ void Edit::populate(const Workout& _wrk)
     {
         fillSet(setsGrid, i, _wrk.sets[i], _wrk); //Fill sets
     }
+
+    // preserve original selection to avoid flickering
     setsGrid->setCurrentCell(oldCurrentSet, 1);
 }
 
@@ -178,7 +182,7 @@ void Edit::on_strokesEdit_valueChanged(int /* strokes */)
 
 void Edit::calculate()
 {
-    if (currentSet>=0)
+    if (currentSet >= 0)
     {
         setMod = setOrig;
 
@@ -190,7 +194,6 @@ void Edit::calculate()
             QTime duration;
             double setAvg;
             extractSetData(setMod, setLens, duration, setAvg);
-
 
             const double gapTime = gapTimeUsedSpin->value();
             const double average = roundTo8thSecond(gapTime / extraLengths);
@@ -266,7 +269,6 @@ void Edit::on_deleteButton_clicked()
 
         populate(modified);
         calculate();
-
         // recalc workout summary
     }
 }
@@ -290,6 +292,7 @@ void Edit::on_adjustButton_clicked()
 void Edit::on_setsGrid_currentCellChanged(int currentRow, int /*currentColumn*/, int /*previousRow*/, int /*previousColumn*/)
 {
     lengthsGrid->clearContents();
+    lengthsGrid->setRowCount(0);
 
     // Fill edit fields with current set.
     currentSet = currentRow;
@@ -358,6 +361,7 @@ void Edit::fillLengths(const Set & set)
         item = createTableWidgetItem(QVariant(set.strokes[i]));
         lengthsGrid->setItem(i, 1, item);
     }
+    on_lengthsGrid_itemSelectionChanged();
 }
 
 void Edit::on_revertButton_clicked()
@@ -408,6 +412,7 @@ void Edit::on_deleteLength_clicked()
         if (setMod.lens > 1)
         {
             setMod.duration = setMod.duration.addSecs(-setMod.times[pos]);
+            setMod.rest = setMod.rest.addSecs(setMod.times[pos]);
 
             --setMod.lens;
             setMod.times.erase(setMod.times.begin() + pos);
@@ -437,8 +442,10 @@ void Edit::on_balanceLength_clicked()
         if (pos > 0)
         {
             const double totalTime = setMod.times[pos] + setMod.times[pos - 1];
+            setMod.times[pos - 1] = roundTo8thSecond(totalTime * 0.5);
+            setMod.times[pos] = totalTime - setMod.times[pos - 1];
+
             const int totalStrokes = setMod.strokes[pos] + setMod.strokes[pos - 1];
-            setMod.times[pos] = setMod.times[pos - 1] = totalTime * 0.5;
             setMod.strokes[pos - 1] = totalStrokes / 2;
             setMod.strokes[pos] = totalStrokes - setMod.strokes[pos - 1];
 
@@ -447,5 +454,30 @@ void Edit::on_balanceLength_clicked()
             changed = true;
             populate(modified);
         }
+    }
+}
+
+void Edit::on_lengthsGrid_itemSelectionChanged()
+{
+    const int row = lengthsGrid->currentRow();
+    if (row >= 0)
+    {
+        const QTableWidgetItem * item = lengthsGrid->item(row, 0);
+        const uint pos = item->data(Qt::UserRole).toUInt();
+
+        squashLength->setEnabled(pos > 0);
+        balanceLength->setEnabled(pos > 0);
+        deleteLength->setEnabled(setMod.lens > 1);
+
+        // give a visual indication of which lengths are modified
+        squashLength->setText(QString("Squash %1 -> %2").arg(1 + pos).arg(pos));
+        balanceLength->setText(QString("Balance %1 && %2").arg(1 + pos).arg(pos));
+        deleteLength->setText(QString("Delete %1").arg(1 + pos));
+    }
+    else
+    {
+        squashLength->setEnabled(false);
+        balanceLength->setEnabled(false);
+        deleteLength->setEnabled(false);
     }
 }

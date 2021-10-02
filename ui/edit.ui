@@ -272,6 +272,9 @@
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
         <widget class="QPushButton" name="deleteLength">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Delete selected length.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
@@ -282,6 +285,9 @@
        </item>
        <item>
         <widget class="QPushButton" name="squashLength">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Squash selected length with previous.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
@@ -292,6 +298,9 @@
        </item>
        <item>
         <widget class="QPushButton" name="balanceLength">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Balance selected length with previous.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
