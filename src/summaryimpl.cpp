@@ -56,6 +56,8 @@ SummaryImpl::SummaryImpl( QWidget * parent, Qt::WindowFlags f)
     tabs->setCurrentIndex(1);
 
     //    setEscapeButton(pushButton);
+
+    setWindowIcon(QIcon(":/images/poolmate.png"));
 }
 
 void SummaryImpl::scaleChanged(int sc)

@@ -6,5 +6,6 @@
         <file>images/strava.png</file>
         <file>images/garmin.png</file>
         <file>images/tick.png</file>
+        <file>images/poolmate.png</file>
     </qresource>
 </RCC>
