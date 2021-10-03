@@ -23,13 +23,14 @@
 #include <QSettings>
 #include <QChartView>
 #include <QLineSeries>
+#include <QScatterSeries>
 #include <QDateTimeAxis>
 #include <QtMath>
 
 namespace
 {
     void addSet(const Set & set, const Workout & workout, const int numberOfLanes, double & bestSpeed, QTableWidget * table,
-                std::vector<QTime> &allTimes)
+                std::vector<BestTimesImpl::record_t> &allTimes)
     {
         const bool speedAsMinuteAndSeconds = QSettings("Swim", "Poolmate").value("speed").toBool();
 
@@ -69,7 +70,7 @@ namespace
             duration = duration.addMSecs(min * 1000.0);
         }
 
-        allTimes.push_back(duration);
+        allTimes.push_back({duration.msecsSinceStartOfDay(), QDateTime(workout.date, workout.time)});
 
         const double speed = duration.msecsSinceStartOfDay() / distance / 10.0;
         const double total = workout.pool * set.lens;
@@ -162,7 +163,7 @@ void BestTimesImpl::on_calculateButton_clicked()
 
     const std::vector<Workout>& workouts = ds->Workouts();
 
-    std::vector<QTime> allTimes;
+    std::vector<record_t> allTimes;
 
     for (size_t i = 0; i < workouts.size(); ++i)
     {
@@ -244,39 +245,52 @@ void BestTimesImpl::on_calculateButton_clicked()
     timesTable->setSortingEnabled(true);
 }
 
-void BestTimesImpl::fillChart(const std::vector<QTime> & allTimes)
+void BestTimesImpl::fillChart(const std::vector<record_t> & allTimes)
 {
     QtCharts::QChart *chart = new QtCharts::QChart();
     if (allTimes.size() > 1)
     {
-        std::vector<QTime> sorted(allTimes);
-        std::sort(sorted.begin(), sorted.end());
+        const auto compareDuration = [](const record_t & lhs, const record_t & rhs) {return lhs.duration < rhs.duration;};
+        const auto compareDate = [](const record_t & lhs, const record_t & rhs) {return lhs.date < rhs.date;};
+
+        std::vector<record_t> sorted(allTimes);
+        std::sort(sorted.begin(), sorted.end(), compareDuration);
+
+        const int minTime = sorted.front().duration;
+        const int maxTime = sorted.back().duration;
+        const int span = maxTime - minTime;
 
         QtCharts::QLineSeries *series = new QtCharts::QLineSeries();
+        series->setName("distribution");
         QtCharts::QLineSeries *medianSeries = new QtCharts::QLineSeries();
-
-        const QTime minTime = sorted.front();
-        const QTime maxTime = sorted.back();
-        const int span = minTime.msecsTo(maxTime);
+        medianSeries->setName("median");
+        QtCharts::QScatterSeries *dateSeries = new QtCharts::QScatterSeries();
+        dateSeries->setName("date");
 
         // heuristic to get a decent number of bins
         const size_t bins = qSqrt(sorted.size()) * 2.5;
-        int previous = 0;
-        int maximum = 0;
+        std::vector<record_t>::iterator previous = sorted.begin();
+        int maximum = 0; // to fit the median vertically
+
         for (size_t i = 0; i < bins; ++i)
         {
-            const QTime currentTime = minTime.addMSecs(span * i / (bins - 1));
-            const std::vector<QTime>::iterator it = std::upper_bound(sorted.begin(), sorted.end(), currentTime);
-            const int total = std::distance(sorted.begin(), it);
-            const int diff = total - previous;
-            previous = total;
-            series->append(currentTime.msecsSinceStartOfDay(), diff);
+            const int currentTime = minTime + span * i / (bins - 1);
+            const record_t value = {currentTime, QDateTime()};
+
+            const std::vector<record_t>::iterator it = std::upper_bound(sorted.begin(), sorted.end(), value, compareDuration);
+            const int diff = std::distance(previous, it);
+            const QDateTime mostRecent = std::max_element(previous, it, compareDate)->date;
+
+            series->append(currentTime, diff);
+            dateSeries->append(currentTime, mostRecent.toMSecsSinceEpoch());
+
             maximum = std::max(maximum, diff);
+            previous = it;
         }
 
-        const QTime median = sorted[sorted.size() / 2];
-        medianSeries->append(median.msecsSinceStartOfDay(), 0);
-        medianSeries->append(median.msecsSinceStartOfDay(), maximum);
+        const int median = sorted[sorted.size() / 2].duration;
+        medianSeries->append(median, 0);
+        medianSeries->append(median, maximum);
 
         QtCharts::QDateTimeAxis *axisX = new QtCharts::QDateTimeAxis;
         axisX->setTitleText("time");
@@ -284,13 +298,26 @@ void BestTimesImpl::fillChart(const std::vector<QTime> & allTimes)
         axisX->setTickCount(13);
         chart->addAxis(axisX, Qt::AlignBottom);
 
+        QtCharts::QDateTimeAxis *axisY = new QtCharts::QDateTimeAxis;
+        axisY->setFormat("MMM yy");
+        chart->addAxis(axisY, Qt::AlignRight);
+
         chart->addSeries(series);
-        chart->addSeries(medianSeries);
-
         series->attachAxis(axisX);
-        medianSeries->attachAxis(axisX);
+        // no y axis as values are meaningless
 
-        chart->legend()->hide();
+        chart->addSeries(medianSeries);
+        medianSeries->attachAxis(axisX);
+        // no y axis as values are meaningless
+
+        chart->addSeries(dateSeries);
+        dateSeries->attachAxis(axisX);
+        dateSeries->attachAxis(axisY);
+
+        // make y axis a bit wider so we can fit the xy markers
+        const qint64 extraRange = axisY->min().msecsTo(axisY->max()) / 40;
+        axisY->setMin(axisY->min().addMSecs(-extraRange));
+        axisY->setMax(axisY->max().addMSecs(extraRange));
     }
 
     // Utter qt nonsense! Is this needed? Doc it unclear and so is valgrind
@@ -310,7 +337,7 @@ void BestTimesImpl::on_progressionBox_clicked()
         for (size_t i = 0; i < numberOfTimes; ++i)
         {
             const QTableWidgetItem * record_item = timesTable->item(i, 0);
-            const bool record = record_item->data(NEW_BEST_TIME).value<bool>();
+            const bool record = record_item->data(NEW_BEST_TIME).toBool();
             timesTable->setRowHidden(i, !record);
         }
     }

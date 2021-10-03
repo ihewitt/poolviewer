@@ -21,6 +21,8 @@
 
 #include "ui_besttimesimpl.h"
 
+#include <QDateTime>
+
 class DataStore;
 
 class BestTimesImpl : public QDialog, private Ui::besttimesimpl
@@ -32,6 +34,12 @@ public:
 
     void setDataStore(const DataStore *_ds);
 
+    struct record_t
+    {
+        int duration;
+        QDateTime date;
+    };
+
 private slots:
     void on_calculateButton_clicked();
 
@@ -40,7 +48,7 @@ private slots:
 private:
     const DataStore *ds;
 
-    void fillChart(const std::vector<QTime> & allTimes);
+    void fillChart(const std::vector<record_t> & allTimes);
 };
 
 #endif // BESTTIMESIMPL_H
