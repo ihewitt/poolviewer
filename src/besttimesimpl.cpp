@@ -29,51 +29,24 @@
 
 namespace
 {
-    void addSet(const Set & set, const Workout & workout, const int numberOfLanes, double & bestSpeed, QTableWidget * table,
-                std::vector<BestTimesImpl::record_t> &allTimes)
+    void addSet(const int targetDistance, const Set & set, const Workout & workout, double & bestSpeed,
+                QTableWidget * table, std::vector<BestTimesImpl::record_t> &allTimes)
     {
+        double range; // time range per length: slowest - fastest
+        double bestTime; // adjusted for the distance requested!
+        int distance; // distance used for time (might be longer)
+        if (!getFastestSubset(set, workout.pool, targetDistance, bestTime, range, distance))
+        {
+            return;  // not enought lengths
+        }
+
         const bool speedAsMinuteAndSeconds = QSettings("Swim", "Poolmate").value("speed").toBool();
-
-        const int distance = workout.pool * numberOfLanes;
-        QTime duration(0, 0);
-        double range = 0.0; // time range per length: slowest - fastest
-
-        if ((int)set.times.size() != set.lens)
-        {
-            // Non poolmate live, try to use set duration.
-            // Since we're taking distances >= numberOfLanes which should be slower, assume we can
-            // just divide to get the closes time for shorter distance.
-            duration = duration.addMSecs( (QTime(0,0).msecsTo(set.duration) * numberOfLanes / set.lens ));
-        }
-        else
-        {
-            // Locate fastest window
-            double min = 0.0;
-            for (int j = 0; j <= (int)set.times.size()-numberOfLanes; ++j)
-            {
-                double cur = 0.0;
-                double fastest = std::numeric_limits<double>::max();
-                double slowest = -fastest;
-                for (int i = j; i < j + numberOfLanes; ++i)
-                {
-                    const double time = set.times[i];
-                    fastest = std::min(fastest, time);
-                    slowest = std::max(slowest, time);
-                    cur += time;
-                }
-                if (cur < min || min == 0.0)
-                {
-                    min = cur;
-                    range = slowest - fastest;
-                }
-            }
-            duration = duration.addMSecs(min * 1000.0);
-        }
+        const QTime duration = QTime(0, 0).addMSecs(bestTime * 1000.0);
 
         allTimes.push_back({duration.msecsSinceStartOfDay(), QDateTime(workout.date, workout.time)});
 
-        const double speed = duration.msecsSinceStartOfDay() / distance / 10.0;
-        const double total = workout.pool * set.lens;
+        const double speed = bestTime / targetDistance * 100.0;
+        const double total = workout.pool * set.lens;  // total distance in set
 
         const int row = table->rowCount();
         table->setRowCount(row + 1);
@@ -103,7 +76,7 @@ namespace
         table->setItem(row, 7, rangeItem);
 
         // Store in column 0 whether this has been a new best time
-        // use speed as the time could be for a longer distance if lane does not divide exactly the distance
+        // we can use speed or duration as they are uniform now
         const bool record = speed <= bestSpeed;
         if (record)
         {
@@ -121,9 +94,9 @@ BestTimesImpl::BestTimesImpl(QWidget *parent) :
 
     // not done in on_calculateButton_clicked() not to override user choice
 
-    // sort by speed as the ditance might be different
-    // (if number of lanes is not integer)
-    timesTable->sortItems(5);
+    // sort by duration as speed loses precision
+    timesTable->sortItems(4);
+    chartView->setRubberBand(QtCharts::QChartView::HorizontalRubberBand);
 }
 
 void BestTimesImpl::setDataStore(const DataStore *_ds)
@@ -221,19 +194,9 @@ void BestTimesImpl::on_calculateButton_clicked()
             continue;
         }
 
-        // this is the number of lanes to get above or equal the desired distance
-        const int numberOfLanes = (distance + pool - 1) / pool; // round up
-
         for (size_t j = 0; j < w.sets.size(); ++j)
         {
-            const Set & set = w.sets[j];
-            if (set.lens < numberOfLanes)
-            {
-                // not enough in this set
-                continue;
-            }
-
-            addSet(set, w, numberOfLanes, bestSpeed, timesTable, allTimes);
+            addSet(distance, w.sets[j], w, bestSpeed, timesTable, allTimes);
         }
     }
 

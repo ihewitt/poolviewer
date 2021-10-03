@@ -78,46 +78,16 @@ double AnalysisImpl::getBestTime(int distance)
         if (pool <= 0)
             continue;
 
-        // this is the number of lanes to get above or equal the desired distance
-        const int numberOfLanes = (distance + pool - 1) / pool; // round up
-
         for (size_t j = 0; j < w.sets.size(); ++j)
         {
-            const Set & set = w.sets[j];
-            if (set.lens < numberOfLanes)
-                // not enough in this set
-                continue;
-
-            //
-            //const int distance = w.pool * numberOfLanes;
+            double range; // unused
             double duration;
-
-            if ((int)set.times.size() != set.lens)
+            int actual; // unused
+            if (getFastestSubset(w.sets[j], pool, distance, duration, range, actual))
             {
-                // Non poolmate live, try to use set duration.
-                // Since we're taking distances >= numberOfLanes which should be slower, assume we can
-                // just divide to get the closes time for shorter distance.
-                duration = (QTime(0,0).secsTo(set.duration) * numberOfLanes / set.lens);
+                if (best < 0 || duration < best)
+                    best = duration;
             }
-            else
-            {
-                // Locate fastest window
-                double min = 0.0;
-                for (int j = 0; j <= (int)set.times.size()-numberOfLanes; ++j)
-                {
-                    double cur = 0.0;
-                    for (int i = j; i < j + numberOfLanes; ++i)
-                    {
-                        cur += set.times[i];
-                    }
-                    if (cur < min || min == 0.0)
-                        min = cur;
-                }
-                duration = min;
-            }
-
-            if (best < 0 || duration < best)
-                best = duration;
         }
 
     }

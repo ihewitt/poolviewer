@@ -49,4 +49,9 @@ void synchroniseSet(Set & set, const Workout & workout);
 
 QString formatSpeed(const int speed, const bool asMinuteAndSeconds);
 
+// this function returns the equivalent duration for the target distance
+// adjusting if necessary for broken legs
+bool getFastestSubset(const Set & set, const int pool, const int targetDistance,
+                      double & duration, double & range, int & distance);
+
 #endif // UTILITIES_H

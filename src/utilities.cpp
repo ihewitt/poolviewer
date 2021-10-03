@@ -123,3 +123,54 @@ QString formatSpeed(const int speed, const bool asMinuteAndSeconds)
         return QString::number(speed);
     }
 }
+
+bool getFastestSubset(const Set & set, const int pool, const int targetDistance,
+                      double & duration, double & range, int & distance)
+{
+    if (pool * set.lens < targetDistance)
+    {
+        return false;
+    }
+    else
+    {
+        // this is the number of lengths to get above or equal the desired distance
+        const int numberOfLengths = (targetDistance + pool - 1) / pool; // round up
+        distance = numberOfLengths * pool;
+
+        if ((int)set.times.size() != set.lens)
+        {
+            // Non poolmate live, try to use set duration.
+            // Since we're taking distances >= numberOfLengths which should be slower, assume we can
+            // just divide to get the closes time for shorter distance.
+            duration = (QTime(0, 0).secsTo(set.duration) * numberOfLengths / set.lens);
+            range = 0.0;
+        }
+        else
+        {
+            // Locate fastest window
+            double min = std::numeric_limits<double>::max();
+            for (int j = 0; j <= (int)set.times.size() - numberOfLengths; ++j)
+            {
+                double cur = 0.0;
+                double fastest = std::numeric_limits<double>::max();
+                double slowest = -fastest;
+                for (int i = j; i < j + numberOfLengths; ++i)
+                {
+                    const double time = set.times[i];
+                    fastest = std::min(fastest, time);
+                    slowest = std::max(slowest, time);
+                    cur += time;
+                }
+                if (cur < min)
+                {
+                    min = cur;
+                    range = slowest - fastest;
+                }
+            }
+            duration = min;
+        }
+        const double adjustment = double(targetDistance) / double(numberOfLengths * pool);
+        duration *= adjustment;
+        return true;
+    }
+}
