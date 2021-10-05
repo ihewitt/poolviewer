@@ -20,6 +20,8 @@
 
 #include <QVariant>
 #include <QTableWidgetItem>
+#include <QChartView>
+#include <QDateTimeAxis>
 #include <cmath>
 
 #include "datastore.h"
@@ -173,4 +175,23 @@ bool getFastestSubset(const Set & set, const int pool, const int targetDistance,
         duration *= adjustment;
         return true;
     }
+}
+
+void setChartOnView(QtCharts::QChartView * view, QtCharts::QChart * chart)
+{
+    // Utter qt nonsense! Is this needed? Doc it unclear and so is valgrind
+    // Memory usage seems to indicate this is indeed needed
+    // We are back in the dark ages on new / delete!!!
+
+    QtCharts::QChart * previous = view->chart();
+    view->setChart(chart);
+    delete previous;
+}
+
+void enlargeAxis(QtCharts::QDateTimeAxis * axis, const double factor)
+{
+    // make y axis a bit wider so we can fit the xy markers
+    const qint64 extraRange = axis->min().msecsTo(axis->max()) * factor;
+    axis->setMin(axis->min().addMSecs(-extraRange));
+    axis->setMax(axis->max().addMSecs(extraRange));
 }

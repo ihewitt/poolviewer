@@ -200,7 +200,8 @@ void BestTimesImpl::on_calculateButton_clicked()
         }
     }
 
-    fillChart(allTimes);
+    fillDistributionChart(allTimes);
+    fillScatterChart(allTimes);
 
     // ensure the state of the "record progression" is correct
     on_progressionBox_clicked();
@@ -208,7 +209,7 @@ void BestTimesImpl::on_calculateButton_clicked()
     timesTable->setSortingEnabled(true);
 }
 
-void BestTimesImpl::fillChart(const std::vector<record_t> & allTimes)
+void BestTimesImpl::fillDistributionChart(const std::vector<record_t> & allTimes)
 {
     QtCharts::QChart *chart = new QtCharts::QChart();
     if (allTimes.size() > 1)
@@ -278,17 +279,44 @@ void BestTimesImpl::fillChart(const std::vector<record_t> & allTimes)
         dateSeries->attachAxis(axisY);
 
         // make y axis a bit wider so we can fit the xy markers
-        const qint64 extraRange = axisY->min().msecsTo(axisY->max()) / 40;
-        axisY->setMin(axisY->min().addMSecs(-extraRange));
-        axisY->setMax(axisY->max().addMSecs(extraRange));
+        enlargeAxis(axisY, 0.025);
     }
 
-    // Utter qt nonsense! Is this needed? Doc it unclear and so is valgrind
-    // Memory usage seems to indicate this is indeed needed
-    // We are back in the dark ages on new / delete!!!
-    QtCharts::QChart * previous = chartView->chart();
-    chartView->setChart(chart);
-    delete previous;
+    setChartOnView(chartView, chart);
+}
+
+void BestTimesImpl::fillScatterChart(const std::vector<record_t> & allTimes)
+{
+    QtCharts::QChart *chart = new QtCharts::QChart();
+    if (!allTimes.empty())  // even if with 1 it does not show anything
+    {
+        QtCharts::QScatterSeries *series = new QtCharts::QScatterSeries();
+
+        for (const auto & run : allTimes)
+        {
+            series->append(run.date.toMSecsSinceEpoch(), run.duration);
+        }
+
+        QtCharts::QDateTimeAxis *axisX = new QtCharts::QDateTimeAxis;
+        axisX->setFormat("MMM yy");
+        chart->addAxis(axisX, Qt::AlignBottom);
+
+        QtCharts::QDateTimeAxis *axisY = new QtCharts::QDateTimeAxis;
+        axisY->setFormat("mm:ss");
+        chart->addAxis(axisY, Qt::AlignRight);
+
+        chart->addSeries(series);
+        series->attachAxis(axisX);
+        series->attachAxis(axisY);
+
+        // make axes a bit wider so we can fit the xy markers
+        enlargeAxis(axisX, 0.025);
+        enlargeAxis(axisY, 0.025);
+
+        chart->legend()->hide();
+    }
+
+    setChartOnView(scatterView, chart);
 }
 
 void BestTimesImpl::on_progressionBox_clicked()

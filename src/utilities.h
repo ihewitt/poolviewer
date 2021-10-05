@@ -24,6 +24,14 @@
 
 class QTableWidgetItem;
 class QVariant;
+
+namespace QtCharts
+{
+    class QChartView;
+    class QChart;
+    class QDateTimeAxis;
+}
+
 struct Set;
 struct Workout;
 
@@ -53,5 +61,11 @@ QString formatSpeed(const int speed, const bool asMinuteAndSeconds);
 // adjusting if necessary for broken legs
 bool getFastestSubset(const Set & set, const int pool, const int targetDistance,
                       double & duration, double & range, int & distance);
+
+// set chart on a view with correct memory management
+void setChartOnView(QtCharts::QChartView * view, QtCharts::QChart * chart);
+
+// make the date axis a bit wider to improve rendering (0 = unchanged)
+void enlargeAxis(QtCharts::QDateTimeAxis * axis, const double factor);
 
 #endif // UTILITIES_H

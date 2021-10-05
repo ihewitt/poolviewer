@@ -97,7 +97,17 @@
      </item>
      <item>
       <property name="text">
-       <string>500</string>
+       <string>200</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>400</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>800</string>
       </property>
      </item>
      <item>
@@ -108,6 +118,11 @@
      <item>
       <property name="text">
        <string>1500</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>2000</string>
       </property>
      </item>
     </widget>
@@ -124,7 +139,7 @@
      <property name="currentIndex">
       <number>0</number>
      </property>
-     <widget class="QWidget" name="tab">
+     <widget class="QWidget" name="tab1">
       <attribute name="title">
        <string>Table</string>
       </attribute>
@@ -175,13 +190,23 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tab">
+     <widget class="QWidget" name="tab2">
       <attribute name="title">
-       <string>Chart</string>
+       <string>Distribution</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_3">
        <item row="0" column="0">
         <widget class="QtCharts::QChartView" name="chartView"/>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tab3">
+      <attribute name="title">
+       <string>Scatter plot</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout_4">
+       <item row="0" column="0">
+        <widget class="QtCharts::QChartView" name="scatterView"/>
        </item>
       </layout>
      </widget>

@@ -234,12 +234,7 @@ void AnalysisImpl::fillChart()
         serie->attachAxis(axisY);
     }
 
-    // Utter qt nonsense! Is this needed? Doc it unclear and so is valgrind
-    // Memory usage seems to indicate this is indeed needed
-    // We are back in the dark ages on new / delete!!!
-    QtCharts::QChart * previous = chartView->chart();
-    chartView->setChart(chart);
-    delete previous;
+    setChartOnView(chartView, chart);
 }
 
 void AnalysisImpl::setDataStore(const DataStore *_ds)

@@ -48,7 +48,8 @@ private slots:
 private:
     const DataStore *ds;
 
-    void fillChart(const std::vector<record_t> & allTimes);
+    void fillDistributionChart(const std::vector<record_t> & allTimes);
+    void fillScatterChart(const std::vector<record_t> & allTimes);
 };
 
 #endif // BESTTIMESIMPL_H
