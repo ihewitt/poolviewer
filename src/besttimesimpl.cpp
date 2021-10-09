@@ -97,6 +97,7 @@ BestTimesImpl::BestTimesImpl(QWidget *parent) :
     // sort by duration as speed loses precision
     timesTable->sortItems(4);
     chartView->setRubberBand(QtCharts::QChartView::HorizontalRubberBand);
+    scatterView->setRubberBand(QtCharts::QChartView::HorizontalRubberBand);
 }
 
 void BestTimesImpl::setDataStore(const DataStore *_ds)
