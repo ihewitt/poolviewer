@@ -21,6 +21,8 @@
 
 #include "ui_analysis.h"
 
+#include <QDate>
+
 class DataStore;
 
 class AnalysisImpl :  public QDialog, private Ui::Analysis
@@ -31,11 +33,20 @@ public:
     explicit AnalysisImpl(QWidget *parent = 0);
     void setDataStore(const DataStore *_ds);
 
+
 private slots:
     void on_allBest_clicked();
 
 private:
-    double getBestTime(int distance);
+    struct record_t
+    {
+        double best;
+        double predicted;
+        double reference;
+        QDate date;
+    };
+
+    void setBestTime(int distance, record_t & rec);
     void createTable();
     void fillTable();
     void fillChart();
@@ -44,7 +55,8 @@ private:
 
     const DataStore *ds;
 
-    std::vector<std::vector<double> > times;
+    std::vector<record_t> times;
+    int bestRef;
 
     static constexpr double peterRiegelExponent = 1.06;
 };

@@ -39,6 +39,11 @@
            </property>
            <column>
             <property name="text">
+             <string>Date</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
              <string>Best</string>
             </property>
            </column>
