@@ -47,6 +47,7 @@ FORMS = ui/summary.ui \
     ui/edit.ui \
     ui/export.ui
 HEADERS = src/uploadimpl.h \
+    src/distances.h \
     src/syncimpl.h \
     src/configimpl.h \
     src/summaryimpl.h \
@@ -72,6 +73,7 @@ HEADERS = src/uploadimpl.h \
     src/authprivate.h
 SOURCES = src/uploadimpl.cpp \
     src/ExerciseSet.cpp \
+    src/distances.cpp \
     src/syncimpl.cpp \
     src/configimpl.cpp \
     src/summaryimpl.cpp \

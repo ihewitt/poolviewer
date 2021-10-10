@@ -67,8 +67,8 @@ ConfigImpl::ConfigImpl( QWidget * parent, Qt::WindowFlags f)
     garminUser->setText(settings.value("garminUser").toString());
     garminPassword->setText(settings.value("garminPass").toString());
 
+    distances->setText(settings.value("distances").toString());
 }
-
 
 void ConfigImpl::on_buttonBox_accepted()
 {
@@ -105,6 +105,8 @@ void ConfigImpl::on_buttonBox_accepted()
 
     settings.setValue("garminUser", garminUser->text());
     settings.setValue("garminPass", garminPassword->text());
+
+    settings.setValue("distances", distances->text());
 }
 
 void ConfigImpl::on_podLive_clicked(bool /*checked*/)

@@ -19,6 +19,7 @@
 #include "besttimesimpl.h"
 #include "datastore.h"
 #include "utilities.h"
+#include "distances.h"
 
 #include <QSettings>
 #include <QChartView>
@@ -98,6 +99,12 @@ BestTimesImpl::BestTimesImpl(QWidget *parent) :
     timesTable->sortItems(4);
     chartView->setRubberBand(QtCharts::QChartView::HorizontalRubberBand);
     scatterView->setRubberBand(QtCharts::QChartView::HorizontalRubberBand);
+
+    const std::vector<Distance> distances = getDistanceFromConfig();
+    for (const auto & distance : distances)
+    {
+        distanceBox->addItem(distance.label, QVariant(distance.distance));
+    }
 }
 
 void BestTimesImpl::setDataStore(const DataStore *_ds)
@@ -123,12 +130,27 @@ void BestTimesImpl::on_calculateButton_clicked()
     // and we set the item in the wrong place
     timesTable->setSortingEnabled(false);
 
-    int id = periodBox->currentIndex();
-
+    const int index = distanceBox->currentIndex();
     const QString distStr = distanceBox->currentText();
+
+    double distance;
     bool ok = false;
-    const uint distance = distStr.toUInt(&ok);
-    if (!ok || distance == 0)
+    if (distStr == distanceBox->itemText(index))
+    {
+        // selected from the drop down
+        const QVariant currentData = distanceBox->currentData();
+        if (currentData.isValid())
+        {
+            distance = currentData.toDouble(&ok);
+        }
+    }
+    else
+    {
+        // in meters
+        distance = distStr.toDouble(&ok);
+    }
+
+    if (!ok || distance <= 0.0)
     {
         return;
     }
@@ -139,6 +161,7 @@ void BestTimesImpl::on_calculateButton_clicked()
 
     std::vector<record_t> allTimes;
 
+    const int id = periodBox->currentIndex();
     for (size_t i = 0; i < workouts.size(); ++i)
     {
         const Workout & w = workouts[i];

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>759</width>
-    <height>532</height>
+    <width>803</width>
+    <height>612</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -54,7 +54,7 @@
            </column>
            <column>
             <property name="text">
-             <string>Based on</string>
+             <string>Equivalent</string>
             </property>
            </column>
            <column>
@@ -81,8 +81,7 @@
      <item>
       <widget class="QLabel" name="label">
        <property name="text">
-        <string>Calculates predicted times for each distance based on previous best times at other distances using Peter Riegels formula.
-Predictions can be recalculated by selecting a different distance.</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Calculates predicted times for each distance based on previous best times at other distances using Peter Riegels formula.&lt;/p&gt;&lt;p&gt;Predictions can be recalculated by selecting a different distance.&lt;/p&gt;&lt;p&gt;In green the best &amp;quot;pound for pound&amp;quot; swim.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>

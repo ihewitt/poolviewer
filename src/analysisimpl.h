@@ -20,6 +20,7 @@
 #define ANALYSISIMPL_H
 
 #include "ui_analysis.h"
+#include "distances.h"
 
 #include <QDate>
 
@@ -54,6 +55,7 @@ private:
     void fillPredicted(const int ref);
 
     const DataStore *ds;
+    const std::vector<Distance> distances;
 
     std::vector<record_t> times;
     int bestRef;

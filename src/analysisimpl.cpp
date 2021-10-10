@@ -21,6 +21,7 @@
 #include "besttimesimpl.h"
 #include "utilities.h"
 #include "datastore.h"
+#include "distances.h"
 
 #include <QRadioButton>
 #include <QChartView>
@@ -36,25 +37,17 @@
 #define COL_RADIO 4
 
 
-namespace
-{
-    const double distances[] = {25, 50, 100, 200, 400, 800, 1000, 1500, 1931, 2000, 3862, 5000};
-    const char * labels[] = {"25m", "50m", "100m", "200m", "400m", "800m", "1000m", "1500m", "1931m (1.2ml)", "2000m", "3862m (2.4ml)", "5000m"};
-    const size_t numberOfRows = sizeof(distances) / sizeof(distances[0]);
-}
-
-
 void AnalysisImpl::createTable()
 {
-    times.resize(numberOfRows);
-    analysisTable->setRowCount(numberOfRows);
+    times.resize(distances.size());
+    analysisTable->setRowCount(distances.size());
 
-    for (size_t i = 0; i < numberOfRows; ++i)
+    for (size_t i = 0; i < distances.size(); ++i)
     {
-        QTableWidgetItem * item = new QTableWidgetItem(labels[i]);
+        QTableWidgetItem * item = new QTableWidgetItem(distances[i].label);
         analysisTable->setVerticalHeaderItem(i, item);
 
-        QRadioButton *button = new QRadioButton(labels[i], this);
+        QRadioButton *button = new QRadioButton(distances[i].label, this);
         analysisTable->setCellWidget(i, COL_RADIO, button);
         const auto handler = [this, i] (const bool x) {
             if (x)
@@ -104,7 +97,7 @@ void AnalysisImpl::setBestTime(int distance, record_t & rec)
 }
 
 AnalysisImpl::AnalysisImpl(QWidget *parent) :
-    QDialog(parent),ds(NULL), bestRef(-1)
+    QDialog(parent), ds(NULL), distances(getDistanceFromConfig()), bestRef(-1)
 {
     setupUi(this);
     createTable();
@@ -112,7 +105,7 @@ AnalysisImpl::AnalysisImpl(QWidget *parent) :
 
 void AnalysisImpl::fillTable()
 {
-    for (size_t i = 0; i < numberOfRows; ++i)
+    for (size_t i = 0; i < distances.size(); ++i)
     {
         if (times[i].predicted > 0)
         {
@@ -122,7 +115,7 @@ void AnalysisImpl::fillTable()
 
             analysisTable->setItem(i, COL_REFERENCE, createTableWidgetItem(reference));
 
-            if (distances[i] == reference)
+            if (distances[i].distance == reference)
             {
                 QRadioButton * radio = dynamic_cast<QRadioButton *>(analysisTable->cellWidget(i, COL_RADIO));
                 radio->setChecked(true);
@@ -152,21 +145,21 @@ void AnalysisImpl::fillTable()
 
 int AnalysisImpl::precalculate(const double minimum)
 {
-    std::vector<double> normalised(numberOfRows, std::numeric_limits<double>::infinity());
+    std::vector<double> normalised(distances.size(), std::numeric_limits<double>::infinity());
     // Populate best times
-    for (size_t i = 0; i < numberOfRows; ++i)
+    for (size_t i = 0; i < distances.size(); ++i)
     {
         record_t & rec = times[i];
 
-        setBestTime(distances[i], rec);
+        setBestTime(distances[i].distance, rec);
         QWidget * radio = analysisTable->cellWidget(i, 4);
 
         if (rec.best > 0)
         {
-            if (distances[i] >= minimum)
+            if (distances[i].distance >= minimum)
             {
                 // we skip predictions based on very short distances as less accurate
-                normalised[i] = rec.best / std::pow(distances[i], peterRiegelExponent);
+                normalised[i] = rec.best / std::pow(distances[i].distance, peterRiegelExponent);
             }
 
             const QTime calc = QTime(0, 0, 0).addSecs(rec.best);
@@ -198,13 +191,13 @@ int AnalysisImpl::precalculate(const double minimum)
 void AnalysisImpl::fillPredicted(const int ref)
 {
     // For each time / distance predict best time
-    for (size_t i = 0; i < numberOfRows; ++i)
+    for (size_t i = 0; i < distances.size(); ++i)
     {
         if (ref >=0)
         {
             // Use Peter Riegel's formula: t2 = t1 * (d2 / d1) ^ 1.06.
-            times[i].predicted = times[ref].best * pow(distances[i] / distances[ref], peterRiegelExponent);
-            times[i].reference = distances[ref];
+            times[i].predicted = times[ref].best * pow(distances[i].distance / distances[ref].distance, peterRiegelExponent);
+            times[i].reference = distances[ref].distance;
         }
         else
         {
@@ -226,15 +219,15 @@ void AnalysisImpl::fillChart()
     // Y axis is speed in ms per 100m (see QDateTimeAxis)
     const double multiplier = 100 * 1000;
 
-    for (size_t i = 0; i < numberOfRows; ++i)
+    for (size_t i = 0; i < distances.size(); ++i)
     {
         if (times[i].best > 0)
         {
-            series[0]->append(distances[i], times[i].best / distances[i] * multiplier);
+            series[0]->append(distances[i].distance, times[i].best / distances[i].distance * multiplier);
         }
         if (times[i].predicted > 0)
         {
-            series[1]->append(distances[i], times[i].predicted / distances[i] * multiplier);
+            series[1]->append(distances[i].distance, times[i].predicted / distances[i].distance * multiplier);
         }
     }
 
