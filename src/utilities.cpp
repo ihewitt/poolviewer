@@ -22,6 +22,9 @@
 #include <QTableWidgetItem>
 #include <QChartView>
 #include <QDateTimeAxis>
+#include <QApplication>
+#include <QClipboard>
+
 #include <cmath>
 
 #include "datastore.h"
@@ -194,4 +197,51 @@ void enlargeAxis(QtCharts::QDateTimeAxis * axis, const double factor)
     const qint64 extraRange = axis->min().msecsTo(axis->max()) * factor;
     axis->setMin(axis->min().addMSecs(-extraRange));
     axis->setMax(axis->max().addMSecs(extraRange));
+}
+
+void copyTableToClipboard(const QTableWidget * table, const bool index)
+{
+    QString data;
+
+    const char separator = ',';
+
+    const auto addWidget = [&data](const QTableWidgetItem * item, const bool addSeparator)
+    {
+        // empty top left corner if adding the index
+        if (addSeparator)
+        {
+            data += separator;
+        }
+
+        if (item)
+        {
+            // simpler, always quote, LibreOffice detects numbers and dates anyway
+            data += '"';
+            data += item->text();
+            data += '"';
+        }
+    };
+
+    for (int j = 0; j < table->columnCount(); ++j)
+    {
+        addWidget(table->horizontalHeaderItem(j), index || (j > 0));
+    }
+    data += '\n';
+
+    for (int i = 0; i < table->rowCount(); ++i)
+    {
+        if (index)
+        {
+            addWidget(table->verticalHeaderItem(i), false);
+        }
+
+        for (int j = 0; j < table->columnCount(); ++j)
+        {
+            addWidget(table->item(i, j), index || (j > 0));
+        }
+        data += '\n';
+    }
+
+    QClipboard *clipboard = QApplication::clipboard();
+    clipboard->setText(data);
 }

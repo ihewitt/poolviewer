@@ -231,6 +231,8 @@ void BestTimesImpl::on_calculateButton_clicked()
     on_progressionBox_clicked();
     timesTable->resizeColumnsToContents();
     timesTable->setSortingEnabled(true);
+
+    copyTableToClipboard(timesTable, false);
 }
 
 void BestTimesImpl::fillDistributionChart(const std::vector<record_t> & allTimes)

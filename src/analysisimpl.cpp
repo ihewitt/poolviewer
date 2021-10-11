@@ -141,6 +141,7 @@ void AnalysisImpl::fillTable()
     }
 
     analysisTable->resizeColumnsToContents();
+    copyTableToClipboard(analysisTable, true);
 }
 
 int AnalysisImpl::precalculate(const double minimum)

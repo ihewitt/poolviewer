@@ -24,6 +24,7 @@
 
 class QTableWidgetItem;
 class QVariant;
+class QTableWidget;
 
 namespace QtCharts
 {
@@ -67,5 +68,8 @@ void setChartOnView(QtCharts::QChartView * view, QtCharts::QChart * chart);
 
 // make the date axis a bit wider to improve rendering (0 = unchanged)
 void enlargeAxis(QtCharts::QDateTimeAxis * axis, const double factor);
+
+// export table to clipboard
+void copyTableToClipboard(const QTableWidget * table, const bool addSeparator);
 
 #endif // UTILITIES_H
