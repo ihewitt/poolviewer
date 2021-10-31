@@ -81,7 +81,7 @@
      <item>
       <widget class="QLabel" name="label">
        <property name="text">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Calculates predicted times for each distance based on previous best times at other distances using Peter Riegels formula.&lt;/p&gt;&lt;p&gt;Predictions can be recalculated by selecting a different distance.&lt;/p&gt;&lt;p&gt;In green the best &amp;quot;pound for pound&amp;quot; swim.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Calculates predicted times for each distance based on previous best times at other distances using Peter Riegel's formula.&lt;/p&gt;&lt;p&gt;Predictions can be recalculated by selecting a different distance.&lt;/p&gt;&lt;p&gt;In green the best &amp;quot;pound for pound&amp;quot; swim.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
