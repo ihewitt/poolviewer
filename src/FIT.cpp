@@ -39,6 +39,7 @@
 
 #include "FIT.hpp"
 #include "logging.h"
+#include "utilities.h"
 #include "antdefs.hpp"
 
 #include <time.h>
@@ -867,7 +868,7 @@ string FIT::getDataString(uint8_t *ptr, uint8_t size, uint8_t baseType, uint8_t 
         break;
     }
     case BT_String: {
-        strstrm << "\"" << GarminConvert::gString(ptr, size) << "\"";
+        strstrm << GarminConvert::gString(ptr, size);
         break;
     }
     }
@@ -963,7 +964,7 @@ bool FIT::parse(vector<uint8_t> &fitData, std::vector<ExerciseSet> &result)
                 // Data Message
                 map<uint8_t, RecordDef>::iterator it = recDefMap.find(rh.normalHeader.localMessageType);
                 if (it != recDefMap.end()) {
-                    RecordDef rd = recDefMap[rh.normalHeader.localMessageType];
+                    const RecordDef & rd = recDefMap[rh.normalHeader.localMessageType];
                     //logger() << "Local Message \"" << messageTypeMap[rd.rfx.globalNum] << "\"(" << rd.rfx.globalNum << "):\n";
 
 //                    switch(rd.rfx.globalNum)
@@ -981,7 +982,7 @@ bool FIT::parse(vector<uint8_t> &fitData, std::vector<ExerciseSet> &result)
                     uint32_t time;
 
                     for (int i = 0; i < rd.rfx.fieldsNum; i++) {
-                        RecordField &rf = rd.rf[i];
+                        const RecordField &rf = rd.rf[i];
 
                         //BaseType bt;
                         //bt.byte = rf.baseType;
@@ -1004,6 +1005,27 @@ bool FIT::parse(vector<uint8_t> &fitData, std::vector<ExerciseSet> &result)
                             }
                             break;
                         }
+                        case 12: { // Sport
+                            switch (rf.definitionNum) {
+                            case 0: { // Sport
+                                const std::string sport = getDataString(ptr, rf.size, BT_Enum, rd.rfx.globalNum, rf.definitionNum);
+                                if (sport != "Swimming") {
+                                    return false;
+                                }
+                                break;
+                            }
+                            case 3: { // Name
+                                const std::string name = getDataString(ptr, rf.size, BT_String, rd.rfx.globalNum, rf.definitionNum);
+                                if (name != "Pool Swim") {
+                                    // this is not an enum, so it might change
+                                    // in which case we can simply delete it
+                                    return false;
+                                }
+                                break;
+                            }
+                            }
+                            break;
+                        }
                         case 34: { // Activity
                             switch (rf.definitionNum) {
                             case 5 : { // "Local Timestamp"
@@ -1020,9 +1042,9 @@ bool FIT::parse(vector<uint8_t> &fitData, std::vector<ExerciseSet> &result)
                             switch (rf.definitionNum) {
                             case 2 : { // Start Time
                                 int t = *(uint32_t*)ptr;
-                                INFO ("0x%X", t);
                                 QDateTime timestamp;
                                 timestamp.setTime_t(t + timestampOffset);
+                                INFO ("Session: %s\n", timestamp.toString().toStdString().c_str());
 
                                 session_data.date = timestamp.date();
                                 session_data.time = timestamp.time();
@@ -1049,7 +1071,7 @@ bool FIT::parse(vector<uint8_t> &fitData, std::vector<ExerciseSet> &result)
                             } // switch(rf.definitionNum)
 
                             break;
-                        } // case 18: // Session
+                        }
                         case 19: { // Lap
                             switch (rf.definitionNum) {
                             case 253: { // Timestamp
@@ -1065,12 +1087,15 @@ bool FIT::parse(vector<uint8_t> &fitData, std::vector<ExerciseSet> &result)
                             }
                             case 32 : { // int lens;
                                 // nb length of the Lap/Set
-                                e.lens = *(uint16_t *)ptr;
+                                const uint16_t lens = *(uint16_t *)ptr;
+                                if (lens != 65535) {
+                                    e.lens = *(uint16_t *)ptr;
+                                }
                                 break;
                             }
                             case 11 : { //  "Total calories";
                                 // calories Lap/Set
-                                int cal = *(uint16_t *)ptr;
+                                const uint16_t cal = *(uint16_t *)ptr;
                                 if (cal != 65535) {
                                     total_cals += cal;
                                 }
@@ -1117,7 +1142,7 @@ bool FIT::parse(vector<uint8_t> &fitData, std::vector<ExerciseSet> &result)
 //                                 INFO("%d.%d : %s (", rd.rfx.globalNum, (unsigned)rf.definitionNum, messageFieldNameMap[rd.rfx.globalNum][rf.definitionNum].c_str());
 //                                 INFO("%d", *(uint16_t *)ptr);
 //                                 INFO(")\n");
-                                int strokes = *(uint16_t *)ptr;
+                                const uint16_t strokes = *(uint16_t *)ptr;
                                 // add strokes only if valid value
                                 // if not, this is a rest
                                 if (strokes != 65535) {
@@ -1178,8 +1203,11 @@ bool FIT::parse(vector<uint8_t> &fitData, std::vector<ExerciseSet> &result)
                     }
                     case 19: { // Lap
                         // now the lap is "closed"
-                                                
-                        if (e.len_strokes.empty()) {
+                        // Garmin allows a gap with no lengths as a rest (saved as len_time)
+                        // our internal representation does not
+                        // and we move the rest to the previous set
+                        if (e.lens == 0) {
+                            // use e.lens which works for drill sets too
                             // so add the 1 length time to previous lap rest time
                             if (!dst.empty()) {
                                 ExerciseSet & previous = dst.back();
@@ -1189,49 +1217,61 @@ bool FIT::parse(vector<uint8_t> &fitData, std::vector<ExerciseSet> &result)
                                 // we could add an empty set with just a rest
                             }
                         } else {
-                            // lengths are already added to len_strokes & len_time
+                            // lengths have already been processed
+                            // in case of drills, len_strokes and len_time are not populated
+                            // so we do it here
+                            if (e.len_strokes.empty()) {
+                                // drills, no strokes
+                                e.len_strokes.resize(e.lens, 0);
+                            } else {
+                                if (e.len_strokes.size() != (size_t)e.lens) {
+                                    INFO ("Internal error, wrong size of e.len_strokes: %zu != %d\n", e.len_strokes.size(), e.lens);
+                                    e.len_strokes.resize(e.lens);  // what else can we do?
+                                }
+                            }
+
+                            if (e.len_time.empty()) {
+                                // drills, allocate time uniformly
+                                const double time = roundTo8thSecond(e.duration.msecsSinceStartOfDay() / e.lens / 1000);
+                                e.len_time.resize(e.lens, time);
+                            } else {
+                                if (e.len_time.size() != (size_t)e.lens) {
+                                    INFO ("Internal error, wrong sizeof e.len_time: %zu != %d\n", e.len_time.size(), e.lens);
+                                    e.len_time.resize(e.lens);  // what else can we do?
+                                }
+                            }
+
+                            // we are not checking e.len_style as the code already handles it when missing
+
                             e.set++;
-                            e.lens = e.len_strokes.size();
                             total_lengths += e.lens;
 
-                            // average number of strokes for this lap/set
-                            e.strk = 0;
-                            for(std::vector<int>::iterator j=e.len_strokes.begin();j!=e.len_strokes.end();++j) {
-                                e.strk += *j;
-                            }
+                            const int total_strokes = std::accumulate(e.len_strokes.begin(), e.len_strokes.end(), 0);
+
                             // number of strokes per minute
-                            e.rate = 60 * e.strk / QTime(0,0).secsTo(e.duration);
-                            e.strk /= e.len_strokes.size();
+                            e.rate = 60 * total_strokes / QTime(0, 0).secsTo(e.duration);
+                            // average number of strokes for this lap/set
+                            e.strk = total_strokes / e.lens;
                             
                             // average swolf/efficiency for this lap/set
-                            e.effic = 0;
-                            for(unsigned int i=0; i < e.len_strokes.size(); i++) {
-                                e.effic += e.len_strokes[i] + e.len_time[i] ;
-                            }
-                            e.effic /= e.len_strokes.size();
+                            const int total_time = std::accumulate(e.len_time.begin(), e.len_time.end(), 0.0);
+                            e.effic = (total_strokes + total_time) / e.lens; // cast to int
                             
                             dst.push_back(e);
-                            INFO ("LAP: set:%d, lens:%d dist:%d, strk:%d, cal:%d\n",
-                                e.set, e.lens, e.dist, e.strk, total_cals);
+                            INFO ("LAP: set: %2d, lens: %3d, strk: %2d, cal: %4d\n",
+                                e.set, e.lens, e.strk, total_cals);
                         }
                         // clear for next lap
                         e.len_time.clear();
                         e.len_strokes.clear();
                         e.len_style.clear();
                         e.rest = QTime(0,0);
+                        e.lens = 0;
                         break;
                     }
                     case 101: // length is closed
                     {
-                        if (! e.len_strokes.empty() && e.len_strokes.back() == 0) {
-                            INFO ("len %f, %d, %s\n", e.len_time.back(), e.len_strokes.back(), e.len_style.back().toLocal8Bit().constData());
-                            // add to lap rest
-                            e.rest = e.rest.addSecs(e.len_time.back());
-                            // remove cur length
-                            e.len_strokes.pop_back();
-                            e.len_time.pop_back();
-                            e.len_style.pop_back();
-                        }
+                        // nothing to do here
                         break;
                     }
                     }
